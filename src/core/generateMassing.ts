@@ -16,16 +16,21 @@ export interface GenerateMassingOptions {
   context?: ContextData;
   officialFootprint?: LocalPoint[];
   officialHeightM?: number;
+  /** Deterministic per-address variation for procedural fallback geometry. */
+  seed?: number;
 }
 
 function addressSummary(geocoding: TwinProject["geocoding"]) {
+  const rawCandidate = geocoding.candidates.find((candidate) => candidate.type === "raw")?.label;
   const parcel =
     geocoding.normalized?.parcel_address ||
     geocoding.candidates.find((candidate) => candidate.type === "parcel")?.label ||
+    rawCandidate ||
     geocoding.selected.address_query;
   const road =
     geocoding.normalized?.road_address ||
     geocoding.candidates.find((candidate) => candidate.type === "road")?.label ||
+    rawCandidate ||
     geocoding.selected.address_query;
   const building =
     geocoding.normalized?.building_name ||
@@ -52,7 +57,12 @@ function rectangle(width: number, depth: number, x = 0, z = 0, rotationRad = 0):
   }));
 }
 
-function makeProceduralBuildings(): BuildingFeature[] {
+function makeProceduralBuildings(seed = 0): BuildingFeature[] {
+  const jitter = (index: number, scale: number) => {
+    if (!seed) return 0;
+    const h = (seed * 31 + index * 2654435761) >>> 0;
+    return (((h & 0xff) / 255) - 0.5) * scale;
+  };
   const configs = [
     [-32, -8, 15, 20, 17, 0.08],
     [-30, 22, 20, 13, 12, -0.12],
@@ -68,20 +78,29 @@ function makeProceduralBuildings(): BuildingFeature[] {
     [-2, -62, 24, 15, 19, 0.05]
   ];
 
-  return configs.map(([x, z, width, depth, height, rotation], index) => ({
-    id: `procedural-context-${index + 1}`,
-    name: `주변 매스 ${index + 1}`,
-    role: "surrounding",
-    footprint: rectangle(width, depth, x, z, rotation),
-    height_m: height,
-    floors_estimate: Math.max(2, Math.round(height / 3.4)),
-    source_type: "procedural",
-    confidence: "low",
-    material_hint: "neutral_gray"
-  }));
+  return configs.map(([x, z, width, depth, height, rotation], index) => {
+    const jitteredHeight = Math.max(6, Math.round(height + jitter(index, 14)));
+    return {
+      id: `procedural-context-${index + 1}`,
+      name: `주변 매스 ${index + 1}`,
+      role: "surrounding" as const,
+      footprint: rectangle(
+        width,
+        depth,
+        x + jitter(index + 100, 8),
+        z + jitter(index + 200, 8),
+        rotation + jitter(index + 300, 0.3)
+      ),
+      height_m: jitteredHeight,
+      floors_estimate: Math.max(2, Math.round(jitteredHeight / 3.4)),
+      source_type: "procedural" as const,
+      confidence: "low" as const,
+      material_hint: "neutral_gray"
+    };
+  });
 }
 
-function makeRoadHints(context?: ContextData): RoadHint[] {
+function makeRoadHints(context?: ContextData, roadLabel?: string): RoadHint[] {
   const osmRoads =
     context?.roads.map<RoadHint>((road) => ({
       id: road.id,
@@ -97,7 +116,7 @@ function makeRoadHints(context?: ContextData): RoadHint[] {
   return [
     {
       id: "procedural-road-main",
-      name: "사당로20가길 방향 추정",
+      name: roadLabel ? `${roadLabel} 방향 추정` : "주요 도로 방향 추정",
       centerline: [
         { x: -74, z: -23 },
         { x: 74, z: -5 }
@@ -151,7 +170,7 @@ export function generateMassing(options: GenerateMassingOptions): TwinProject {
       material_hint: "neutral_gray"
     })) ?? [];
 
-  const surrounding = (contextBuildings.length > 0 ? contextBuildings : makeProceduralBuildings()).slice(0, 18);
+  const surrounding = (contextBuildings.length > 0 ? contextBuildings : makeProceduralBuildings(options.seed)).slice(0, 18);
   const hasOfficialTarget = Boolean(options.officialFootprint?.length);
   const target: BuildingFeature = {
     id: "target-building",
@@ -190,7 +209,7 @@ export function generateMassing(options: GenerateMassingOptions): TwinProject {
     },
     geocoding: options.geocoding,
     buildings: [target, ...surrounding],
-    roads: makeRoadHints(options.context),
+    roads: makeRoadHints(options.context, addresses.road !== addresses.parcel ? addresses.road : undefined),
     pois: [],
     parcel: makeParcelBoundary(),
     basemap: {

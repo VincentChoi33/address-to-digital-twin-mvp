@@ -1,234 +1,150 @@
 import sadangTwin from "../samples/sadang_317_6/twin.json";
 import sadangManifest from "../samples/sadang_317_6/source_manifest.json";
+import { generateQaReport } from "../core/qa";
 import { escapeHtml } from "../lib/html";
-import type { HydrologyCell, HydrologyState, SourceManifest, TwinProject } from "../types/twin";
+import { BASEMAP_ATTRIBUTION, resolveBasemapMode } from "../render/basemap";
+import { SceneRenderer, WebGLUnavailableError } from "../render/scene";
+import { SoundSynth } from "../render/sound";
+import {
+  UNDERGROUND_ALARM_M3,
+  applyScenario,
+  applyTool,
+  createSimFromTwin,
+  dryUp,
+  stepSim,
+  type SimCell,
+  type SimScenario,
+  type SimState,
+  type SimTool
+} from "../sim/hydrology";
+import type { SourceManifest, TwinProject } from "../types/twin";
 import { runLocalAddressAgent, type AgentRun } from "./agent";
-import { confidenceKo, coordinateText, createUi, geocodingStatusKo, layerRows, sourceTypeKo } from "./ui";
-import { TwinViewer } from "./viewer";
+import {
+  coordinateText,
+  confidenceKo,
+  createUi,
+  geocodingStatusKo,
+  layerRows,
+  rainLabelText,
+  sourceTypeKo
+} from "./ui";
 
 const app = document.querySelector<HTMLDivElement>("#app");
+if (!app) throw new Error("Missing #app root");
 
-if (!app) {
-  throw new Error("Missing #app root");
-}
+const initialTwin = sadangTwin as unknown as TwinProject;
+const initialManifest = sadangManifest as unknown as SourceManifest;
+const controls = createUi(app, initialTwin, initialManifest);
 
-const twin = sadangTwin as unknown as TwinProject;
-const manifest = sadangManifest as unknown as SourceManifest;
-const controls = createUi(app, twin, manifest);
+const basemapMode = resolveBasemapMode(
+  import.meta.env.VITE_BASEMAP_MODE,
+  import.meta.env.VITE_CUSTOM_TILE_URL
+);
+controls.basemapAttribution.textContent = BASEMAP_ATTRIBUTION[basemapMode];
 
-// UI Log Helper
+const sound = new SoundSynth();
+
+// ---------------------------------------------------------------- state
+
+let twin: TwinProject = initialTwin;
+let manifest: SourceManifest = initialManifest;
+let sim: SimState = createSimFromTwin(twin);
+let selectedTool: SimTool = "inspect";
+let theme: "light" | "dark" = "dark";
+let undergroundAlarmed = false;
+let lastOverflowCount = 0;
+let blobUrls: string[] = [];
+
+// ---------------------------------------------------------------- logging
+
 function addLog(text: string, type: "info" | "success" | "warn" | "danger" = "info"): void {
-  const log = document.createElement("div");
-  log.className = `log-item ${type}`;
-  log.innerText = text;
-  controls.logFeed.appendChild(log);
+  const entry = document.createElement("div");
+  entry.className = `log-item ${type}`;
+  entry.innerText = text;
+  controls.logFeed.appendChild(entry);
   controls.logFeed.scrollTop = controls.logFeed.scrollHeight;
   while (controls.logFeed.children.length > 24) {
     controls.logFeed.removeChild(controls.logFeed.firstChild!);
   }
 }
 
-// Callbacks instance for TwinViewer
-const hydrologyCallbacks = {
-  onLog: (text: string, type: "info" | "success" | "warn" | "danger") => {
-    addLog(text, type);
-  },
-  onApiStatusUpdate: (key: "geocode" | "osm" | "dem" | "tile", status: "gray" | "green" | "yellow" | "red") => {
-    // API LED Indicators mapping in the HTML template
-    const ledEl = document.getElementById(`led-${key}`);
-    if (ledEl) {
-      ledEl.className = `led-indicator led-${status}`;
-    }
-  },
-  onStatsUpdate: (stats: {
-    totalSurfaceWater: number;
-    totalPipeWater: number;
-    subwayWater: number;
-    totalOutflowVolume: number;
-    overflowCount: number;
-  }) => {
-    controls.surfaceWaterDisplay.textContent = `${stats.totalSurfaceWater.toFixed(1)} ㎥`;
-    controls.pipeWaterDisplay.textContent = `${stats.totalPipeWater.toFixed(1)} ㎥`;
-    controls.subwayWaterDisplay.textContent = `${stats.subwayWater.toFixed(1)} ㎥`;
-    controls.outflowDisplay.textContent = `${stats.totalOutflowVolume.toFixed(1)} ㎥`;
-    controls.overflowDisplay.textContent = String(stats.overflowCount);
-    controls.overflowDisplay.className = stats.overflowCount > 0 ? "stat-value danger" : "stat-value success";
-    
-    // Toggle subway alarm banner visibility
-    if (stats.subwayWater > 15) {
-      controls.subwayAlertBanner.style.display = "flex";
-    } else {
-      controls.subwayAlertBanner.style.display = "none";
-    }
-  },
-  onGaugesUpdate: (drainPercent: number, pressurePercent: number, speedMS: number) => {
-    controls.gaugeDrainVal.textContent = `${drainPercent}%`;
-    controls.gaugeDrainBar.style.width = `${drainPercent}%`;
+// ---------------------------------------------------------------- renderer (WebGL-guarded)
 
-    controls.gaugePressureVal.textContent = `${pressurePercent}%`;
-    controls.gaugePressureBar.style.width = `${pressurePercent}%`;
-    controls.gaugePressureBar.className = pressurePercent > 70 ? "gauge-bar high" : "gauge-bar";
-
-    controls.gaugeVelocityVal.textContent = `${speedMS.toFixed(1)} m/s`;
-    controls.gaugeVelocityBar.style.width = `${Math.min(100, Math.floor(speedMS * 12))}%`;
-  },
-  onCellInspect: (cell: HydrologyCell | null) => {
-    if (!cell) {
-      controls.inspectCellCoord.textContent = "선택된 격자 없음";
-      controls.inspectType.textContent = "-";
-      controls.inspectMetadata.textContent = "-";
-      controls.inspectElevation.textContent = "-";
-      controls.inspectWater.textContent = "-";
-      controls.inspectSewer.textContent = "-";
-      controls.inspectPipe.textContent = "-";
-      controls.inspectPipeWater.textContent = "-";
-      return;
-    }
-
-    controls.inspectCellCoord.textContent = `선택 격자 [${cell.x}, ${cell.z}]`;
-    
-    let gTypeName = "인도 및 완충녹지";
-    let gTypeClass = "badge grass";
-    let metaHTML = "일반 자연 피복 블록";
-
-    if (cell.type === "road") {
-      gTypeName = "아스팔트 포장도로";
-      gTypeClass = "badge road";
-      metaHTML = cell.name || "인근 도로망";
-    } else if (cell.type === "building") {
-      gTypeName = cell.isTarget ? "랜드마크 빌딩" : "상업 오피스 빌딩";
-      gTypeClass = cell.isTarget ? "badge target" : "badge building";
-      metaHTML = `${cell.name || "오피스 매스"}<br>실측높이: ${cell.buildingHeight}m`;
-    }
-
-    if (cell.isSubwayExit) {
-      gTypeName = "지하철 출입구";
-      gTypeClass = "badge subway-exit";
-      metaHTML = `강남역 연결구 (유입 시 역사 내 지하 침수 발생)`;
-    }
-
-    controls.inspectType.innerHTML = `<span class="${gTypeClass}">${gTypeName}</span>`;
-    controls.inspectMetadata.innerHTML = metaHTML;
-    controls.inspectElevation.textContent = `${cell.elevation} m`;
-    controls.inspectWater.textContent = cell.water > 0.005 ? `${cell.water.toFixed(3)} m` : "건조함";
-    controls.inspectSewer.textContent = cell.hasSewer ? "🕳️ 우수 빗물받이 설치됨" : cell.isSubwayExit ? "🚇 지하철 통로 연결됨" : "없음";
-    controls.inspectPipe.textContent = cell.hasPipe ? "⚙️ 지하 관거 연동됨" : "없음";
-    controls.inspectPipeWater.textContent = cell.hasPipe ? `${(cell.pipeWater * 100 / 2.0).toFixed(0)}% (${cell.pipeWater.toFixed(2)}m)` : "N/A";
+let renderer: SceneRenderer | null = null;
+try {
+  renderer = new SceneRenderer(controls.sceneHost, {
+    onCellPick: (cell) => handleCellPick(cell)
+  });
+} catch (error) {
+  if (error instanceof WebGLUnavailableError) {
+    controls.webglFallback.hidden = false;
+    controls.warningBanner.textContent =
+      "WebGL 미지원 환경: 3D 미리보기 없이 주소 분석과 산출물 생성만 동작합니다.";
+    addLog("WebGL 컨텍스트 생성 실패 — 3D 없이 콘솔 모드로 동작합니다.", "danger");
+  } else {
+    throw error;
   }
-};
-
-const rawMode = import.meta.env.VITE_BASEMAP_MODE;
-const basemapMode =
-  rawMode === "procedural" || rawMode === "vworld" || rawMode === "arcgis" || rawMode === "custom"
-    ? rawMode
-    : "arcgis";
-
-const viewer = new TwinViewer({
-  host: controls.sceneHost,
-  twin,
-  basemapMode,
-  customTileUrl: import.meta.env.VITE_CUSTOM_TILE_URL,
-  callbacks: hydrologyCallbacks
-});
-
-// Real-time Rolling Hydrograph Chart Setup
-const chartHistory = {
-  rain: [] as number[],
-  runoff: [] as number[],
-  discharge: [] as number[],
-  subway: [] as number[]
-};
-
-function updateHydrographData() {
-  chartHistory.rain.push(viewer.hydrologyState.rainIntensity);
-  chartHistory.runoff.push(viewer.hydrologyState.totalSurfaceWater);
-  chartHistory.discharge.push(viewer.hydrologyState.totalOutflowVolume);
-  chartHistory.subway.push(viewer.hydrologyState.subwayWater);
-  
-  if (chartHistory.rain.length > 60) {
-    chartHistory.rain.shift();
-    chartHistory.runoff.shift();
-    chartHistory.discharge.shift();
-    chartHistory.subway.shift();
-  }
-  
-  drawHydrograph();
 }
 
-function drawHydrograph() {
-  const canvas = controls.sceneHost.parentNode?.querySelector("#hydrograph-canvas") as HTMLCanvasElement;
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-  
-  const rect = (canvas.parentNode as HTMLElement).getBoundingClientRect();
-  canvas.width = rect.width * window.devicePixelRatio;
-  canvas.height = rect.height * window.devicePixelRatio;
-  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-  
-  const w = rect.width;
-  const h = rect.height;
-  
-  ctx.fillStyle = "#02040c";
-  ctx.fillRect(0, 0, w, h);
-  
-  ctx.strokeStyle = "rgba(255,255,255,0.04)";
-  ctx.lineWidth = 1;
-  for (let x = 0; x < w; x += w / 6) {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
-  }
-  for (let y = 0; y < h; y += h / 4) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
-  }
-  
-  let maxVal = 100.0;
-  for (let i = 0; i < chartHistory.rain.length; i++) {
-    maxVal = Math.max(maxVal, chartHistory.rain[i]);
-    maxVal = Math.max(maxVal, chartHistory.runoff[i] / 10);
-    maxVal = Math.max(maxVal, chartHistory.discharge[i] / 20);
-    maxVal = Math.max(maxVal, chartHistory.subway[i]);
-  }
-  
-  const plotLine = (data: number[], color: string, scaleFactor: number, isDashed: boolean) => {
-    if (data.length < 2) return;
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    if (isDashed) ctx.setLineDash([4, 4]);
-    else ctx.setLineDash([]);
-    
-    ctx.beginPath();
-    const spacing = w / 59;
-    for (let i = 0; i < data.length; i++) {
-      const px = i * spacing;
-      const val = data[i] * scaleFactor;
-      const py = h - 6 - ((val / maxVal) * (h - 18));
-      if (i === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.stroke();
+// ---------------------------------------------------------------- artifacts
+
+function rebuildArtifactLinks(): void {
+  for (const url of blobUrls) URL.revokeObjectURL(url);
+  blobUrls = [];
+
+  const makeBlobLink = (label: string, kind: string, content: string, mime: string, filename: string): string => {
+    const url = URL.createObjectURL(new Blob([content], { type: mime }));
+    blobUrls.push(url);
+    return `<a class="output-link ${kind}" href="${url}" download="${filename}">${escapeHtml(label)}</a>`;
   };
-  
-  plotLine(chartHistory.rain, "#5ce1e6", 1.0, true);
-  plotLine(chartHistory.runoff, "#f59e0b", 0.1, false);
-  plotLine(chartHistory.discharge, "#10b981", 0.05, false);
-  plotLine(chartHistory.subway, "#ef4444", 1.0, false);
-  
-  ctx.font = "bold 8.5px sans-serif";
-  ctx.fillStyle = "#5ce1e6"; ctx.fillText("우량", 6, 12);
-  ctx.fillStyle = "#f59e0b"; ctx.fillText("지상우수(x0.1)", 38, 12);
-  ctx.fillStyle = "#10b981"; ctx.fillText("방류구(x0.05)", 110, 12);
-  ctx.fillStyle = "#ef4444"; ctx.fillText("지하철침수", 182, 12);
+
+  controls.agentOutputs.innerHTML = [
+    makeBlobLink("twin.json", "data", JSON.stringify(twin, null, 2), "application/json", `${twin.project_id}_twin.json`),
+    makeBlobLink(
+      "source_manifest.json",
+      "manifest",
+      JSON.stringify(manifest, null, 2),
+      "application/json",
+      `${twin.project_id}_manifest.json`
+    ),
+    makeBlobLink("qa_report.html", "qa", generateQaReport(twin, manifest), "text/html", `${twin.project_id}_qa.html`)
+  ].join("");
 }
 
-// Bind Chart Interval
-setInterval(updateHydrographData, 500);
+// ---------------------------------------------------------------- project loading
+
+function updateProjectUi(): void {
+  controls.parcelAddress.textContent = twin.addresses.parcel_address;
+  controls.roadAddress.textContent = twin.addresses.road_address_candidate;
+  controls.buildingName.textContent = twin.addresses.building_name_candidate;
+  controls.coordinates.textContent = coordinateText(twin);
+  controls.confidence.textContent = confidenceKo(twin.geocoding.confidence);
+  controls.parcelBoundarySource.textContent = `${sourceTypeKo(twin.parcel.source_type)} / ${confidenceKo(twin.parcel.confidence)}`;
+  controls.sourceStatus.textContent = geocodingStatusKo(manifest.geocoding.provider);
+  controls.sourceStatus.className = `status-pill ${manifest.geocoding.provider}`;
+  controls.layerRows.innerHTML = layerRows(manifest);
+  controls.warningBanner.textContent = twin.viewer.warning;
+}
+
+function loadProject(nextTwin: TwinProject, nextManifest: SourceManifest): void {
+  twin = nextTwin;
+  manifest = nextManifest;
+  sim = createSimFromTwin(twin);
+  undergroundAlarmed = false;
+  lastOverflowCount = 0;
+  controls.undergroundAlert.hidden = true;
+  syncScenarioButtons("normal");
+  controls.rainSlider.value = "0";
+  controls.rainLabel.textContent = rainLabelText(0);
+  updateProjectUi();
+  rebuildArtifactLinks();
+  void renderer?.loadProject(twin, sim, basemapMode, import.meta.env.VITE_CUSTOM_TILE_URL);
+  addLog(`트윈 로드: ${twin.project_id} (${twin.addresses.parcel_address})`, "success");
+}
+
+// ---------------------------------------------------------------- agent console
 
 function renderAgentRun(run: AgentRun): void {
-  if (run.twin && run.manifest) {
-    updateProjectUi(run.twin, run.manifest);
-    void viewer.loadProject(run.twin);
-  }
-
   controls.agentTranscript.innerHTML = run.messages
     .map(
       (message) => `
@@ -244,247 +160,356 @@ function renderAgentRun(run: AgentRun): void {
     ? `${run.model.provider} / ${run.model.name}${run.model.available ? "" : " unavailable"}`
     : "local-rule-agent / deterministic-preview-agent";
   const modelReady = run.model?.provider === "ollama" && run.model.available;
-  const modelStatus = modelReady ? "LLM: Gemma 4B 연결" : "LLM 미연결: 로컬 규칙";
 
-  controls.agentSteps.innerHTML = run.steps
-    .map(
-      (step) => `
-        <div class="agent-step step-${step.status}">
-          <b>${escapeHtml(step.label)}</b>
-          <span>${escapeHtml(step.detail)}</span>
-        </div>
-      `
-    )
-    .join("") + `<div class="agent-model">모델: ${escapeHtml(modelText)}</div>`;
-  controls.modelStatus.textContent = modelStatus;
+  controls.agentSteps.innerHTML =
+    run.steps
+      .map(
+        (step) => `
+          <div class="agent-step step-${step.status}">
+            <b>${escapeHtml(step.label)}</b>
+            <span>${escapeHtml(step.detail)}</span>
+          </div>
+        `
+      )
+      .join("") + `<div class="agent-model">모델: ${escapeHtml(modelText)}</div>`;
+
+  controls.modelStatus.textContent = modelReady ? "LLM: Gemma 연결" : "LLM 미연결: 로컬 규칙";
   controls.modelStatus.classList.remove("pending");
   controls.modelStatus.classList.toggle("connected", modelReady);
   controls.modelStatus.classList.toggle("fallback", !modelReady);
 
-  controls.agentOutputs.innerHTML = run.outputLinks
-    .map(
-      (link) => `
-        <a class="output-link ${link.kind}" href="${link.href}" target="_blank" rel="noreferrer">
-          ${escapeHtml(link.label)}
-        </a>
-      `
-    )
-    .join("");
-}
-
-function updateProjectUi(nextTwin: TwinProject, nextManifest: SourceManifest): void {
-  controls.parcelAddress.textContent = nextTwin.addresses.parcel_address;
-  controls.roadAddress.textContent = nextTwin.addresses.road_address_candidate;
-  controls.buildingName.textContent = nextTwin.addresses.building_name_candidate;
-  controls.coordinates.textContent = coordinateText(nextTwin);
-  controls.confidence.textContent = confidenceKo(nextTwin.geocoding.confidence);
-  controls.parcelBoundarySource.textContent = `${sourceTypeKo(nextTwin.parcel.source_type)} / ${confidenceKo(nextTwin.parcel.confidence)}`;
-  controls.sourceStatus.textContent = geocodingStatusKo(nextManifest.geocoding.provider);
-  controls.sourceStatus.className = `status-pill source-status ${nextManifest.geocoding.provider}`;
-  controls.layerRows.innerHTML = layerRows(nextManifest);
-  controls.inlineWarning.textContent = nextTwin.viewer.warning;
-  controls.warningBanner.textContent = nextTwin.viewer.warning;
-}
-
-function setConnectionPending(): void {
-  controls.sourceStatus.textContent = "공간 데이터 확인 중";
-  controls.sourceStatus.className = "status-pill source-status pending";
-  controls.modelStatus.textContent = "LLM 확인 중";
-  controls.modelStatus.classList.remove("connected", "fallback");
-  controls.modelStatus.classList.add("pending");
-  controls.inlineWarning.textContent = "Juso/VWorld/WFS/Gemma 연결 상태를 확인하고 있습니다.";
-  controls.warningBanner.textContent = "Juso/VWorld/WFS/Gemma 연결 상태를 확인하고 있습니다.";
-}
-
-function setLocalFallbackState(): void {
-  controls.sourceStatus.textContent = "공간 데이터: 서버 응답 대기/로컬 프리뷰";
-  controls.sourceStatus.className = "status-pill source-status fallback";
-  controls.inlineWarning.textContent =
-    "서버 연결이 지연되어 로컬 프리뷰를 표시 중입니다. 잠시 후 다시 생성하면 Juso/VWorld/WFS 결과로 갱신됩니다.";
-  controls.warningBanner.textContent =
-    "서버 연결이 지연되어 로컬 프리뷰를 표시 중입니다. 잠시 후 다시 생성하면 Juso/VWorld/WFS 결과로 갱신됩니다.";
+  if (run.twin && run.manifest) {
+    loadProject(run.twin, run.manifest);
+  }
+  // Server runs may carry their own artifact links; otherwise blob links were rebuilt above.
+  if (run.outputLinks.length > 0) {
+    controls.agentOutputs.innerHTML = run.outputLinks
+      .map(
+        (link) =>
+          `<a class="output-link ${link.kind}" href="${link.href}" target="_blank" rel="noreferrer">${escapeHtml(link.label)}</a>`
+      )
+      .join("");
+  }
 }
 
 async function runPrompt(): Promise<void> {
-  setConnectionPending();
-  const localResult = runLocalAddressAgent(controls.promptInput.value, twin, manifest);
-  let result = localResult;
+  controls.sourceStatus.textContent = "공간 데이터 확인 중";
+  controls.sourceStatus.className = "status-pill pending";
+
+  const localRun = runLocalAddressAgent(controls.promptInput.value, initialTwin, initialManifest);
+  let run = localRun;
   try {
     const response = await fetch("/api/agent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        query: controls.promptInput.value,
-        project_id: twin.project_id
-      })
+      body: JSON.stringify({ query: controls.promptInput.value, project_id: twin.project_id })
     });
     if (response.ok) {
-      result = (await response.json()) as AgentRun;
+      const serverRun = (await response.json()) as AgentRun;
+      if (serverRun.twin && serverRun.manifest) run = serverRun;
     }
   } catch {
-    result = localResult;
+    run = localRun; // dev/offline: deterministic local agent
+  }
+  renderAgentRun(run);
+}
+
+// ---------------------------------------------------------------- inspector / tools
+
+function describeInfra(cell: SimCell): string {
+  const parts: string[] = [];
+  if (cell.hasSewer) parts.push("🕳️ 빗물받이");
+  if (cell.hasPipe) parts.push("⚙️ 관거");
+  if (cell.hasOutfall) parts.push("🌊 방류구");
+  if (cell.isUndergroundEntrance) parts.push("🚇 지하공간 입구");
+  return parts.length > 0 ? parts.join(" · ") : "없음";
+}
+
+function showCell(cell: SimCell): void {
+  controls.inspectCoord.textContent = `선택 격자 [${cell.x}, ${cell.z}]`;
+  const typeLabel =
+    cell.type === "building"
+      ? cell.isTarget
+        ? `<span class="badge target">대상 건물</span>`
+        : `<span class="badge building">주변 건물</span>`
+      : cell.type === "road"
+        ? `<span class="badge road">도로</span>`
+        : `<span class="badge grass">녹지/공지</span>`;
+  controls.inspectType.innerHTML = typeLabel;
+  controls.inspectMeta.textContent =
+    cell.type === "building" ? `${cell.name || "건물"} · 높이 ${cell.buildingHeight.toFixed(0)}m` : cell.name || "-";
+  controls.inspectElevation.textContent = `${cell.elevation.toFixed(2)} m`;
+  controls.inspectWater.textContent = cell.water > 0.005 ? `${cell.water.toFixed(3)} m` : "건조함";
+  controls.inspectInfra.textContent = describeInfra(cell);
+  controls.inspectPipeWater.textContent = cell.hasPipe
+    ? `${((cell.pipeWater / sim.pipeCapacity) * 100).toFixed(0)}% (${cell.pipeWater.toFixed(2)}m)`
+    : "N/A";
+}
+
+function handleCellPick(cell: SimCell | null): void {
+  if (!cell) {
+    controls.inspectCoord.textContent = "선택된 격자 없음";
+    return;
+  }
+  if (selectedTool === "inspect") {
+    sound.playClick();
+    showCell(cell);
+    return;
+  }
+  const changed = applyTool(sim, cell.x, cell.z, selectedTool);
+  if (!changed) {
+    addLog("이 격자에는 해당 도구를 적용할 수 없습니다.", "warn");
+    return;
+  }
+  sound.playDraw();
+  renderer?.refreshCellInstance(cell.x, cell.z);
+  renderer?.buildInfraMarkers();
+  showCell(changed);
+}
+
+// ---------------------------------------------------------------- hydrograph
+
+const chartHistory = { rain: [] as number[], runoff: [] as number[], discharge: [] as number[], underground: [] as number[] };
+
+function drawHydrograph(): void {
+  const canvas = controls.chartCanvas;
+  const context = canvas.getContext("2d");
+  const parent = canvas.parentElement;
+  if (!context || !parent) return;
+  const rect = parent.getBoundingClientRect();
+  if (rect.width === 0) return;
+  canvas.width = rect.width * window.devicePixelRatio;
+  canvas.height = rect.height * window.devicePixelRatio;
+  context.scale(window.devicePixelRatio, window.devicePixelRatio);
+  const width = rect.width;
+  const height = rect.height;
+
+  context.fillStyle = theme === "light" ? "#e8eef5" : "#02040c";
+  context.fillRect(0, 0, width, height);
+  context.strokeStyle = theme === "light" ? "rgba(0,0,0,0.06)" : "rgba(255,255,255,0.05)";
+  for (let x = 0; x < width; x += width / 6) {
+    context.beginPath();
+    context.moveTo(x, 0);
+    context.lineTo(x, height);
+    context.stroke();
   }
 
-  renderAgentRun(result);
-  if (!result.twin || !result.manifest) {
-    setLocalFallbackState();
+  let maxValue = 100;
+  for (let i = 0; i < chartHistory.rain.length; i++) {
+    maxValue = Math.max(
+      maxValue,
+      chartHistory.rain[i],
+      chartHistory.runoff[i] / 10,
+      chartHistory.discharge[i] / 20,
+      chartHistory.underground[i]
+    );
   }
-  viewer.setOrbitView();
-  setActive(controls.orbitButton, true);
-  setActive(controls.topButton, false);
-  syncSatelliteVisibility();
+
+  const plot = (data: number[], color: string, scale: number, dashed: boolean) => {
+    if (data.length < 2) return;
+    context.strokeStyle = color;
+    context.lineWidth = 2;
+    context.setLineDash(dashed ? [4, 4] : []);
+    context.beginPath();
+    const spacing = width / 59;
+    data.forEach((value, index) => {
+      const px = index * spacing;
+      const py = height - 6 - ((value * scale) / maxValue) * (height - 18);
+      if (index === 0) context.moveTo(px, py);
+      else context.lineTo(px, py);
+    });
+    context.stroke();
+  };
+
+  plot(chartHistory.rain, "#5ce1e6", 1, true);
+  plot(chartHistory.runoff, "#f59e0b", 0.1, false);
+  plot(chartHistory.discharge, "#10b981", 0.05, false);
+  plot(chartHistory.underground, "#ef4444", 1, false);
+
+  context.setLineDash([]);
+  context.font = "bold 8.5px sans-serif";
+  context.fillStyle = "#5ce1e6";
+  context.fillText("우량", 6, 12);
+  context.fillStyle = "#f59e0b";
+  context.fillText("지표수(x0.1)", 36, 12);
+  context.fillStyle = "#10b981";
+  context.fillText("방류(x0.05)", 102, 12);
+  context.fillStyle = "#ef4444";
+  context.fillText("지하침수", 162, 12);
 }
+
+window.setInterval(() => {
+  chartHistory.rain.push(sim.rainIntensity);
+  chartHistory.runoff.push(sim.stats.surfaceWaterM3);
+  chartHistory.discharge.push(sim.stats.outflowM3);
+  chartHistory.underground.push(sim.stats.undergroundWaterM3);
+  for (const series of Object.values(chartHistory)) {
+    if (series.length > 60) series.shift();
+  }
+  drawHydrograph();
+}, 500);
+
+// ---------------------------------------------------------------- stats HUD
+
+let statsAccumulator = 0;
+
+function updateStatsUi(): void {
+  const stats = sim.stats;
+  controls.statSurface.textContent = `${stats.surfaceWaterM3.toFixed(1)} ㎥`;
+  controls.statPipe.textContent = `${stats.pipeWaterM3.toFixed(1)} ㎥`;
+  controls.statUnderground.textContent = `${stats.undergroundWaterM3.toFixed(1)} ㎥`;
+  controls.statOutflow.textContent = `${stats.outflowM3.toFixed(1)} ㎥`;
+  controls.statOverflow.textContent = String(stats.overflowCount);
+  controls.statOverflow.className = stats.overflowCount > 0 ? "danger" : "";
+
+  controls.gaugeDrainValue.textContent = `${stats.drainEfficiencyPct}%`;
+  controls.gaugeDrainBar.style.width = `${stats.drainEfficiencyPct}%`;
+  controls.gaugePressureValue.textContent = `${stats.pipePressurePct}%`;
+  controls.gaugePressureBar.style.width = `${stats.pipePressurePct}%`;
+  controls.gaugePressureBar.className = stats.pipePressurePct > 70 ? "gauge-bar high" : "gauge-bar";
+  controls.gaugeVelocityValue.textContent = `${stats.dischargeSpeedMs.toFixed(1)} m/s`;
+  controls.gaugeVelocityBar.style.width = `${Math.min(100, Math.floor(stats.dischargeSpeedMs * 12))}%`;
+
+  const alarm = stats.undergroundWaterM3 > UNDERGROUND_ALARM_M3;
+  controls.undergroundAlert.hidden = !alarm;
+  if (alarm && !undergroundAlarmed) {
+    undergroundAlarmed = true;
+    sound.playWarning();
+    addLog("🚨 지하공간 우수 유입 감지! 지하 침수가 진행 중입니다.", "danger");
+  }
+  if (!alarm) undergroundAlarmed = false;
+
+  if (stats.overflowCount > lastOverflowCount) {
+    sound.playOverflow();
+    addLog(`맨홀 역류 발생: ${stats.overflowCount}개 지점`, "warn");
+  }
+  lastOverflowCount = stats.overflowCount;
+}
+
+function tick(dtMs: number): void {
+  stepSim(sim, dtMs);
+  statsAccumulator += dtMs;
+  if (statsAccumulator >= 150) {
+    statsAccumulator = 0;
+    updateStatsUi();
+  }
+}
+
+if (renderer) {
+  renderer.start(tick);
+} else {
+  window.setInterval(() => tick(150), 150); // headless fallback: keep stats alive without 3D
+}
+
+// ---------------------------------------------------------------- bindings
 
 function setActive(button: HTMLButtonElement, active: boolean): void {
   button.classList.toggle("active", active);
 }
 
-function syncSatelliteVisibility(): void {
-  if (basemapMode !== "procedural" && controls.satelliteButton.classList.contains("active")) {
-    viewer.setSatelliteVisible(true);
-  }
-}
+controls.orbitButton.addEventListener("click", () => {
+  renderer?.setView("orbit");
+  setActive(controls.orbitButton, true);
+  setActive(controls.topButton, false);
+});
+controls.topButton.addEventListener("click", () => {
+  renderer?.setView("top");
+  setActive(controls.topButton, true);
+  setActive(controls.orbitButton, false);
+});
 
 controls.satelliteButton.disabled = basemapMode === "procedural";
 controls.satelliteButton.title =
   basemapMode === "procedural"
     ? "VITE_BASEMAP_MODE=vworld, arcgis 또는 custom 설정 시 활성화"
-    : "클릭 시 위성 타일을 실시간으로 켜고 끕니다";
-
+    : "위성 타일 드레이프를 켜고 끕니다";
 if (basemapMode !== "procedural") {
   setActive(controls.satelliteButton, true);
+  renderer?.setSatelliteVisible(true);
 }
-
-controls.orbitButton.addEventListener("click", () => {
-  viewer.setOrbitView();
-  setActive(controls.orbitButton, true);
-  setActive(controls.topButton, false);
-});
-
-controls.topButton.addEventListener("click", () => {
-  viewer.setTopView();
-  setActive(controls.topButton, true);
-  setActive(controls.orbitButton, false);
-});
-
 controls.satelliteButton.addEventListener("click", () => {
   const active = !controls.satelliteButton.classList.contains("active");
-  viewer.setSatelliteVisible(active);
+  renderer?.setSatelliteVisible(active);
   setActive(controls.satelliteButton, active);
 });
 
 controls.massButton.addEventListener("click", () => {
   const active = !controls.massButton.classList.contains("active");
-  viewer.setMassVisible(active);
+  renderer?.setMassingVisible(active);
   setActive(controls.massButton, active);
 });
-
 controls.xrayButton.addEventListener("click", () => {
   const active = !controls.xrayButton.classList.contains("active");
-  viewer.setXray(active);
+  renderer?.setXray(active);
   setActive(controls.xrayButton, active);
 });
-
 controls.shadowButton.addEventListener("click", () => {
   const active = !controls.shadowButton.classList.contains("active");
-  viewer.setShadow(active);
+  renderer?.setShadow(active);
   setActive(controls.shadowButton, active);
 });
 
-function updateOffset(): void {
-  const x = Number(controls.offsetX.value);
-  const z = Number(controls.offsetZ.value);
-  viewer.setTargetOffset(x, z);
-  controls.offsetXValue.textContent = `${x.toFixed(1)}m`;
-  controls.offsetZValue.textContent = `${z.toFixed(1)}m`;
-}
+controls.rainSlider.addEventListener("input", (event) => {
+  const value = Number((event.target as HTMLInputElement).value);
+  sim.rainIntensity = value;
+  controls.rainLabel.textContent = rainLabelText(value);
+});
 
-controls.offsetX.addEventListener("input", updateOffset);
-controls.offsetZ.addEventListener("input", updateOffset);
-controls.runButton.addEventListener("click", runPrompt);
-controls.promptInput.addEventListener("keydown", (event) => {
-  if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
-    void runPrompt();
+function syncScenarioButtons(scenario: SimScenario): void {
+  for (const button of controls.scenarioButtons) {
+    setActive(button, button.dataset.scenario === scenario);
   }
-});
-
-// ==========================================
-// SIMULATOR BINDINGS (ADDITIONS)
-// ==========================================
-
-function rainLabelText(val: number): string {
-  if (val > 120) return `🚨 극한 폭우 (${val}mm/h)`;
-  if (val > 60) return `🌧️ 집중호우 (${val}mm/h)`;
-  if (val > 0) return `🌦️ 약한 강우 (${val}mm/h)`;
-  return "맑음 (0mm/h)";
 }
 
-// Rain intensity slider
-controls.rainSlider.addEventListener("input", (e) => {
-  const val = parseInt((e.target as HTMLInputElement).value);
-  viewer.hydrologyState.rainIntensity = val;
-  controls.rainLabel.textContent = rainLabelText(val);
-});
-
-// Scenario preset buttons
-const scenBtns: Array<{ btn: HTMLButtonElement; name: HydrologyState["scenario"] }> = [
-  { btn: controls.scenNormal, name: "normal" },
-  { btn: controls.scen2022, name: "2022" },
-  { btn: controls.scenExpand, name: "expand" },
-  { btn: controls.scenTunnel, name: "tunnel" }
-];
-
-scenBtns.forEach(({ btn, name }) => {
-  btn.addEventListener("click", () => {
-    viewer.loadScenario(name);
-    scenBtns.forEach(b => b.btn.classList.remove("active"));
-    btn.classList.add("active");
-
-    // Sync rain slider position matching scenario
-    controls.rainSlider.value = String(viewer.hydrologyState.rainIntensity);
-    controls.rainLabel.textContent = rainLabelText(viewer.hydrologyState.rainIntensity);
+for (const button of controls.scenarioButtons) {
+  button.addEventListener("click", () => {
+    const scenario = button.dataset.scenario as SimScenario;
+    applyScenario(sim, scenario);
+    syncScenarioButtons(scenario);
+    controls.rainSlider.value = String(sim.rainIntensity);
+    controls.rainLabel.textContent = rainLabelText(sim.rainIntensity);
+    renderer?.buildInfraMarkers();
+    if (scenario === "cloudburst") sound.playThunder();
+    addLog(`시나리오 적용: ${button.textContent}`, "info");
   });
+}
+
+controls.dryButton.addEventListener("click", () => {
+  dryUp(sim);
+  updateStatsUi();
+  addLog("지표 건조 완료.", "info");
 });
 
-// Dry Grid
-controls.btnDryGrid.addEventListener("click", () => {
-  viewer.dryUpGrid();
-});
+for (const button of controls.toolButtons) {
+  button.addEventListener("click", () => {
+    selectedTool = (button.dataset.tool ?? "inspect") as SimTool;
+    for (const other of controls.toolButtons) setActive(other, other === button);
+  });
+}
 
-// Theme Toggle
-controls.themeToggleBtn.addEventListener("click", () => {
-  const theme = viewer.hydrologyState.theme === "light" ? "dark" : "light";
-  viewer.applyTheme(theme);
-  controls.themeToggleBtn.textContent = theme === "light" ? "☀️ 주간 뷰" : "🌙 야간 뷰";
+controls.themeToggle.addEventListener("click", () => {
+  theme = theme === "light" ? "dark" : "light";
+  renderer?.applyTheme(theme);
   document.body.classList.toggle("light-theme", theme === "light");
+  controls.themeToggle.textContent = theme === "light" ? "☀️ 주간 뷰" : "🌙 야간 뷰";
 });
 
-// Editor Edit Toolbar tools
-const editTools = [
-  { btn: controls.toolInspect, tool: "inspect" },
-  { btn: controls.toolRoad, tool: "road" },
-  { btn: controls.toolBuilding, tool: "building" },
-  { btn: controls.toolSewer, tool: "sewer" },
-  { btn: controls.toolPipe, tool: "pipe" },
-  { btn: controls.toolOutfall, tool: "outfall" },
-  { btn: controls.toolRaise, tool: "raise" },
-  { btn: controls.toolLower, tool: "lower" },
-  { btn: controls.toolEraser, tool: "eraser" }
-];
-
-editTools.forEach(({ btn, tool }) => {
-  btn.addEventListener("click", () => {
-    viewer.hydrologyState.selectedTool = tool;
-    editTools.forEach(t => t.btn.classList.remove("active"));
-    btn.classList.add("active");
-  });
+let soundEnabled = true;
+controls.soundToggle.addEventListener("click", () => {
+  soundEnabled = !soundEnabled;
+  sound.setEnabled(soundEnabled);
+  controls.soundToggle.textContent = soundEnabled ? "🔊 사운드 켜짐" : "🔇 사운드 꺼짐";
 });
+
+controls.runButton.addEventListener("click", () => void runPrompt());
+controls.promptInput.addEventListener("keydown", (event) => {
+  if ((event.metaKey || event.ctrlKey) && event.key === "Enter") void runPrompt();
+});
+
+// ---------------------------------------------------------------- boot
 
 const queryFromUrl = new URLSearchParams(window.location.search).get("q");
-if (queryFromUrl) {
-  controls.promptInput.value = queryFromUrl;
-}
-updateOffset();
+controls.promptInput.value = queryFromUrl ?? "사당동 317-6번지 디지털 트윈 만들어줘";
 void runPrompt();
 
-window.addEventListener("beforeunload", () => viewer.dispose());
+window.addEventListener("beforeunload", () => renderer?.dispose());

@@ -1,3 +1,4 @@
+import { buildPreviewTwin } from "../core/previewTwin";
 import type { SourceManifest, TwinProject } from "../types/twin";
 
 export interface AgentMessage {
@@ -9,6 +10,12 @@ export interface AgentStep {
   label: string;
   status: "done" | "warning" | "next";
   detail: string;
+}
+
+export interface AgentOutputLink {
+  label: string;
+  href: string;
+  kind: "preview" | "manifest" | "qa" | "data";
 }
 
 export interface AgentRun {
@@ -23,16 +30,13 @@ export interface AgentRun {
   };
   messages: AgentMessage[];
   steps: AgentStep[];
-  outputLinks: Array<{
-    label: string;
-    href: string;
-    kind: "preview" | "manifest" | "qa" | "data";
-  }>;
+  outputLinks: AgentOutputLink[];
   twin?: TwinProject;
   manifest?: SourceManifest;
 }
 
 const SADANG_PATTERNS = [/사당동\s*317-?6/, /317-6/, /사당로20가길\s*39/, /행복이가득한집/];
+const DEFAULT_QUERY = "사당동 317-6번지 디지털 트윈 만들어줘";
 
 function looksLikeSadang(query: string): boolean {
   return SADANG_PATTERNS.some((pattern) => pattern.test(query));
@@ -48,32 +52,44 @@ function geocodingDisplay(provider: string): string {
   return "공식 GIS 미연결";
 }
 
-export function runLocalAddressAgent(query: string, twin: TwinProject, manifest: SourceManifest): AgentRun {
-  const cleanQuery = query.trim() || "사당동 317-6번지 디지털 트윈 만들어줘";
+/**
+ * Deterministic offline agent. The curated Sadang sample answers Sadang
+ * queries; every other Korean address gets a client-generated preview twin
+ * (deterministic fallback coordinate + procedural massing) so the full
+ * twin → flood-simulation flow works for arbitrary input without any keys.
+ */
+export function runLocalAddressAgent(
+  query: string,
+  sampleTwin: TwinProject,
+  sampleManifest: SourceManifest
+): AgentRun {
+  const cleanQuery = query.trim() || DEFAULT_QUERY;
   const isSadang = looksLikeSadang(cleanQuery);
   const intent = inferIntent(cleanQuery);
+
+  const { twin, manifest } = isSadang
+    ? { twin: sampleTwin, manifest: sampleManifest }
+    : buildPreviewTwin(cleanQuery);
+
   const recognizedAddress = isSadang
     ? `${twin.addresses.parcel_address} / ${twin.addresses.road_address_candidate}`
-    : cleanQuery;
-  const confidence = isSadang ? manifest.geocoding.confidence : "low";
+    : twin.addresses.parcel_address;
+  const confidence = manifest.geocoding.confidence;
 
   const messages: AgentMessage[] = [
-    {
-      role: "user",
-      text: cleanQuery
-    },
+    { role: "user", text: cleanQuery },
     {
       role: "agent",
       text: isSadang
-        ? "주소 후보를 사당동 317-6 / 사당로20가길 39로 정리했습니다. 지금은 공식 API 키 없이 프리뷰 좌표와 절차적 매스로 생성합니다."
-        : "이 주소는 현재 샘플 범위 밖입니다. MVP는 프리뷰 생성 흐름을 보여주되, 정확 좌표와 geometry는 VWorld/Juso/PNU 검증이 필요합니다."
+        ? "주소 후보를 사당동 317-6 / 사당로20가길 39로 정리했습니다. 큐레이션된 사당 샘플 트윈을 로드합니다."
+        : "공식 API 키 없이 결정적 프리뷰 좌표와 절차적 매스로 즉시 트윈을 생성했습니다. 정확한 좌표·필지·건물 형상은 VWorld/Juso/PNU 검증이 필요합니다."
     },
     {
       role: "agent",
       text:
         intent === "official_required"
-          ? "정밀/공식 산출 요청으로 감지했습니다. 이 MVP에서는 preview와 official-required 항목을 분리해서 표시합니다."
-          : "빠른 프리뷰 요청으로 감지했습니다. 브라우저에서 확인 가능한 3D 매스와 source manifest를 우선 제공합니다."
+          ? "정밀/공식 산출 요청으로 감지했습니다. preview와 official-required 항목을 분리해서 표시합니다."
+          : "빠른 프리뷰 요청으로 감지했습니다. 생성된 트윈 위에서 침수 시뮬레이션을 바로 실행할 수 있습니다."
     }
   ];
 
@@ -81,7 +97,7 @@ export function runLocalAddressAgent(query: string, twin: TwinProject, manifest:
     {
       label: "1. 주소 의도 해석",
       status: "done",
-      detail: isSadang ? "사당 샘플 주소로 매칭" : "주소 후보만 보존, 공식 geocoder 필요"
+      detail: isSadang ? "사당 샘플 주소로 매칭" : "주소 후보 보존 + 오프라인 프리뷰 경로 선택"
     },
     {
       label: "2. 좌표 후보 선택",
@@ -94,9 +110,9 @@ export function runLocalAddressAgent(query: string, twin: TwinProject, manifest:
       detail: "대상 건물, 주변 매스, 도로 힌트, 필지 경계 추정"
     },
     {
-      label: "4. 신뢰도/출처 기록",
+      label: "4. 침수 시뮬 격자 구성",
       status: "done",
-      detail: "source_manifest.json + qa_report.html"
+      detail: "트윈 건물/도로를 24×24 수문 격자로 래스터화"
     },
     {
       label: "5. 공식 데이터 업그레이드",
@@ -117,29 +133,8 @@ export function runLocalAddressAgent(query: string, twin: TwinProject, manifest:
     },
     messages,
     steps,
-    outputLinks: [
-      {
-        label: "3D preview.html",
-        href: "/src/samples/sadang_317_6/preview.html",
-        kind: "preview"
-      },
-      {
-        label: "source_manifest.json",
-        href: "/src/samples/sadang_317_6/source_manifest.json",
-        kind: "manifest"
-      },
-      {
-        label: "qa_report.html",
-        href: "/src/samples/sadang_317_6/qa_report.html",
-        kind: "qa"
-      },
-      {
-        label: "twin.json",
-        href: "/src/samples/sadang_317_6/twin.json",
-        kind: "data"
-      }
-    ],
-    twin: isSadang ? twin : undefined,
-    manifest: isSadang ? manifest : undefined
+    outputLinks: [],
+    twin,
+    manifest
   };
 }

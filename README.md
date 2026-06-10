@@ -1,35 +1,39 @@
-# Address-to-Digital-Twin Preview MVP
+# Address → Digital Twin · Flood Simulator
 
 [![CI](https://github.com/VincentChoi33/address-to-digital-twin-mvp/actions/workflows/ci.yml/badge.svg)](https://github.com/VincentChoi33/address-to-digital-twin-mvp/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Zero-cash-cost MVP that turns a Korean address into a browser-viewable 3D digital twin preview — and then runs an interactive **urban flood (hydrology) simulation** on top of it. Built with TypeScript, Three.js, and Vite; no paid APIs required.
+Type a Korean address, get a browser-viewable 3D digital twin preview, then run an interactive **urban flood simulation on that twin's buildings and roads**. Zero cash cost: no paid APIs, fully offline-capable. TypeScript + Three.js + Vite.
 
-![Web app: LLM address console (left) and generated 3D twin scene (right)](docs/images/app-screenshot.png)
+**One flow, end to end:** `주소 → 지오코딩(폴백 체인) → 절차적 매싱 → 24×24 수문 격자 래스터화 → 침수 시뮬레이션`. Any address works — out-of-sample addresses get a deterministic offline preview twin generated **client-side**, so the full twin → flood loop runs without a single API key.
 
-*The local web app: a Korean-address LLM console and hydrology dashboard on the left, and the generated scene on the right — satellite-textured ground, building massing, parcel boundary, road hints, with per-layer toggles and a source legend.*
+![Web app](docs/images/app-screenshot.png)
 
 | Static preview export (Sadang sample) | Generated QA / confidence report |
 | :---: | :---: |
-| ![Static 3D preview of the Sadang sample twin](docs/images/twin-preview-sadang.png) | ![Auto-generated QA and confidence report](docs/images/twin-qa-report-sadang.png) |
+| ![Static 3D preview](docs/images/twin-preview-sadang.png) | ![QA report](docs/images/twin-qa-report-sadang.png) |
 
 ## What it does
 
-The project has two cooperating layers:
-
-**1. Address → twin pipeline** (`src/pipeline/`)
+**1. Address → twin pipeline** (`src/core/`, runs in Node and in the browser)
 
 - Normalizes a raw Korean address request into parcel / road / building-name candidates.
-- Geocodes through a graceful fallback chain: Juso → VWorld → Nominatim → deterministic offline coordinates.
-- Generates approximate target-building massing, surrounding context massing (OSM/Overpass best-effort, procedural fallback), parcel boundary, and road hints.
-- Emits four artifacts per address: `twin.json`, `source_manifest.json` (per-layer source + confidence), a human-readable `qa_report.html`, and a standalone `preview.html` (CDN Three.js, opens directly in a browser).
+- Geocodes through a graceful fallback chain: Juso → VWorld → Nominatim → deterministic offline coordinates (Node CLI), or straight to the offline path in the browser.
+- Generates target massing, surrounding context (OSM/Overpass best-effort, seeded procedural fallback), parcel boundary, and road hints.
+- Emits four artifacts: `twin.json`, `source_manifest.json` (per-layer source + confidence), human-readable `qa_report.html`, standalone `preview.html`. In the web app these download as generated blobs for any address.
 
-**2. Interactive viewer + flood simulator** (`src/app/`)
+**2. Hydrology engine** (`src/sim/` — pure TypeScript, no Three.js, fully unit-tested)
 
-- Three.js scene with orbit/orthographic cameras, satellite/X-ray/shadow toggles, and per-layer confidence display.
-- A 24×24 cell shallow-water gravity-routing simulation layered on the twin: rainfall intensity control, surface runoff, sewer inlets, underground pipe network, outfalls, and subway-entrance inundation.
-- Disaster scenario presets (2022 Gangnam flood, doubled sewer capacity, deep drainage tunnel), a city-editor toolbar (pave roads, place buildings/sewers/pipes, raise/lower terrain), live hydrograph chart, gauges, and synthesized sound effects via the Web Audio API.
-- An LLM-style address console: a deterministic local rule agent works fully offline; in deployment, `/api/agent` can call an Ollama-compatible Gemma endpoint (`gemma3:4b` by default) and falls back to the local agent if the model service is unavailable.
+- Rasterizes the twin's buildings/roads into a 24×24 cell grid: seeded terrain slope, sewer inlets along roads, a capacity-limited outfall, underground-space entrances near the target.
+- Shallow-water gravity routing, roof runoff, sewer intake, pipe migration toward the outfall, manhole backflow when the network saturates, underground inundation alarm.
+- Deterministic: same twin in, same simulation out. Stylized demo physics (rainfall is amplified for visible flooding), not SWMM.
+
+**3. Viewer + UI** (`src/render/`, `src/app/`)
+
+- Three.js instanced-mesh city (1 draw call per layer), live satellite drape (ArcGIS/VWorld tile mosaic sampled onto terrain cells), twin massing overlay, orbit/top views, X-ray, shadows, dark/light theme.
+- Disaster scenario presets (극한폭우 140mm/h, 하수도 2배 확장, 대심도 배수터널), rainfall slider, city-editor tools (pave roads, build, place sewers/pipes/outfalls, raise/lower terrain), cell inspector, gauges, rolling hydrograph, synthesized sound (Web Audio).
+- **Graceful degradation:** if WebGL is unavailable the app keeps running in console mode — address analysis and artifact downloads still work, with a clear banner instead of a dead page.
+- LLM-style console: a deterministic local rule agent works fully offline; in deployment `/api/agent` can call an Ollama-compatible Gemma endpoint and the client falls back to the local agent when the server is absent.
 
 > **Not** a survey-grade, cadastral, legal, BIM, or legally authoritative digital twin. Official PNU/parcel/building geometry must replace the preview massing before any production or decision-grade use.
 
@@ -37,22 +41,23 @@ The project has two cooperating layers:
 
 ```bash
 npm install
-npm run sample:sadang   # generate the Sadang sample artifacts
-npm run dev             # open the printed Vite URL
+npm run dev     # open the printed URL
 ```
 
-In the app, try prompts such as:
+Try any Korean address in the console:
 
 ```text
-사당동 317-6번지 디지털 트윈 만들어줘
-서울 동작구 사당로20가길 39 공식 디지털 트윈 만들어줘
-서울 강남구 테헤란로 152 디지털 트윈 프리뷰 만들어줘
+사당동 317-6번지 디지털 트윈 만들어줘          # curated sample
+서울 강남구 테헤란로 152 디지털 트윈 프리뷰    # generated offline, on the spot
+부산 해운대구 우동 1408                        # also works — different terrain, same flow
 ```
 
-Or generate a twin for any address from the CLI:
+Then hit **극한폭우 (140mm/h)** and watch the twin flood: streets pond, pipes pressurize, manholes back up red, and the underground-entrance alarm fires.
+
+CLI generation (adds Juso/VWorld/Nominatim/Overpass when keys/network exist):
 
 ```bash
-npx tsx src/pipeline/runAddressTwin.ts --address "서울 강남구 테헤란로 152"
+npx tsx src/core/runAddressTwin.ts --address "서울 강남구 테헤란로 152"
 ```
 
 ## Commands
@@ -63,45 +68,45 @@ npx tsx src/pipeline/runAddressTwin.ts --address "서울 강남구 테헤란로 
 | `npm run build` | typecheck + production build |
 | `npm test` | unit tests (Vitest) |
 | `npm run lint` | TypeScript check |
-| `npm run sample:sadang` | generate Sadang sample artifacts |
-| `npm run prepare:deploy` | build `dist/` and copy generated samples for deployment |
-
-Open `src/samples/sadang_317_6/preview.html` directly in a browser for the static Three.js export.
+| `npm run sample:sadang` | regenerate Sadang sample artifacts |
+| `npm run prepare:deploy` | build `dist/` + copy samples for deployment |
 
 ## Project structure
 
 ```text
 src/
-  pipeline/          # address → twin generation (runs in Node via tsx)
-    geocode.ts       # Juso/VWorld/Nominatim/offline fallback chain
-    dataConnectors.ts# Overpass/OSM context, lon-lat → local meters
-    generateMassing.ts# target + context massing, roads, parcel boundary
-    manifest.ts      # per-layer source/confidence manifest
-    qa.ts            # human-readable QA/confidence report (HTML)
-    exportStaticHtml.ts# standalone preview.html export
-    runAddressTwin.ts# CLI entry point
-  app/               # browser app (Vite)
-    main.ts          # bootstrap + UI bindings
-    ui.ts            # DOM layout + Korean label helpers
+  core/              # address → twin generation (Node + browser-safe)
+    address.ts       #   pure address parsing + deterministic fallback coords
+    geocode.ts       #   Juso/VWorld/Nominatim chain (Node CLI)
+    previewTwin.ts   #   client-side offline twin generation
+    generateMassing.ts, manifest.ts, qa.ts, exportStaticHtml.ts
+    runAddressTwin.ts#   CLI entry point
+  sim/
+    hydrology.ts     # pure flood engine: rasterize twin → step → tools/scenarios
+  render/
+    scene.ts         # Three.js instanced renderer, WebGL-guarded
+    basemap.ts       # live tile mosaic (ArcGIS/VWorld/custom), no caching
+    sound.ts         # Web Audio synth
+  app/
+    main.ts, ui.ts   # grid-layout UI shell + bindings
     agent.ts         # deterministic local address agent
-    viewer.ts        # Three.js scene + shallow-water flood simulation
-  types/twin.ts      # shared twin/manifest/hydrology types
-  samples/           # committed sample artifacts (Sadang 317-6)
+  types/twin.ts      # shared twin/manifest types
+  samples/           # committed Sadang sample artifacts
 deploy/
   server.py          # zero-dependency static + /api/agent (Ollama/Gemma) server
-  batch_address_qa.py# repeatable address QA batch runner
+  batch_address_qa.py
 ```
 
 ## Deployment with a local model server
-
-`deploy/server.py` serves the built app and exposes `/api/agent`. It calls an Ollama-compatible Gemma endpoint (`GEMMA_MODEL=gemma3:4b` by default) and falls back to a readable warning if the model service is unavailable.
 
 ```bash
 npm run prepare:deploy
 python3 deploy/server.py        # HOST/PORT/OLLAMA_URL/GEMMA_MODEL via env or .env
 ```
 
-On a deployed server with `.env` keys configured, run a repeatable address QA batch:
+`deploy/server.py` serves the built app and exposes `/api/agent` (Gemma via Ollama, `gemma3:4b` default) plus the VWorld tile proxy. The browser falls back to its local agent whenever the server or model is unavailable.
+
+Batch QA on a deployed server:
 
 ```bash
 python3 deploy/batch_address_qa.py addresses.txt --project-id address_batch_20260427
@@ -109,7 +114,7 @@ python3 deploy/batch_address_qa.py addresses.txt --project-id address_batch_2026
 
 ## Optional environment
 
-The MVP runs without any API keys by falling back to Nominatim for occasional manual testing and then deterministic procedural coordinates when network geocoding is unavailable.
+Runs with **zero keys** out of the box (offline deterministic coordinates). Keys only raise fidelity:
 
 ```bash
 cp .env.example .env
@@ -117,63 +122,41 @@ cp .env.example .env
 
 | Variable | Purpose |
 | --- | --- |
-| `VWORLD_API_KEY` | VWorld geocoder + WMTS satellite tiles (key stays server-side; summary only is persisted) |
-| `JUSO_API_KEY` | Juso address normalization (summary only is persisted) |
+| `VWORLD_API_KEY` | VWorld geocoder + WMTS satellite tiles (key stays server-side) |
+| `JUSO_API_KEY` | Juso address normalization (derived summary only is persisted) |
 | `NOMINATIM_USER_AGENT` | occasional manual fallback tests only, not bulk geocoding |
-| `VITE_BASEMAP_MODE` | empty (default) \| `procedural` \| `vworld` \| `arcgis` \| `custom` |
+| `VITE_BASEMAP_MODE` | empty(=arcgis) \| `procedural` \| `vworld` \| `arcgis` \| `custom` |
 | `VITE_CUSTOM_TILE_URL` | e.g. `https://host/{z}/{x}/{y}.png` |
-
-When `VWORLD_API_KEY` is configured on the deployment server, the browser defaults to VWorld satellite preview tiles through `/api/vworld/wmts/Satellite/{z}/{y}/{x}.jpeg`. Tiles are requested live and never cached or persisted.
 
 ## Spatial alignment principle
 
-The preview treats Juso/VWorld geocoding as a search hint, not as the final world origin:
+Geocoding is a search hint, not the world origin:
 
 1. Normalize/search the address with Juso/VWorld.
-2. Use the search coordinate only to fetch candidate WFS parcel, building, and road geometry.
-3. When official WFS parcel geometry is found, re-anchor the local 3D meter frame to the official parcel centroid.
-4. If a parcel is unavailable but official building geometry exists, anchor to the building footprint centroid.
-5. Drape VWorld WMTS satellite imagery onto that cadastral/WFS frame as a live visual texture.
-
-Parcel/building WFS geometry is the alignment authority. Satellite imagery is texture/context only — the MVP never infers legal parcel or building geometry from imagery.
+2. Use the search coordinate only to fetch candidate WFS parcel/building/road geometry.
+3. When official WFS parcel geometry exists, re-anchor the local meter frame to the official parcel centroid; else to the official building footprint centroid.
+4. Satellite imagery is draped as preview texture onto that frame — never used to infer legal geometry.
 
 ## Data source policy
 
-- Default fallback ground is a fully offline procedural grid.
-- VWorld WMTS satellite is the preferred Korean basemap preview when configured; the app proxies live tiles without exposing the key or caching imagery.
-- ArcGIS World Imagery is optional preview-only live tile display with visible attribution and no caching.
-- Custom tile URLs must be checked against the provider terms.
-- Juso/VWorld responses are never persisted raw; only derived summaries land in `source_manifest.json`.
-- Nominatim is used only for occasional manual preview fallback, with a custom User-Agent and 1 request/sec behavior.
-- Overpass/OSM context is best-effort only; on failure, procedural surrounding buildings and road hints are generated.
-- Overture Maps is intentionally a future connector placeholder; this MVP downloads no Overture datasets.
-
-## Bundled sample
-
-Offline Sadang approximation (`src/samples/sadang_317_6/`):
-
-- Parcel address: `서울 동작구 사당동 317-6` / road candidate: `서울 동작구 사당로20가길 39`
-- Approximate coordinate: `37.48420, 126.96975`, confidence `low`
-
-The manifest explicitly marks approximate layers, and the QA report explains what requires official verification.
+- Default ground is fully offline; satellite tiles (VWorld/ArcGIS/custom) are live preview-only with attribution and **no caching or persistence**.
+- Juso/VWorld raw responses are never persisted — only derived summaries in `source_manifest.json`.
+- Nominatim: occasional manual fallback only, custom User-Agent, 1 req/sec.
+- Overpass/OSM context is best-effort; on failure, seeded procedural context is generated.
+- Overture Maps remains a future connector placeholder (no dataset downloads).
 
 ## Testing & CI
 
-Unit tests (Vitest) cover the deterministic core: address candidate normalization, the local agent, massing generation, manifest/QA report building, and coordinate math. GitHub Actions runs typecheck → tests → build → an offline sample-pipeline smoke on every push and PR.
-
-```bash
-npm test
-```
+59 Vitest tests cover the deterministic core: address normalization, offline twin generation, massing, manifest/QA building (incl. XSS escaping), and the full hydrology engine (rasterization, downhill flow, sewer/outfall mass balance, manhole backflow, scenario effects, editor tools, determinism). GitHub Actions runs typecheck → tests → build → offline sample smoke on every push/PR.
 
 ## Upgrade path
 
-1. Juso normalization: normalize parcel/road address and reduce ambiguity.
-2. VWorld geocoding: raise coordinate confidence and record selected candidate summary.
-3. Parcel boundary: resolve PNU and fetch official cadastral geometry.
-4. GIS building integrated info: replace fallback massing with official footprint, floors, height, use, and registry attributes.
-5. AI3DAP/SolidRecon adapter: generate higher-detail roof/mesh/texture geometry from official inputs and imagery.
-6. 3D Tiles/Cesium export: stream official LOD1/LOD2 outputs for web-scale city viewing.
-7. QA/confidence dashboard: compare official sources, flag mismatches, and separate preview/official deliverables.
+1. Juso/VWorld keys → coordinate confidence.
+2. PNU resolution → official cadastral parcel boundary.
+3. GIS building integrated info → replace procedural massing with official footprints/heights.
+4. DEM-backed terrain for the flood grid (replace seeded slope with real elevation).
+5. AI3DAP/SolidRecon adapter → higher-detail roof/mesh/texture geometry.
+6. 3D Tiles/Cesium export → web-scale city viewing.
 
 ## License
 
