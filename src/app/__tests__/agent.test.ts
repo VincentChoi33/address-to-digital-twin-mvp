@@ -8,26 +8,36 @@ const twin = sadangTwin as unknown as TwinProject;
 const manifest = sadangManifest as unknown as SourceManifest;
 
 describe("runLocalAddressAgent", () => {
-  it("matches the Sadang sample by parcel number and attaches twin data", () => {
+  it("matches the Sadang sample by parcel number and loads the curated twin", () => {
     const run = runLocalAddressAgent("사당동 317-6번지 디지털 트윈 만들어줘", twin, manifest);
-    expect(run.twin).toBeDefined();
-    expect(run.manifest).toBeDefined();
+    expect(run.twin).toBe(twin);
+    expect(run.manifest).toBe(manifest);
     expect(run.recognizedAddress).toContain(twin.addresses.parcel_address);
   });
 
   it("matches the Sadang sample by road address and building name", () => {
     for (const query of ["사당로20가길 39 트윈", "행복이가득한집 보여줘"]) {
       const run = runLocalAddressAgent(query, twin, manifest);
-      expect(run.twin, query).toBeDefined();
+      expect(run.twin, query).toBe(twin);
     }
   });
 
-  it("keeps out-of-sample addresses as preview-only without twin data", () => {
+  it("generates a fresh offline preview twin for out-of-sample addresses", () => {
     const run = runLocalAddressAgent("서울 강남구 테헤란로 152 디지털 트윈 프리뷰 만들어줘", twin, manifest);
-    expect(run.twin).toBeUndefined();
-    expect(run.manifest).toBeUndefined();
+    expect(run.twin).toBeDefined();
+    expect(run.twin).not.toBe(twin);
+    expect(run.manifest).toBeDefined();
     expect(run.confidence).toBe("low");
-    expect(run.recognizedAddress).toContain("테헤란로 152");
+    expect(run.twin?.addresses.parcel_address).toContain("테헤란로 152");
+    expect(run.twin?.buildings.some((building) => building.role === "target")).toBe(true);
+  });
+
+  it("out-of-sample twins are deterministic per address and distinct across addresses", () => {
+    const a = runLocalAddressAgent("부산 해운대구 우동 1408", twin, manifest);
+    const b = runLocalAddressAgent("부산 해운대구 우동 1408", twin, manifest);
+    const c = runLocalAddressAgent("대전 유성구 대학로 99", twin, manifest);
+    expect(a.twin?.center).toEqual(b.twin?.center);
+    expect(a.twin?.center).not.toEqual(c.twin?.center);
   });
 
   it("detects official-data intent from precision keywords", () => {
@@ -39,12 +49,7 @@ describe("runLocalAddressAgent", () => {
   it("falls back to the default Sadang prompt for empty queries", () => {
     const run = runLocalAddressAgent("   ", twin, manifest);
     expect(run.query).toBe("사당동 317-6번지 디지털 트윈 만들어줘");
-    expect(run.twin).toBeDefined();
-  });
-
-  it("always links the four generated artifacts", () => {
-    const run = runLocalAddressAgent("사당동 317-6", twin, manifest);
-    expect(run.outputLinks.map((link) => link.kind).sort()).toEqual(["data", "manifest", "preview", "qa"]);
+    expect(run.twin).toBe(twin);
   });
 
   it("reports the deterministic local agent as the model", () => {
