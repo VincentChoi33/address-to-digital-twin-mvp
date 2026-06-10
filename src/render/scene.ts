@@ -54,7 +54,7 @@ export class SceneRenderer {
   private sim: SimState | null = null;
   private twin: TwinProject | null = null;
   private mosaic: BasemapMosaic | null = null;
-  private mosaicData: ImageData | null = null;
+  private satelliteSheet: THREE.Mesh | null = null;
   private satelliteVisible = false;
 
   private raycaster = new THREE.Raycaster();
@@ -133,18 +133,94 @@ export class SceneRenderer {
     this.buildInfraMarkers();
     this.buildMassingOverlay();
 
+    this.disposeSatelliteSheet();
     this.mosaic = null;
-    this.mosaicData = null;
     this.refreshGroundColors();
+    this.applySatelliteVisibility();
     if (basemapMode !== "procedural") {
       const mosaic = await loadBasemapMosaic(basemapMode, twin.center, customTileUrl);
       if (this.disposed || this.twin !== twin) return;
       this.mosaic = mosaic;
-      this.mosaicData = mosaic
-        ? mosaic.canvas.getContext("2d")?.getImageData(0, 0, mosaic.canvas.width, mosaic.canvas.height) ?? null
-        : null;
-      this.refreshGroundColors();
+      if (mosaic) this.buildSatelliteSheet(mosaic);
+      this.applySatelliteVisibility();
     }
+  }
+
+  private disposeSatelliteSheet(): void {
+    if (!this.satelliteSheet) return;
+    this.scene.remove(this.satelliteSheet);
+    this.satelliteSheet.geometry.dispose();
+    const material = this.satelliteSheet.material as THREE.MeshStandardMaterial;
+    material.map?.dispose();
+    material.dispose();
+    this.satelliteSheet = null;
+  }
+
+  /**
+   * Full-resolution satellite drape: a terrain-following sheet whose UVs map
+   * each vertex to its exact mosaic pixel — imagery stays photo-sharp instead
+   * of being averaged into one color per 6m cell.
+   */
+  private buildSatelliteSheet(mosaic: BasemapMosaic): void {
+    if (!this.sim) return;
+    const segments = GRID_SIZE * 4; // 1.5m mesh resolution for smooth relief
+    const corners = segments + 1;
+    const positions = new Float32Array(corners * corners * 3);
+    const uvs = new Float32Array(corners * corners * 2);
+    const indices: number[] = [];
+
+    const elevationAt = (worldX: number, worldZ: number): number => {
+      const gx = Math.min(GRID_SIZE - 1, Math.max(0, Math.floor((worldX + BOARD_HALF_M) / CELL_SIZE_M)));
+      const gz = Math.min(GRID_SIZE - 1, Math.max(0, Math.floor((worldZ + BOARD_HALF_M) / CELL_SIZE_M)));
+      return this.sim!.cells[gx][gz].elevation;
+    };
+
+    for (let row = 0; row < corners; row++) {
+      for (let col = 0; col < corners; col++) {
+        const worldX = (col / segments) * BOARD_HALF_M * 2 - BOARD_HALF_M;
+        const worldZ = (row / segments) * BOARD_HALF_M * 2 - BOARD_HALF_M;
+        const index = row * corners + col;
+        positions[index * 3] = worldX;
+        positions[index * 3 + 1] = elevationAt(worldX, worldZ) + 0.05;
+        positions[index * 3 + 2] = worldZ;
+        const px = mosaic.centerPx + worldX * mosaic.pxPerMeter;
+        const py = mosaic.centerPy - worldZ * mosaic.pxPerMeter;
+        uvs[index * 2] = px / mosaic.canvas.width;
+        uvs[index * 2 + 1] = 1 - py / mosaic.canvas.height;
+        if (row < segments && col < segments) {
+          const a = index;
+          const b = index + 1;
+          const c = index + corners;
+          const d = index + corners + 1;
+          indices.push(a, c, b, b, c, d);
+        }
+      }
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+
+    const texture = new THREE.CanvasTexture(mosaic.canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.generateMipmaps = true;
+
+    this.satelliteSheet = new THREE.Mesh(
+      geometry,
+      new THREE.MeshStandardMaterial({ map: texture, roughness: 1, metalness: 0 })
+    );
+    this.satelliteSheet.receiveShadow = true;
+    this.scene.add(this.satelliteSheet);
+  }
+
+  private applySatelliteVisibility(): void {
+    const useSheet = this.satelliteVisible && this.satelliteSheet !== null;
+    if (this.satelliteSheet) this.satelliteSheet.visible = useSheet;
+    if (this.groundMesh) this.groundMesh.visible = !useSheet;
   }
 
   private disposeInstanced(mesh: THREE.InstancedMesh | undefined): void {
@@ -236,30 +312,11 @@ export class SceneRenderer {
     this.refreshGroundColor(x, z);
   }
 
-  private sampleMosaic(worldX: number, worldZ: number): THREE.Color | null {
-    if (!this.mosaic || !this.mosaicData) return null;
-    const px = Math.round(this.mosaic.centerPx + worldX * this.mosaic.pxPerMeter);
-    const py = Math.round(this.mosaic.centerPy - worldZ * this.mosaic.pxPerMeter);
-    if (px < 0 || py < 0 || px >= this.mosaicData.width || py >= this.mosaicData.height) return null;
-    const offset = (py * this.mosaicData.width + px) * 4;
-    return new THREE.Color(
-      this.mosaicData.data[offset] / 255,
-      this.mosaicData.data[offset + 1] / 255,
-      this.mosaicData.data[offset + 2] / 255
-    );
-  }
-
   private refreshGroundColor(x: number, z: number): void {
     if (!this.sim) return;
     const cell = this.sim.cells[x][z];
     const index = x * GRID_SIZE + z;
-    const typeColor = cell.type === "road" ? COLORS.road : COLORS.grass;
-    let color = typeColor;
-    if (this.satelliteVisible) {
-      const sampled = this.sampleMosaic(this.cellWorldX(x), this.cellWorldX(z));
-      if (sampled) color = sampled.lerp(typeColor, cell.type === "road" ? 0.35 : 0.15);
-    }
-    this.groundMesh.setColorAt(index, color);
+    this.groundMesh.setColorAt(index, cell.type === "road" ? COLORS.road : COLORS.grass);
     if (this.groundMesh.instanceColor) this.groundMesh.instanceColor.needsUpdate = true;
   }
 
@@ -406,7 +463,7 @@ export class SceneRenderer {
 
   setSatelliteVisible(visible: boolean): void {
     this.satelliteVisible = visible;
-    this.refreshGroundColors();
+    this.applySatelliteVisibility();
   }
 
   applyTheme(theme: "light" | "dark"): void {
@@ -425,11 +482,20 @@ export class SceneRenderer {
     this.pointer.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
     this.pointer.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
     this.raycaster.setFromCamera(this.pointer, this.camera);
-    const hits = this.raycaster.intersectObjects([this.groundMesh, this.buildingMesh, this.waterMesh]);
-    const hit = hits.find((candidate) => candidate.instanceId !== undefined);
-    if (!hit || hit.instanceId === undefined) return null;
-    const x = Math.floor(hit.instanceId / GRID_SIZE);
-    const z = hit.instanceId % GRID_SIZE;
+    const targets: THREE.Object3D[] = [this.groundMesh, this.buildingMesh, this.waterMesh];
+    if (this.satelliteSheet) targets.push(this.satelliteSheet);
+    const hits = this.raycaster.intersectObjects(targets);
+    const hit = hits.find(
+      (candidate) => candidate.instanceId !== undefined || candidate.object === this.satelliteSheet
+    );
+    if (!hit) return null;
+    if (hit.instanceId !== undefined && hit.object !== this.satelliteSheet) {
+      const x = Math.floor(hit.instanceId / GRID_SIZE);
+      const z = hit.instanceId % GRID_SIZE;
+      return this.sim.cells[x]?.[z] ?? null;
+    }
+    const x = Math.floor((hit.point.x + BOARD_HALF_M) / CELL_SIZE_M);
+    const z = Math.floor((hit.point.z + BOARD_HALF_M) / CELL_SIZE_M);
     return this.sim.cells[x]?.[z] ?? null;
   }
 
@@ -459,6 +525,7 @@ export class SceneRenderer {
 
   dispose(): void {
     this.disposed = true;
+    this.disposeSatelliteSheet();
     cancelAnimationFrame(this.animationId);
     this.resizeObserver.disconnect();
     this.renderer.domElement.removeEventListener("pointermove", this.handlePointerMove);

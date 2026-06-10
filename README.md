@@ -30,7 +30,7 @@ Type a Korean address, get a browser-viewable 3D digital twin preview, then run 
 
 **3. Viewer + UI** (`src/render/`, `src/app/`)
 
-- Three.js instanced-mesh city (1 draw call per layer), live satellite drape (ArcGIS/VWorld tile mosaic sampled onto terrain cells), twin massing overlay, orbit/top views, X-ray, shadows, dark/light theme.
+- Three.js instanced-mesh city (1 draw call per layer), full-resolution satellite drape (z19 ArcGIS/VWorld tile mosaic on a terrain-following sheet), twin massing overlay, orbit/top views, X-ray, shadows, dark/light theme.
 - Disaster scenario presets (극한폭우 140mm/h, 하수도 2배 확장, 대심도 배수터널), rainfall slider, city-editor tools (pave roads, build, place sewers/pipes/outfalls, raise/lower terrain), cell inspector, gauges, rolling hydrograph, synthesized sound (Web Audio).
 - **Graceful degradation:** if WebGL is unavailable the app keeps running in console mode — address analysis and artifact downloads still work, with a clear banner instead of a dead page.
 - LLM-style console: a deterministic local rule agent works fully offline; in deployment `/api/agent` can call an Ollama-compatible Gemma endpoint and the client falls back to the local agent when the server is absent.

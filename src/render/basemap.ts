@@ -40,57 +40,81 @@ export interface BasemapMosaic {
   /** mosaic pixel of the twin center (x to the right, y downward) */
   centerPx: number;
   centerPy: number;
+  zoom: number;
+}
+
+const EARTH_CIRCUMFERENCE_M = 40075016.686;
+
+async function loadMosaicAtZoom(
+  mode: BasemapMode,
+  center: Coordinate,
+  zoom: number,
+  halfSpanM: number,
+  customTileUrl?: string
+): Promise<BasemapMosaic | null> {
+  const n = 2 ** zoom;
+  const latRad = (center.lat * Math.PI) / 180;
+  const xFloat = ((center.lon + 180) / 360) * n;
+  const yFloat = ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n;
+  const tileMeters = (EARTH_CIRCUMFERENCE_M * Math.cos(latRad)) / n;
+  const tileSpan = halfSpanM / tileMeters;
+
+  const minX = Math.floor(xFloat - tileSpan);
+  const maxX = Math.floor(xFloat + tileSpan);
+  const minY = Math.floor(yFloat - tileSpan);
+  const maxY = Math.floor(yFloat + tileSpan);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = (maxX - minX + 1) * 256;
+  canvas.height = (maxY - minY + 1) * 256;
+  const context = canvas.getContext("2d");
+  if (!context) return null;
+  context.fillStyle = "#1c2430";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  const loads: Array<Promise<boolean>> = [];
+  for (let ty = minY; ty <= maxY; ty++) {
+    for (let tx = minX; tx <= maxX; tx++) {
+      loads.push(
+        loadImage(tileUrl(mode, zoom, tx, ty, customTileUrl)).then((image) => {
+          if (!image) return false;
+          context.drawImage(image, (tx - minX) * 256, (ty - minY) * 256, 256, 256);
+          return true;
+        })
+      );
+    }
+  }
+  const results = await Promise.all(loads);
+  const loadedRatio = results.filter(Boolean).length / results.length;
+  // High zooms are missing in some regions — caller falls back to a lower zoom.
+  if (loadedRatio < 0.7) return null;
+
+  return {
+    canvas,
+    pxPerMeter: 256 / tileMeters,
+    centerPx: (xFloat - minX) * 256,
+    centerPy: (yFloat - minY) * 256,
+    zoom
+  };
 }
 
 /**
- * Build a 3x3 live tile mosaic around the center as one canvas, for draping
- * onto the simulation board. Returns null when offline/blocked — callers fall
- * back to the procedural ground. Nothing is cached or persisted.
+ * Build a live tile mosaic covering ±halfSpanM around the center as one
+ * canvas, draped onto the board as a full-resolution texture. Tries the
+ * sharpest zoom first (z19 ≈ 0.24m/px) and degrades where unavailable.
+ * Returns null when offline/blocked — callers fall back to the procedural
+ * ground. Nothing is cached or persisted.
  */
 export async function loadBasemapMosaic(
   mode: BasemapMode,
   center: Coordinate,
-  customTileUrl?: string
+  customTileUrl?: string,
+  halfSpanM = 90
 ): Promise<BasemapMosaic | null> {
   if (mode === "procedural") return null;
-
-  const zoom = 17;
-  const n = 2 ** zoom;
-  const xFloat = ((center.lon + 180) / 360) * n;
-  const latRad = (center.lat * Math.PI) / 180;
-  const yFloat = ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n;
-  const centerX = Math.floor(xFloat);
-  const centerY = Math.floor(yFloat);
-
-  const canvas = document.createElement("canvas");
-  canvas.width = 768;
-  canvas.height = 768;
-  const context = canvas.getContext("2d");
-  if (!context) return null;
-
-  const loads: Array<Promise<{ image: HTMLImageElement | null; dx: number; dy: number }>> = [];
-  for (let dy = -1; dy <= 1; dy++) {
-    for (let dx = -1; dx <= 1; dx++) {
-      loads.push(
-        loadImage(tileUrl(mode, zoom, centerX + dx, centerY + dy, customTileUrl)).then((image) => ({ image, dx, dy }))
-      );
-    }
+  for (const zoom of [19, 18, 17]) {
+    const mosaic = await loadMosaicAtZoom(mode, center, zoom, halfSpanM, customTileUrl);
+    if (mosaic) return mosaic;
   }
-  const tiles = await Promise.all(loads);
-  const loaded = tiles.filter((tile) => tile.image);
-  if (loaded.length === 0) return null;
-
-  context.fillStyle = "#1c2430";
-  context.fillRect(0, 0, 768, 768);
-  for (const tile of tiles) {
-    if (tile.image) context.drawImage(tile.image, (tile.dx + 1) * 256, (tile.dy + 1) * 256, 256, 256);
-  }
-
-  const tileMeters = (40075016.686 * Math.cos(latRad)) / n;
-  return {
-    canvas,
-    pxPerMeter: 256 / tileMeters,
-    centerPx: (xFloat - (centerX - 1)) * 256,
-    centerPy: (yFloat - (centerY - 1)) * 256
-  };
+  return null;
 }
