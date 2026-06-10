@@ -2,6 +2,14 @@
 
 Zero-cash-cost MVP for turning a Korean address into a browser-viewable 3D digital twin preview.
 
+![Web app: LLM address console (left) and generated 3D twin scene (right)](docs/images/app-screenshot.png)
+
+*The local web app: a Korean-address LLM console on the left, and the generated scene on the right — satellite-textured ground, target and context building massing, parcel boundary, road hints, and POI markers, with per-layer toggles and source legend.*
+
+| Static preview export (Sadang sample) | Generated QA / confidence report |
+| :---: | :---: |
+| ![Static 3D preview of the Sadang sample twin](docs/images/twin-preview-sadang.png) | ![Auto-generated QA and confidence report](docs/images/twin-qa-report-sadang.png) |
+
 This MVP creates a fast visual preview: procedural/offline ground, optional live satellite texture, approximate target building massing, surrounding context massing, approximate parcel boundary, road hints, POI markers, `source_manifest.json`, and a human-readable QA report.
 
 The local web app also includes an LLM-style address request console. It does not require a paid LLM API: a deterministic local agent parses Korean address requests, separates preview outputs from official-data-required work, and links the generated preview/manifest/QA artifacts. In deployment, `/api/agent` can generate a fresh preview for arbitrary Korean address text and return `twin` + `manifest` JSON for the browser to render immediately.
