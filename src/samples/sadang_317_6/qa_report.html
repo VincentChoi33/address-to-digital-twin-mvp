@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sadang_317_6 QA / Confidence Report</title>
+  <style>
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f6f3ed; color: #1d1b16; }
+    main { max-width: 980px; margin: 0 auto; padding: 40px 20px 56px; }
+    h1 { margin: 0 0 8px; font-size: 30px; }
+    h2 { margin-top: 28px; font-size: 18px; }
+    p, li { line-height: 1.65; }
+    .notice { background: #fff4cf; border: 1px solid #e5c96a; padding: 14px 16px; border-radius: 8px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric { background: #ffffff; border: 1px solid #ded8cb; border-radius: 8px; padding: 14px; }
+    .metric b { display: block; margin-bottom: 6px; color: #5b3b00; }
+    table { width: 100%; border-collapse: collapse; background: #ffffff; border: 1px solid #ded8cb; border-radius: 8px; overflow: hidden; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid #eee6d8; text-align: left; vertical-align: top; }
+    th { background: #eee7d9; }
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 999px; font-weight: 700; font-size: 12px; }
+    .high { background: #d4f7df; color: #166534; }
+    .medium { background: #def0ff; color: #075985; }
+    .low { background: #ffe8ca; color: #9a3412; }
+    code { background: #eee7d9; padding: 2px 5px; border-radius: 4px; }
+    @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>QA / Confidence Report</h1>
+    <p class="notice">이 산출물은 제안·검토용 프리뷰입니다. 측량급 또는 법적 효력이 있는 디지털 트윈이 아닙니다.</p>
+
+    <section class="grid">
+      <div class="metric"><b>프로젝트</b>sadang_317_6</div>
+      <div class="metric"><b>입력 주소</b>사당동 317-6번지 디지털 트윈 만들어줘</div>
+      <div class="metric"><b>좌표 신뢰도</b>낮음</div>
+    </section>
+
+    <h2>생성된 것</h2>
+    <p>브라우저에서 볼 수 있는 3D 프리뷰, 대상 건물 매스, 주변 건물 맥락, 추정 필지 경계, 도로 힌트를 생성했습니다.</p>
+
+    <h2>근사값인 것</h2>
+    <p>대상 건물 크기, 높이, 층수, 필지 경계, 일부 주변 건물은 공식 데이터가 아니라 프리뷰용 추정값입니다.</p>
+
+    <h2>공식 데이터인 것</h2>
+    <p>없음. 현재 산출물은 공식 geometry 없이 프리뷰용으로 생성되었습니다.</p>
+
+    <h2>검증이 필요한 것</h2>
+    <ul><li>Not survey-grade</li><li>Exact PNU/parcel boundary not verified</li><li>Building footprint/height should be replaced with official GIS data</li><li>Preview coordinate may be approximate until VWorld/Juso verification succeeds</li><li>Optional basemap tiles are for browser preview only and are not cached by this MVP</li></ul>
+
+    <h2>레이어별 신뢰도</h2>
+    <table>
+      <thead><tr><th>레이어</th><th>출처</th><th>신뢰도</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>satellite_ground</td>
+          <td>procedural</td>
+          <td><span class="badge low">낮음</span></td>
+        </tr>
+      
+        <tr>
+          <td>target_building_massing</td>
+          <td>procedural fallback</td>
+          <td><span class="badge low">낮음</span></td>
+        </tr>
+      
+        <tr>
+          <td>surrounding_context_massing</td>
+          <td>OSM/Overpass best-effort only</td>
+          <td><span class="badge medium">중간</span></td>
+        </tr>
+      
+        <tr>
+          <td>parcel_boundary</td>
+          <td>procedural fallback</td>
+          <td><span class="badge low">낮음</span></td>
+        </tr>
+      
+        <tr>
+          <td>road_hints</td>
+          <td>OSM/Overpass best-effort</td>
+          <td><span class="badge medium">중간</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>다음 권장 업그레이드</h2>
+    <ol><li>Add Juso and VWorld keys</li><li>Resolve PNU</li><li>Fetch parcel boundary</li><li>Fetch GIS building integrated info</li><li>Generate official LOD1/LOD2 geometry</li><li>Export glTF/3D Tiles</li></ol>
+
+    <h2>좌표 요약</h2>
+    <p>선택 좌표: <code>37.48420, 126.96975</code> / 공급자: <code>fallback</code></p>
+  </main>
+</body>
+</html>

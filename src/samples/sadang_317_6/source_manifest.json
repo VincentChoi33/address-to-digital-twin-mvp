@@ -1,0 +1,95 @@
+{
+  "project_id": "sadang_317_6",
+  "generated_at": "2026-05-26T03:57:10.609Z",
+  "input": {
+    "raw_query": "사당동 317-6번지 디지털 트윈 만들어줘",
+    "normalized_address_candidates": [
+      {
+        "label": "사당동 317-6",
+        "type": "raw"
+      },
+      {
+        "label": "서울 동작구 사당동 317-6",
+        "type": "parcel"
+      },
+      {
+        "label": "서울 동작구 사당로20가길 39",
+        "type": "road"
+      },
+      {
+        "label": "행복이가득한집",
+        "type": "building_name"
+      }
+    ]
+  },
+  "geocoding": {
+    "selected": {
+      "provider": "fallback",
+      "request_time": "2026-05-26T03:57:09.526Z",
+      "address_query": "사당동 317-6번지 디지털 트윈 만들어줘",
+      "result_count": 1,
+      "selected_lon_lat": [
+        126.96975,
+        37.4842
+      ],
+      "confidence": "low",
+      "restrictions_note": "approximate preview coordinate; official geocoding required",
+      "note": "approximate preview coordinate; official geocoding required"
+    },
+    "provider": "fallback",
+    "confidence": "low",
+    "notes": [
+      "JUSO_API_KEY missing or Juso normalization unavailable.",
+      "VWORLD_API_KEY missing or VWorld geocoder unavailable.",
+      "Nominatim fallback unavailable or disabled.",
+      "Using hardcoded Sadang approximation because official geocoding is unavailable.",
+      "Road/parcel/building-name candidates require Juso/VWorld verification.",
+      "Overpass context is best-effort preview context.",
+      "OSM features are not a substitute for official Korean parcel/building records.",
+      "Overture building footprints can be used later for overseas expansion. MVP does not download Overture data; building geometry is 2D footprint/roofprint and height/num_floors can approximate 3D when available."
+    ]
+  },
+  "layers": [
+    {
+      "name": "satellite_ground",
+      "source": "procedural",
+      "usage": "preview basemap",
+      "license_note": "Offline procedural grid is fallback. VWorld WMTS, ArcGIS, or custom tiles are optional live preview sources and must not be cached or redistributed without reviewing provider terms."
+    },
+    {
+      "name": "target_building_massing",
+      "source": "procedural fallback",
+      "confidence": "low"
+    },
+    {
+      "name": "surrounding_context_massing",
+      "source": "OSM/Overpass best-effort only",
+      "confidence": "medium"
+    },
+    {
+      "name": "parcel_boundary",
+      "source": "procedural fallback",
+      "confidence": "low"
+    },
+    {
+      "name": "road_hints",
+      "source": "OSM/Overpass best-effort",
+      "confidence": "medium"
+    }
+  ],
+  "limitations": [
+    "Not survey-grade",
+    "Exact PNU/parcel boundary not verified",
+    "Building footprint/height should be replaced with official GIS data",
+    "Preview coordinate may be approximate until VWorld/Juso verification succeeds",
+    "Optional basemap tiles are for browser preview only and are not cached by this MVP"
+  ],
+  "next_actions": [
+    "Add Juso and VWorld keys",
+    "Resolve PNU",
+    "Fetch parcel boundary",
+    "Fetch GIS building integrated info",
+    "Generate official LOD1/LOD2 geometry",
+    "Export glTF/3D Tiles"
+  ]
+}
