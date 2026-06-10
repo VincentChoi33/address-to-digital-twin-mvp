@@ -1,3 +1,4 @@
+import { escapeHtml } from "../lib/html";
 import type { SourceManifest, TwinProject } from "../types/twin";
 
 export interface ViewerControls {
@@ -75,14 +76,6 @@ export interface ViewerControls {
   toolRaise: HTMLButtonElement;
   toolLower: HTMLButtonElement;
   toolEraser: HTMLButtonElement;
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }
 
 export function confidenceKo(value: string): string {

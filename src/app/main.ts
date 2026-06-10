@@ -1,6 +1,7 @@
 import sadangTwin from "../samples/sadang_317_6/twin.json";
 import sadangManifest from "../samples/sadang_317_6/source_manifest.json";
-import type { SourceManifest, TwinProject } from "../types/twin";
+import { escapeHtml } from "../lib/html";
+import type { HydrologyCell, HydrologyState, SourceManifest, TwinProject } from "../types/twin";
 import { runLocalAddressAgent, type AgentRun } from "./agent";
 import { confidenceKo, coordinateText, createUi, geocodingStatusKo, layerRows, sourceTypeKo } from "./ui";
 import { TwinViewer } from "./viewer";
@@ -71,7 +72,7 @@ const hydrologyCallbacks = {
     controls.gaugeVelocityVal.textContent = `${speedMS.toFixed(1)} m/s`;
     controls.gaugeVelocityBar.style.width = `${Math.min(100, Math.floor(speedMS * 12))}%`;
   },
-  onCellInspect: (cell: any | null) => {
+  onCellInspect: (cell: HydrologyCell | null) => {
     if (!cell) {
       controls.inspectCellCoord.textContent = "선택된 격자 없음";
       controls.inspectType.textContent = "-";
@@ -221,14 +222,6 @@ function drawHydrograph() {
 
 // Bind Chart Interval
 setInterval(updateHydrographData, 500);
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 function renderAgentRun(run: AgentRun): void {
   if (run.twin && run.manifest) {
@@ -419,20 +412,22 @@ controls.promptInput.addEventListener("keydown", (event) => {
 // SIMULATOR BINDINGS (ADDITIONS)
 // ==========================================
 
+function rainLabelText(val: number): string {
+  if (val > 120) return `🚨 극한 폭우 (${val}mm/h)`;
+  if (val > 60) return `🌧️ 집중호우 (${val}mm/h)`;
+  if (val > 0) return `🌦️ 약한 강우 (${val}mm/h)`;
+  return "맑음 (0mm/h)";
+}
+
 // Rain intensity slider
 controls.rainSlider.addEventListener("input", (e) => {
   const val = parseInt((e.target as HTMLInputElement).value);
   viewer.hydrologyState.rainIntensity = val;
-
-  let label = "맑음 (0mm/h)";
-  if (val > 120) label = `🚨 극한 폭우 (${val}mm/h)`;
-  else if (val > 60) label = `🌧️ 집중호우 (${val}mm/h)`;
-  else if (val > 0) label = `🌦️ 약한 강우 (${val}mm/h)`;
-  controls.rainLabel.textContent = label;
+  controls.rainLabel.textContent = rainLabelText(val);
 });
 
 // Scenario preset buttons
-const scenBtns = [
+const scenBtns: Array<{ btn: HTMLButtonElement; name: HydrologyState["scenario"] }> = [
   { btn: controls.scenNormal, name: "normal" },
   { btn: controls.scen2022, name: "2022" },
   { btn: controls.scenExpand, name: "expand" },
@@ -441,18 +436,13 @@ const scenBtns = [
 
 scenBtns.forEach(({ btn, name }) => {
   btn.addEventListener("click", () => {
-    viewer.loadScenario(name as any);
+    viewer.loadScenario(name);
     scenBtns.forEach(b => b.btn.classList.remove("active"));
     btn.classList.add("active");
 
     // Sync rain slider position matching scenario
     controls.rainSlider.value = String(viewer.hydrologyState.rainIntensity);
-    let label = "맑음 (0mm/h)";
-    const val = viewer.hydrologyState.rainIntensity;
-    if (val > 120) label = `🚨 극한 폭우 (${val}mm/h)`;
-    else if (val > 60) label = `🌧️ 집중호우 (${val}mm/h)`;
-    else if (val > 0) label = `🌦️ 약한 강우 (${val}mm/h)`;
-    controls.rainLabel.textContent = label;
+    controls.rainLabel.textContent = rainLabelText(viewer.hydrologyState.rainIntensity);
   });
 });
 
