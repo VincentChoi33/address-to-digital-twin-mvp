@@ -6,6 +6,7 @@ import { generateStaticPreviewHtml } from "./exportStaticHtml";
 import { geocodeAddress } from "./geocode";
 import { generateMassing } from "./generateMassing";
 import { buildSourceManifest } from "./manifest";
+import { projectIdFromQuery } from "./previewTwin";
 import { generateQaReport } from "./qa";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -33,13 +34,7 @@ function parseArgs(): RunOptions {
     };
   }
 
-  const safeProjectId =
-    projectId ??
-    address
-      .normalize("NFKD")
-      .replace(/[^\w가-힣]+/g, "_")
-      .replace(/^_+|_+$/g, "")
-      .toLowerCase();
+  const safeProjectId = projectId ?? projectIdFromQuery(address);
 
   return {
     projectId: safeProjectId || "address_twin_preview",
