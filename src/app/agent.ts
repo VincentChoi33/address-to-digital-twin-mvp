@@ -112,7 +112,7 @@ export function runLocalAddressAgent(
     {
       label: "4. 침수 시뮬 격자 구성",
       status: "done",
-      detail: "트윈 건물/도로를 24×24 수문 격자로 래스터화"
+      detail: "실DEM·실건물 footprint를 GPU 수문 격자로 베이크"
     },
     {
       label: "5. 공식 데이터 업그레이드",
