@@ -130,7 +130,7 @@ const STATS_FRAGMENT = /* glsl */ `
     gl_FragColor = vec4(
       clamp(sumD / 16.0 / 2.55, 0.0, 1.0),   // mean depth, 1 unit = 2.55m
       flooded / 16.0,                          // flooded fraction (>10cm)
-      clamp(sumA / 16.0 / 25.5, 0.0, 1.0),    // mean absorbed, 1 unit = 25.5m
+      clamp(sumA / 16.0 / 2.55, 0.0, 1.0),    // mean absorbed, 1 unit = 2.55m
       clamp(maxD / 2.55, 0.0, 1.0)
     );
   }
@@ -316,7 +316,7 @@ export class WaterSolver {
     for (let i = 0; i < 64 * 64; i++) {
       const meanDepth = (this.statsBuffer[i * 4] / 255) * 2.55;
       const floodedFraction = this.statsBuffer[i * 4 + 1] / 255;
-      const meanAbsorbed = (this.statsBuffer[i * 4 + 2] / 255) * 25.5;
+      const meanAbsorbed = (this.statsBuffer[i * 4 + 2] / 255) * 2.55;
       const blockMax = (this.statsBuffer[i * 4 + 3] / 255) * 2.55;
       volume += meanDepth * blockArea;
       flooded += floodedFraction * blockArea;

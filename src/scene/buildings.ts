@@ -26,7 +26,7 @@ export function buildCityGroup(
     roughness: 0.35,
     metalness: 0.25,
     emissive: 0x0b4a44,
-    emissiveIntensity: 0.25
+    emissiveIntensity: 0.1
   });
   const officialMaterial = new THREE.MeshStandardMaterial({ color: 0xb9c0cc, roughness: 0.62, metalness: 0.08 });
   const fallbackMaterial = new THREE.MeshStandardMaterial({ color: 0x8e96a3, roughness: 0.8, metalness: 0.02 });

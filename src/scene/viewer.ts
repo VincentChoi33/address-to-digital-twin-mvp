@@ -208,13 +208,18 @@ export class CityViewer {
       ? this.twin.buildings.reduce((max, b) => Math.max(max, b.height_m), 0)
       : 0;
     if (view === "top") {
-      this.camera.position.set(0, Math.max(DOMAIN_SIZE_M * 1.15, tallest * 2.6), 0.01);
+      this.camera.position.set(0, Math.max(DOMAIN_SIZE_M * 1.15, tallest * 2.2), 0.01);
+      this.camera.lookAt(0, 0, 0);
+      this.controls.target.set(0, 0, 0);
     } else {
-      const lift = Math.max(DOMAIN_SIZE_M * 0.42, tallest * 1.15);
-      this.camera.position.set(DOMAIN_SIZE_M * 0.52, lift, DOMAIN_SIZE_M * 0.7);
+      // ground (the flood) is the subject — clamp so supertalls can't tilt
+      // the camera into the sky
+      const lift = Math.max(DOMAIN_SIZE_M * 0.42, Math.min(tallest * 1.1, DOMAIN_SIZE_M * 0.62));
+      const aim = Math.min(tallest * 0.2, 32);
+      this.camera.position.set(DOMAIN_SIZE_M * 0.5, lift, DOMAIN_SIZE_M * 0.68);
+      this.camera.lookAt(0, aim, 0);
+      this.controls.target.set(0, aim, 0);
     }
-    this.camera.lookAt(0, tallest * 0.25, 0);
-    this.controls.target.set(0, tallest * 0.25, 0);
     this.controls.update();
   }
 

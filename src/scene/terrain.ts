@@ -106,8 +106,13 @@ export async function loadHeightfield(center: Coordinate): Promise<Heightfield> 
     for (let col = 0; col < HEIGHT_GRID; col++) {
       const worldX = (col / (HEIGHT_GRID - 1) - 0.5) * DOMAIN_SIZE_M;
       const worldZ = (row / (HEIGHT_GRID - 1) - 0.5) * DOMAIN_SIZE_M;
-      // local +z = north → image y decreases northward
-      data[row * HEIGHT_GRID + col] = sample(centerPx + worldX * pxPerMeter, centerPy - worldZ * pxPerMeter);
+      // local +z = north → image y decreases northward.
+      // Terrarium is topobathy: the sea floor comes back as -180m off Busan
+      // and would hijack the min-normalization — clamp water to sea level.
+      data[row * HEIGHT_GRID + col] = Math.max(
+        sample(centerPx + worldX * pxPerMeter, centerPy - worldZ * pxPerMeter),
+        -2
+      );
     }
   }
 

@@ -86,16 +86,20 @@ const WATER_FRAGMENT = /* glsl */ `
     float glint = pow(max(dot(normal, halfway), 0.0), 220.0);
     color += vec3(1.0, 0.96, 0.85) * glint * 1.6;
 
-    // foam at wet/dry edges and steep gradients
-    float edgeFoam = 1.0 - smoothstep(0.012, 0.05, vDepth);
-    float slopeFoam = smoothstep(0.18, 0.5, length(vec2(hL - hR, hD - hU)) / cell);
+    // foam at wet/dry edges and steep gradients — but a centimetres-thin film
+    // running down a hillside must NOT read as a white sheet, so weight foam
+    // and opacity by actual depth
+    float depthWeight = smoothstep(0.05, 0.3, vDepth);
+    float edgeFoam = (1.0 - smoothstep(0.015, 0.06, vDepth)) * 0.5;
+    float slopeFoam = smoothstep(0.22, 0.6, length(vec2(hL - hR, hD - hU)) / cell) * depthWeight;
     float foamNoise = sin(vWorld.x * 7.0 + uTime * 2.0) * sin(vWorld.z * 6.3 - uTime * 1.6);
     float foam = clamp(max(edgeFoam, slopeFoam) * (0.55 + 0.45 * foamNoise), 0.0, 1.0);
-    color = mix(color, vec3(0.88, 0.92, 0.93), foam * 0.5);
+    color = mix(color, vec3(0.88, 0.92, 0.93), foam * 0.45);
 
-    float alpha = mix(0.62, 0.94, absorb);
-    alpha = max(alpha, fresnel * 0.9);
-    gl_FragColor = vec4(color, alpha * smoothstep(0.012, 0.035, vDepth));
+    float thin = smoothstep(0.015, 0.09, vDepth);
+    float alpha = mix(0.55, 0.94, absorb);
+    alpha = max(alpha, fresnel * 0.85 * depthWeight);
+    gl_FragColor = vec4(color, alpha * thin);
   }
 `;
 

@@ -81,7 +81,7 @@ export function createSkyRig(renderer: THREE.WebGLRenderer, scene: THREE.Scene):
       } else {
         sunLight.intensity = 1.5;
         hemiLight.intensity = 0.45;
-        apply(26, 195, 10, 1.1, 0.56);
+        apply(30, 195, 8, 1.6, 0.58);
       }
     },
     dispose: () => {
