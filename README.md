@@ -3,9 +3,9 @@
 [![CI](https://github.com/VincentChoi33/address-to-digital-twin-mvp/actions/workflows/ci.yml/badge.svg)](https://github.com/VincentChoi33/address-to-digital-twin-mvp/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Type a Korean address, get a browser-viewable 3D digital twin preview, then run an interactive **urban flood simulation on that twin's buildings and roads**. Zero cash cost: no paid APIs, fully offline-capable. TypeScript + Three.js + Vite.
+Type a Korean address, get a real-data 3D digital twin — actual DEM terrain, actual WFS building footprints, full-resolution satellite drape — then run a **GPU shallow-water flood simulation** on it: continuous water surface with fresnel reflections, storm drains along the real roads, manhole backflow when the network saturates. TypeScript + Three.js + Vite.
 
-**One flow, end to end:** `주소 → 지오코딩(폴백 체인) → 절차적 매싱 → 24×24 수문 격자 래스터화 → 침수 시뮬레이션`. Any address works — out-of-sample addresses get a deterministic offline preview twin generated **client-side**, so the full twin → flood loop runs without a single API key.
+**One flow, end to end:** `주소 → Juso/VWorld 지오코딩 → WFS 실건물·도로 + 실DEM + 위성 → GPU 수문 격자 베이크 → virtual-pipe-model 침수 해석`. Any address works — keyless/offline runs degrade to deterministic preview twins, so the loop never breaks.
 
 ![Web app](docs/images/app-screenshot.png)
 
@@ -17,21 +17,25 @@ Type a Korean address, get a browser-viewable 3D digital twin preview, then run 
 
 **1. Address → twin pipeline** (`src/core/`, runs in Node and in the browser)
 
+*(the deployed `/api/agent` adds VWorld WFS: real parcel-anchored footprints with heights/floors — e.g. 강남파이낸스센터 33-vertex footprint, 202m/45F)*
+
 - Normalizes a raw Korean address request into parcel / road / building-name candidates.
 - Geocodes through a graceful fallback chain: Juso → VWorld → Nominatim → deterministic offline coordinates (Node CLI), or straight to the offline path in the browser.
 - Generates target massing, surrounding context (OSM/Overpass best-effort, seeded procedural fallback), parcel boundary, and road hints.
 - Emits four artifacts: `twin.json`, `source_manifest.json` (per-layer source + confidence), human-readable `qa_report.html`, standalone `preview.html`. In the web app these download as generated blobs for any address.
 
-**2. Hydrology engine** (`src/sim/` — pure TypeScript, no Three.js, fully unit-tested)
+**2. GPU flood solver** (`src/water/`)
 
-- Rasterizes the twin's buildings/roads into a 24×24 cell grid: seeded terrain slope, sewer inlets along roads, a capacity-limited outfall, underground-space entrances near the target.
-- Shallow-water gravity routing, roof runoff, sewer intake, pipe migration toward the outfall, manhole backflow when the network saturates, underground inundation alarm.
-- Deterministic: same twin in, same simulation out. Stylized demo physics (rainfall is amplified for visible flooding), not SWMM.
+- **Virtual pipe model** (Mei et al.) integrated entirely on the GPU: half-float ping-pong textures, per-cell flux to 4 neighbours from hydraulic head, rainfall source, capacity-limited storm-drain sinks, open boundary.
+- Static inputs baked deterministically on the CPU (`bake.ts`, unit-tested): real DEM + extruded building obstacles as the solid heightfield, drain inlets every 18m along the real road centerlines, network capacity → manhole backflow loop.
+- Continuous water-surface shader: depth-based absorption (shallow teal → muddy deep), fresnel sky reflection, sun glint, depth-weighted foam. No blue boxes.
+- Stylized demo physics (rainfall amplified ×200 in one constant), not SWMM.
 
-**3. Viewer + UI** (`src/render/`, `src/app/`)
+**3. Real-data scene** (`src/scene/`)
 
-- Three.js instanced-mesh city (1 draw call per layer), full-resolution satellite drape (z19 ArcGIS/VWorld tile mosaic on a terrain-following sheet), twin massing overlay, orbit/top views, X-ray, shadows, dark/light theme.
-- Disaster scenario presets (극한폭우 140mm/h, 하수도 2배 확장, 대심도 배수터널), rainfall slider, city-editor tools (pave roads, build, place sewers/pipes/outfalls, raise/lower terrain), cell inspector, gauges, rolling hydrograph, synthesized sound (Web Audio).
+- Terrain from **AWS Terrain Tiles** DEM with a DSM→DTM cleanup (morphological erosion + blur — the ALOS source carries tower clusters as 100m fake hills, and ocean pixels are bathymetry) and z18–19 satellite drape.
+- Real WFS/OSM **building footprints extruded** with ring sanitization; physical sky + cube environment driving PBR and water reflections; rain streaks; ACES tone mapping.
+- Disaster scenario presets (집중호우 80mm/h, 극한폭우 140mm/h, 대심도 배수터널), rainfall slider, point inspector, network-load gauge, rolling hydrograph, synthesized sound (Web Audio).
 - **Graceful degradation:** if WebGL is unavailable the app keeps running in console mode — address analysis and artifact downloads still work, with a clear banner instead of a dead page.
 - LLM-style console: a deterministic local rule agent works fully offline; in deployment `/api/agent` can call an Ollama-compatible Gemma endpoint and the client falls back to the local agent when the server is absent.
 
@@ -52,7 +56,7 @@ Try any Korean address in the console:
 부산 해운대구 우동 1408                        # also works — different terrain, same flow
 ```
 
-Then hit **극한폭우 (140mm/h)** and watch the twin flood: streets pond, pipes pressurize, manholes back up red, and the underground-entrance alarm fires.
+Then hit **극한폭우 (140mm/h)** and watch the twin flood: water sheets down the real terrain, ponds in the real low streets, the drain network saturates, and manholes start backflowing.
 
 CLI generation (adds Juso/VWorld/Nominatim/Overpass when keys/network exist):
 
@@ -76,25 +80,14 @@ npx tsx src/core/runAddressTwin.ts --address "서울 강남구 테헤란로 152"
 ```text
 src/
   core/              # address → twin generation (Node + browser-safe)
-    address.ts       #   pure address parsing + deterministic fallback coords
-    geocode.ts       #   Juso/VWorld/Nominatim chain (Node CLI)
-    previewTwin.ts   #   client-side offline twin generation
-    generateMassing.ts, manifest.ts, qa.ts, exportStaticHtml.ts
-    runAddressTwin.ts#   CLI entry point
-  sim/
-    hydrology.ts     # pure flood engine: rasterize twin → step → tools/scenarios
-  render/
-    scene.ts         # Three.js instanced renderer, WebGL-guarded
-    basemap.ts       # live tile mosaic (ArcGIS/VWorld/custom), no caching
-    sound.ts         # Web Audio synth
-  app/
-    main.ts, ui.ts   # grid-layout UI shell + bindings
-    agent.ts         # deterministic local address agent
+  scene/             # terrain (DEM+satellite), buildings (WFS extrude), sky, rain, viewer
+  water/             # GPU pipe-model solver, water surface shader, CPU bake (+tests)
+  app/               # UI shell + agent console + scenario/stats wiring
+  render/            # basemap mosaic loader, Web Audio synth
   types/twin.ts      # shared twin/manifest types
   samples/           # committed Sadang sample artifacts
 deploy/
-  server.py          # zero-dependency static + /api/agent (Ollama/Gemma) server
-  batch_address_qa.py
+  server.py          # static + /api/agent (VWorld WFS + Ollama/Gemma) + tile proxy
 ```
 
 ## Deployment with a local model server
