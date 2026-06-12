@@ -1,0 +1,194 @@
+{
+  "project_id": "sadang_317_6",
+  "generated_at": "2026-06-12T04:12:45Z",
+  "status": "openusd_ready",
+  "summary": {
+    "openusd_authoring_ready": true,
+    "omniverse_rtx_ready": false,
+    "omniverse_streaming_ready": false,
+    "simready_automation_ready": false,
+    "content_agents_ready": false
+  },
+  "commands": {
+    "nvidia_smi": {
+      "ok": true,
+      "code": 0,
+      "stdout": "NVIDIA GeForce RTX 3090, 580.105.08, 24576 MiB NVIDIA GeForce RTX 3090, 580.105.08, 24576 MiB NVIDIA GeForce RTX 3090, 580.105.08, 24576 MiB NVIDIA GeForce RTX 3090, 580.105.08, 24576 MiB NVIDIA GeForce RTX 3090, 580.105.08, 24576 MiB NVIDIA GeForce RTX 3090, 580.105.08, 24576 MiB NVIDIA GeForce RTX 3090, 580.105.08, 24576 MiB NVIDIA GeForce RTX 3090, 580.105.08, 24576 MiB",
+      "stderr": ""
+    },
+    "docker_version": {
+      "ok": true,
+      "code": 0,
+      "stdout": "Docker version 29.0.4, build 3247a5a",
+      "stderr": ""
+    },
+    "docker_info": {
+      "ok": true,
+      "code": 0,
+      "stdout": "{\"io.containerd.runc.v2\":{\"path\":\"runc\",\"status\":{\"org.opencontainers.runtime-spec.features\":\"{\\\"ociVersionMin\\\":\\\"1.0.0\\\",\\\"ociVersionMax\\\":\\\"1.2.1\\\",\\\"hooks\\\":[\\\"prestart\\\",\\\"createRuntime\\\",\\\"createContainer\\\",\\\"startContainer\\\",\\\"poststart\\\",\\\"poststop\\\"],\\\"mountOptions\\\":[\\\"async\\\",\\\"atime\\\",\\\"bind\\\",\\\"defaults\\\",\\\"dev\\\",\\\"diratime\\\",\\\"dirsync\\\",\\\"exec\\\",\\\"iversion\\\",\\\"lazytime\\\",\\\"loud\\\",\\\"mand\\\",\\\"noatime\\\",\\\"nodev\\\",\\\"nodiratime\\\",\\\"noexec\\\",\\\"noiversion\\\",\\\"nolazytime\\\",\\\"nomand\\\",\\\"norelatime\\\",\\\"nostrictatime\\\",\\\"nosuid\\\",\\\"nosymfollow\\\",\\\"private\\\",\\\"ratime\\\",\\\"rbind\\\",\\\"rdev\\\",\\\"r",
+      "stderr": ""
+    },
+    "python_pxr": {
+      "ok": true,
+      "code": 0,
+      "stdout": "pxr-usd-ok",
+      "stderr": ""
+    },
+    "usdchecker": {
+      "ok": false,
+      "code": null,
+      "stdout": "",
+      "stderr": ""
+    },
+    "ovrtx": {
+      "ok": false,
+      "code": null,
+      "stdout": "",
+      "stderr": ""
+    },
+    "kit": {
+      "ok": false,
+      "code": null,
+      "stdout": "",
+      "stderr": ""
+    },
+    "usdview": {
+      "ok": false,
+      "code": null,
+      "stdout": "",
+      "stderr": ""
+    }
+  },
+  "gates": [
+    {
+      "id": "OPENUSD.AUTHORING.001",
+      "product": "OpenUSD",
+      "status": "passed",
+      "required_for": [
+        "static USD package generation"
+      ],
+      "evidence": "The repository authors a meter-based Y-up .usda package from twin.json/source_manifest.json."
+    },
+    {
+      "id": "OPENUSD.RUNTIME.001",
+      "product": "OpenUSD / USD Python / usdchecker",
+      "status": "passed",
+      "required_for": [
+        "local USD validation",
+        "Omniverse preflight"
+      ],
+      "evidence": "pxr-usd-ok"
+    },
+    {
+      "id": "OPENUSD.CHECKER.001",
+      "product": "usdchecker",
+      "status": "warning",
+      "required_for": [
+        "CI-grade USD syntax/validator smoke"
+      ],
+      "evidence": "usdchecker is missing; export still works but local USD validation cannot run.",
+      "remediation": "Install usdchecker/OpenUSD CLI tools or use Omniverse Kit validation."
+    },
+    {
+      "id": "NVIDIA.GPU.001",
+      "product": "NVIDIA GPU / Driver",
+      "status": "passed",
+      "required_for": [
+        "RTX rendering",
+        "ovrtx",
+        "local Content Agents",
+        "GPU simulation services"
+      ],
+      "evidence": "NVIDIA GeForce RTX 3090, 580.105.08, 24576 MiB"
+    },
+    {
+      "id": "DOCKER.001",
+      "product": "Docker",
+      "status": "passed",
+      "required_for": [
+        "local Omniverse Content Agents",
+        "containerized ovrtx services"
+      ],
+      "evidence": "Docker version 29.0.4, build 3247a5a"
+    },
+    {
+      "id": "DOCKER.DAEMON.001",
+      "product": "Docker daemon",
+      "status": "passed",
+      "required_for": [
+        "local Omniverse Content Agents"
+      ],
+      "evidence": "docker info returned runtime metadata."
+    },
+    {
+      "id": "DOCKER.NVIDIA_RUNTIME.001",
+      "product": "NVIDIA Container Toolkit",
+      "status": "passed",
+      "required_for": [
+        "GPU-enabled Content Agents containers"
+      ],
+      "evidence": "Docker runtime metadata includes nvidia."
+    },
+    {
+      "id": "OMNIVERSE.VIEWER.001",
+      "product": "NVIDIA Omniverse / ovrtx / Kit viewer",
+      "status": "blocked",
+      "required_for": [
+        "NVIDIA-only visual runtime",
+        "RTX/ovrtx render verification"
+      ],
+      "evidence": "No ovrtx, kit, usdview, or known Omniverse app path was found.",
+      "remediation": "Install/use an Omniverse Kit or ovrtx runtime on an NVIDIA GPU machine."
+    },
+    {
+      "id": "OMNIVERSE.OVSTREAM.001",
+      "product": "NVIDIA Omniverse Streaming / ovstream WebRTC",
+      "status": "blocked",
+      "required_for": [
+        "browser-delivered NVIDIA-only viewer",
+        "remote RTX/ovrtx stream acceptance"
+      ],
+      "evidence": "No OVSTREAM_SIGNALING_URL, OMNIVERSE_STREAM_URL, or OVRTX_WEBRTC_URL was provided.",
+      "remediation": "Expose an ovstream/WebRTC endpoint from the NVIDIA GPU host after ovrtx/Omniverse first-frame readiness."
+    },
+    {
+      "id": "CONTENT_AGENTS.AUTH.001",
+      "product": "NVIDIA API / NGC / NVCF credentials",
+      "status": "blocked",
+      "required_for": [
+        "Omniverse Content Agents material/physics assignment"
+      ],
+      "evidence": "No NVIDIA_API_KEY, NGC_API_KEY, NVCF_API_KEY, or complete provided Content Agents endpoint set was found.",
+      "remediation": "Provide NVIDIA_API_KEY for local deployment or set provided Content Agents endpoint URLs/tokens."
+    },
+    {
+      "id": "CONTENT_AGENTS.RUNTIME.001",
+      "product": "Omniverse Content Agents",
+      "status": "blocked",
+      "required_for": [
+        "full SimReady material/physics assignment"
+      ],
+      "evidence": "Content Agents prerequisites are incomplete.",
+      "remediation": "Satisfy NVIDIA GPU + Docker daemon + NVIDIA runtime + auth, or provide healthy service endpoints."
+    }
+  ],
+  "redacted_environment": {
+    "NVIDIA_API_KEY": "missing",
+    "NGC_API_KEY": "missing",
+    "NVCF_API_KEY": "missing",
+    "CONTENT_AGENTS_TOKEN": "missing",
+    "CONTENT_AGENTS_MATERIAL_BASE_URL": "missing",
+    "CONTENT_AGENTS_PHYSICS_BASE_URL": "missing",
+    "CONTENT_AGENTS_TEXTURE_BASE_URL": "missing",
+    "CONTENT_AGENTS_OVRTX_BASE_URL": "missing",
+    "OVSTREAM_SIGNALING_URL": "missing",
+    "OMNIVERSE_STREAM_URL": "missing",
+    "OVRTX_WEBRTC_URL": "missing"
+  },
+  "next_actions": [
+    "Install or expose NVIDIA Omniverse Kit/ovrtx/usdview runtime for the USD stage.",
+    "Expose an ovstream/WebRTC endpoint from the NVIDIA GPU host for the browser-delivered NVIDIA-only viewer.",
+    "Configure Content Agents prerequisites: NVIDIA API/NGC/NVCF auth plus GPU Docker runtime, or provided service endpoints.",
+    "After runtime gates pass, run SimReady/Asset Validator and USD Performance Tuning baseline profiling."
+  ]
+}

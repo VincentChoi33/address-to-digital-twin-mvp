@@ -66,6 +66,14 @@ Current generated evidence:
 - Runtime preflight status is `openusd_ready`: local OpenUSD/usdchecker and Docker are present, but local NVIDIA GPU, Omniverse/ovrtx/Kit viewer, Content Agents auth/endpoints, and NVIDIA Container Toolkit gates are not ready on this Mac.
 - Therefore RTX rendering and full SimReady validation remain external NVIDIA GPU/runtime gates.
 
+Remote GPU evidence captured on 2026-06-12:
+
+- [`docs/evidence/nvidia-train1-runtime-preflight-2026-06-12.md`](evidence/nvidia-train1-runtime-preflight-2026-06-12.md)
+- [`docs/evidence/nvidia-train1-runtime-preflight-2026-06-12.json`](evidence/nvidia-train1-runtime-preflight-2026-06-12.json)
+- [`docs/evidence/nvidia-train1-package-validation-2026-06-12.md`](evidence/nvidia-train1-package-validation-2026-06-12.md)
+
+On `train1` (`gpu1`, 8 × RTX 3090), GPU/driver, Docker, NVIDIA Container Toolkit, OpenUSD Python runtime, and `npm run nvidia:package` self-validation passed. Remaining remote blockers are explicit: no `ovrtx`/Omniverse Kit viewer, no ovstream/WebRTC endpoint, and no NVIDIA/NGC/NVCF or Content Agents credentials/endpoints.
+
 ## NVIDIA product mapping
 
 | NVIDIA product / stack | Role in this project | Current status |

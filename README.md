@@ -167,7 +167,7 @@ src/samples/sadang_317_6/omniverse/
   README.md
 ```
 
-The USD stage is authored as meter-based, Y-up OpenUSD with `MaterialBindingAPI`, `UsdPreviewSurface` materials, a USD `PhysicsScene`, conservative `PhysicsCollisionAPI` static colliders for terrain/buildings/roads/parcel geometry, official building meshes, road ribbons, parcel boundary, terrain reference, and flood-water reference layer. Full NVIDIA-only rendering still requires an Omniverse/RTX/ovrtx runtime; browser delivery must be ovstream/WebRTC video from the NVIDIA renderer, not Three.js/WebGL USD rendering. This Mac can author and `usdchecker`-validate the stage but cannot run RTX rendering or ovstream first-frame validation without an NVIDIA GPU.
+The USD stage is authored as meter-based, Y-up OpenUSD with `MaterialBindingAPI`, `UsdPreviewSurface` materials, a USD `PhysicsScene`, conservative `PhysicsCollisionAPI` static colliders for terrain/buildings/roads/parcel geometry, official building meshes, road ribbons, parcel boundary, terrain reference, and flood-water reference layer. Full NVIDIA-only rendering still requires an Omniverse/RTX/ovrtx runtime; browser delivery must be ovstream/WebRTC video from the NVIDIA renderer, not Three.js/WebGL USD rendering. This Mac can author and `usdchecker`-validate the stage but cannot run RTX rendering or ovstream first-frame validation without an NVIDIA GPU. A remote `train1` RTX 3090 host preflight is captured under [`docs/evidence/`](docs/evidence/) and proves GPU/Docker/NVIDIA Container Toolkit/OpenUSD Python/package-validation gates, while still blocking on ovrtx/ovstream/Content Agents setup.
 
 ## Data source policy
 
