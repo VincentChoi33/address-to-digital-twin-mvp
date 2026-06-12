@@ -6,7 +6,9 @@ Status: **blocked**
 - Passed: `False`
 - Upstream: `.physical-ai-skill-hub/upstreams/content-agents` @ `5be4f88`
 - Runtime dir: `.tmp/nvidia-content-agents`
+- Endpoint env: `.tmp/nvidia-content-agents/endpoints.env`
 - Secret handling: secret values are never printed; up mode writes an ignored 0600 runtime env file under .tmp
+- GPU assignment: `auto_multi_gpu_split`; material OVRTX=`0`, physics OVRTX=`1`
 
 ## Blockers
 
@@ -35,11 +37,15 @@ Status: **blocked**
 - `docker compose -p address-twin-material -f /home/choihy/.tmp/nvidia-content-agents/material/docker-compose.yml up -d --build`
 - `docker compose -p address-twin-physics -f /home/choihy/.tmp/nvidia-content-agents/physics/docker-compose.yml up -d --build`
 
+### status
+- `npm run nvidia:content-agents:deploy -- status`
+
 ### down
 - `docker compose -p address-twin-physics -f /home/choihy/.tmp/nvidia-content-agents/physics/docker-compose.yml down`
 - `docker compose -p address-twin-material -f /home/choihy/.tmp/nvidia-content-agents/material/docker-compose.yml down`
 
 ### run_assignment_after_ready
+- `source /home/choihy/.tmp/nvidia-content-agents/endpoints.env`
 - `export CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL=http://127.0.0.1:8100`
 - `export CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL=http://127.0.0.1:8200`
 - `npm run nvidia:content-agents`

@@ -78,6 +78,7 @@ npm run nvidia:content-agents:deploy-audit  # audits deploy prerequisites withou
 npm run nvidia:content-agents:deploy:plan   # writes the concrete NVIDIA-only Docker launch plan
 npm run nvidia:content-agents:check  # records blocked gate until Material/Physics endpoints or deployment auth exist
 # with NVIDIA_API_KEY on a GPU host: npm run nvidia:content-agents:deploy -- up
+# wait/check endpoints: npm run nvidia:content-agents:deploy:status -- --wait-seconds 900
 # with healthy Content Agents endpoints: npm run nvidia:content-agents
 usdchecker src/samples/sadang_317_6/omniverse/sadang_317_6.usda
 ```
@@ -101,8 +102,10 @@ usdchecker src/samples/sadang_317_6/omniverse/sadang_317_6.usda
 | `npm run nvidia:warp-flood` | run the NVIDIA Warp/CUDA shallow-water smoke and write JSON/PGM evidence; requires CUDA + `warp-lang` |
 | `npm run nvidia:warp-flood:check` | write a blocked report instead of faking success when CUDA/Warp is missing |
 | `npm run nvidia:content-agents:deploy-audit` | read-only audit for official NVIDIA Content Agents deployment prerequisites: GPU, Docker/Compose, NVIDIA Container Toolkit, upstream checkout, ports, and redacted provider env |
-| `npm run nvidia:content-agents:deploy:plan` | render the concrete NVIDIA-only Content Agents deployment plan without printing secrets; Material/Physics are remapped to `8100/8200` so both can run on one host |
+| `npm run nvidia:content-agents:deploy:plan` | render the concrete NVIDIA-only Content Agents deployment plan without printing secrets; Material/Physics are remapped to `8100/8200`, endpoint exports are written to `.tmp/nvidia-content-agents/endpoints.env`, and multi-GPU hosts auto-pin Material/Physics OVRTX sidecars to separate GPUs |
 | `npm run nvidia:content-agents:deploy -- up` | start official NVIDIA Material and Physics Agent Docker Compose stacks from the upstream checkout when `NVIDIA_API_KEY` is present on a GPU host |
+| `npm run nvidia:content-agents:deploy:status` | poll the deployed Material/Physics endpoints; add `-- --wait-seconds 900` for OVRTX cold starts |
+| `npm run nvidia:content-agents:deploy:down` | stop the repo-managed Content Agents Docker Compose projects |
 | `npm run nvidia:content-agents` | run NVIDIA Content Agents Material→Physics assignment when real Material/Physics endpoints are configured |
 | `npm run nvidia:content-agents:check` | write a blocked-gate report without faking Content Agents success when endpoints or deployment auth are missing |
 | `npm run prepare:deploy` | build `dist/` + copy samples for deployment |

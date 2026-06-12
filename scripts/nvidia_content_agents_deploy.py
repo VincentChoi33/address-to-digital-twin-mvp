@@ -26,6 +26,7 @@ from pathlib import Path
 import socket
 import stat
 import subprocess
+import time
 from typing import Any
 from urllib.request import urlopen
 
@@ -33,7 +34,6 @@ DEFAULT_PROJECT_ID = "sadang_317_6"
 DEFAULT_OUTPUT_JSON = "docs/evidence/nvidia-content-agents-deploy-plan-sadang-2026-06-13.json"
 DEFAULT_OUTPUT_MD = "docs/evidence/nvidia-content-agents-deploy-plan-sadang-2026-06-13.md"
 DEFAULT_CUDA_IMAGE = "nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04"
-PROVIDER_ENV = "NVIDIA_API_KEY"
 UPSTREAM_COMPOSE = {
     "material": "apps/material_agent_service/docker-compose.yml",
     "physics": "apps/physics_agent_service/docker-compose.yml",
@@ -58,6 +58,9 @@ def main() -> int:
     parser.add_argument("--material-ovrtx-port", type=int, default=DEFAULT_PORTS["material_ovrtx"])
     parser.add_argument("--physics-port", type=int, default=DEFAULT_PORTS["physics"])
     parser.add_argument("--physics-ovrtx-port", type=int, default=DEFAULT_PORTS["physics_ovrtx"])
+    parser.add_argument("--material-gpu", default=os.environ.get("CONTENT_AGENTS_MATERIAL_GPU"), help="GPU id(s) exposed to the Material OVRTX sidecar; auto-pins to GPU 0 on multi-GPU hosts.")
+    parser.add_argument("--physics-gpu", default=os.environ.get("CONTENT_AGENTS_PHYSICS_GPU"), help="GPU id(s) exposed to the Physics OVRTX sidecar; auto-pins to GPU 1 on multi-GPU hosts.")
+    parser.add_argument("--wait-seconds", type=int, default=0, help="After up/status, poll service health for this many seconds before writing the final status.")
     parser.add_argument("--cuda-image", default=DEFAULT_CUDA_IMAGE)
     parser.add_argument("--skip-docker-gpu-smoke", action="store_true")
     parser.add_argument("--skip-build", action="store_true", help="Use docker compose up -d without --build.")
@@ -73,21 +76,28 @@ def main() -> int:
         "physics": args.physics_port,
         "physics_ovrtx": args.physics_ovrtx_port,
     }
-    report = build_base_report(args.action, args.project_id, repo_root, upstream, runtime_dir, ports)
-    report["checks"] = collect_checks(args, upstream, ports)
+    checks = collect_checks(args, upstream, ports)
+    gpu_assignment = infer_gpu_assignment(args, checks["nvidia_smi"].get("stdout", ""))
+    report = build_base_report(args.action, args.project_id, repo_root, upstream, runtime_dir, ports, gpu_assignment)
+    report["checks"] = checks
     report["service_health"] = probe_services(ports)
-    report["commands"] = planned_commands(runtime_dir, args.skip_build)
+    report["commands"] = planned_commands(runtime_dir, ports, args.skip_build, args.wait_seconds)
 
     blockers = blockers_for(args.action, report, upstream, ports)
     report["blockers"] = blockers
 
     if args.action == "up" and not blockers:
-        render_runtime_files(upstream, runtime_dir, ports)
+        render_runtime_files(upstream, runtime_dir, ports, gpu_assignment)
         up_result = run_up(runtime_dir, args.skip_build)
         report["execution"] = up_result
-        report["service_health"] = probe_services(ports)
-        report["status"] = "running" if up_result["ok"] else "failed"
-        report["passed"] = bool(up_result["ok"])
+        wait_report = wait_for_services(ports, args.wait_seconds) if up_result["ok"] and args.wait_seconds > 0 else None
+        if wait_report:
+            report["wait"] = wait_report
+            report["service_health"] = wait_report["service_health"]
+        else:
+            report["service_health"] = probe_services(ports)
+        report["status"] = ("ready" if wait_report and wait_report["ready"] else "running") if up_result["ok"] else "failed"
+        report["passed"] = bool(up_result["ok"] and (not wait_report or wait_report["ready"]))
         if not up_result["ok"]:
             report["blockers"] = ["docker compose up failed; inspect execution.stderr_tail and container logs."]
     elif args.action == "down":
@@ -95,14 +105,20 @@ def main() -> int:
         report["status"] = "stopped" if report["execution"]["ok"] else "failed"
         report["passed"] = bool(report["execution"]["ok"])
     elif args.action == "status":
-        all_healthy = all(item.get("healthy") for item in report["service_health"].values())
+        wait_report = wait_for_services(ports, args.wait_seconds) if args.wait_seconds > 0 else None
+        if wait_report:
+            report["wait"] = wait_report
+            report["service_health"] = wait_report["service_health"]
+            report["blockers"] = blockers_for(args.action, report, upstream, ports)
+            blockers = report["blockers"]
+        all_healthy = required_services_ready(report["service_health"])
         report["status"] = "ready" if all_healthy else ("blocked" if blockers else "warming")
         report["passed"] = all_healthy
     else:
         report["status"] = "ready_to_deploy" if not blockers else "blocked"
         report["passed"] = not blockers
-        if not blockers:
-            render_runtime_files(upstream, runtime_dir, ports, write_secret=False)
+        if upstream:
+            render_runtime_files(upstream, runtime_dir, ports, gpu_assignment, write_secret=False)
 
     write_reports(report, Path(args.output_json), Path(args.output_md))
     print(json.dumps({"status": report["status"], "output_json": args.output_json, "output_md": args.output_md, "blockers": report["blockers"]}, indent=2))
@@ -116,6 +132,7 @@ def build_base_report(
     upstream: Path | None,
     runtime_dir: Path,
     ports: dict[str, int],
+    gpu_assignment: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "project_id": project_id,
@@ -125,6 +142,7 @@ def build_base_report(
         "passed": False,
         "secret_handling": "secret values are never printed; up mode writes an ignored 0600 runtime env file under .tmp",
         "runtime_dir": display_path(runtime_dir, repo_root),
+        "endpoint_env_path": display_path(runtime_dir / "endpoints.env", repo_root),
         "redacted_environment": {
             "NVIDIA_API_KEY": "present" if os.environ.get("NVIDIA_API_KEY") else "missing",
             "NVIDIA_API_KEY_FILE": "present" if os.environ.get("NVIDIA_API_KEY_FILE") else "missing",
@@ -132,6 +150,7 @@ def build_base_report(
         },
         "content_agents_upstream": upstream_report(upstream, repo_root),
         "ports": ports,
+        "gpu_assignment": gpu_assignment,
         "endpoints_after_up": {
             "material": f"http://127.0.0.1:{ports['material']}",
             "physics": f"http://127.0.0.1:{ports['physics']}",
@@ -150,6 +169,36 @@ def build_base_report(
             },
         },
     }
+
+
+def infer_gpu_assignment(args: argparse.Namespace, nvidia_smi_stdout: str) -> dict[str, Any]:
+    material = normalize_gpu_arg(args.material_gpu)
+    physics = normalize_gpu_arg(args.physics_gpu)
+    gpu_count = count_nvidia_smi_gpus(nvidia_smi_stdout)
+    policy = "explicit" if material or physics else "auto"
+    if material is None and physics is None and gpu_count >= 2:
+        material = "0"
+        physics = "1"
+        policy = "auto_multi_gpu_split"
+    elif material is None and physics is None:
+        policy = "single_gpu_or_unknown_no_pin"
+    return {
+        "policy": policy,
+        "detected_gpu_count": gpu_count,
+        "material_ovrtx_visible_devices": material,
+        "physics_ovrtx_visible_devices": physics,
+    }
+
+
+def normalize_gpu_arg(value: str | None) -> str | None:
+    if value is None:
+        return None
+    cleaned = value.strip()
+    return cleaned or None
+
+
+def count_nvidia_smi_gpus(stdout: str) -> int:
+    return sum(1 for line in stdout.splitlines() if line.strip().startswith("GPU "))
 
 
 def collect_checks(args: argparse.Namespace, upstream: Path | None, ports: dict[str, int]) -> dict[str, Any]:
@@ -174,6 +223,13 @@ def collect_checks(args: argparse.Namespace, upstream: Path | None, ports: dict[
 def blockers_for(action: str, report: dict[str, Any], upstream: Path | None, ports: dict[str, int]) -> list[str]:
     if action == "down":
         return []
+    if action == "status":
+        blockers: list[str] = []
+        for name in ("material", "physics"):
+            health = report["service_health"].get(name, {})
+            if not health.get("healthy"):
+                blockers.append(f"{name} endpoint is not healthy at http://127.0.0.1:{ports[name]}/health.")
+        return blockers
     checks = report["checks"]
     blockers: list[str] = []
     if not upstream:
@@ -197,7 +253,13 @@ def blockers_for(action: str, report: dict[str, Any], upstream: Path | None, por
     return blockers
 
 
-def render_runtime_files(upstream: Path | None, runtime_dir: Path, ports: dict[str, int], write_secret: bool = True) -> None:
+def render_runtime_files(
+    upstream: Path | None,
+    runtime_dir: Path,
+    ports: dict[str, int],
+    gpu_assignment: dict[str, Any],
+    write_secret: bool = True,
+) -> None:
     if not upstream:
         return
     material_dir = runtime_dir / "material"
@@ -205,6 +267,7 @@ def render_runtime_files(upstream: Path | None, runtime_dir: Path, ports: dict[s
     material_dir.mkdir(parents=True, exist_ok=True)
     physics_dir.mkdir(parents=True, exist_ok=True)
     env_file = runtime_dir / "nvidia-runtime.env"
+    write_endpoint_env(runtime_dir / "endpoints.env", ports)
     if write_secret:
         write_runtime_env(env_file)
     render_compose(
@@ -218,6 +281,7 @@ def render_runtime_files(upstream: Path | None, runtime_dir: Path, ports: dict[s
             "container_name: material-agent-service": "container_name: address-twin-material-agent-service",
             "container_name: ovrtx-rendering-api": "container_name: address-twin-material-ovrtx-rendering-api",
         },
+        gpu_assignment.get("material_ovrtx_visible_devices"),
     )
     render_compose(
         upstream / UPSTREAM_COMPOSE["physics"],
@@ -230,6 +294,7 @@ def render_runtime_files(upstream: Path | None, runtime_dir: Path, ports: dict[s
             "container_name: physics-agent-service": "container_name: address-twin-physics-agent-service",
             "container_name: physics-ovrtx-rendering-api": "container_name: address-twin-physics-ovrtx-rendering-api",
         },
+        gpu_assignment.get("physics_ovrtx_visible_devices"),
     )
 
 
@@ -253,12 +318,30 @@ def write_runtime_env(path: Path) -> None:
     path.chmod(stat.S_IRUSR | stat.S_IWUSR)
 
 
-def render_compose(source: Path, dest: Path, upstream: Path, env_file: Path, replacements: dict[str, str]) -> None:
+def write_endpoint_env(path: Path, ports: dict[str, int]) -> None:
+    lines = [
+        "# Generated by scripts/nvidia_content_agents_deploy.py; safe to source.",
+        f"CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL=http://127.0.0.1:{ports['material']}",
+        f"CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL=http://127.0.0.1:{ports['physics']}",
+        f"CONTENT_AGENTS_OVRTX_BASE_URL=http://127.0.0.1:{ports['material_ovrtx']}",
+        f"RENDER_ENDPOINT=http://127.0.0.1:{ports['material_ovrtx']}",
+        "",
+    ]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def render_compose(source: Path, dest: Path, upstream: Path, env_file: Path, replacements: dict[str, str], gpu_device: str | None) -> None:
     text = source.read_text(encoding="utf-8")
     text = text.replace("context: ../..", f"context: {upstream.as_posix()}")
     text = text.replace("- path: ../../.env", f"- path: {env_file.as_posix()}")
     for old, new in replacements.items():
         text = text.replace(old, new)
+    if gpu_device:
+        text = text.replace(
+            "- OVRTX_RENDER_MODE=${OVRTX_RENDER_MODE:-pt}",
+            f"- OVRTX_RENDER_MODE=${{OVRTX_RENDER_MODE:-pt}}\n      - NVIDIA_VISIBLE_DEVICES={gpu_device}",
+        )
     dest.write_text(text, encoding="utf-8")
 
 
@@ -284,20 +367,25 @@ def run_down(runtime_dir: Path) -> dict[str, Any]:
     return {"ok": all(result["ok"] for result in results), "commands": [redact_command(command) for command in commands], "results": results}
 
 
-def planned_commands(runtime_dir: Path, skip_build: bool) -> dict[str, list[str]]:
+def planned_commands(runtime_dir: Path, ports: dict[str, int], skip_build: bool, wait_seconds: int) -> dict[str, list[str]]:
     up_suffix = "up -d" if skip_build else "up -d --build"
+    wait_arg = f" --wait-seconds {wait_seconds}" if wait_seconds > 0 else ""
     return {
         "up": [
             f"docker compose -p address-twin-material -f {runtime_dir / 'material/docker-compose.yml'} {up_suffix}",
             f"docker compose -p address-twin-physics -f {runtime_dir / 'physics/docker-compose.yml'} {up_suffix}",
+        ],
+        "status": [
+            f"npm run nvidia:content-agents:deploy -- status{wait_arg}",
         ],
         "down": [
             f"docker compose -p address-twin-physics -f {runtime_dir / 'physics/docker-compose.yml'} down",
             f"docker compose -p address-twin-material -f {runtime_dir / 'material/docker-compose.yml'} down",
         ],
         "run_assignment_after_ready": [
-            "export CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL=http://127.0.0.1:8100",
-            "export CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL=http://127.0.0.1:8200",
+            f"source {runtime_dir / 'endpoints.env'}",
+            f"export CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL=http://127.0.0.1:{ports['material']}",
+            f"export CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL=http://127.0.0.1:{ports['physics']}",
             "npm run nvidia:content-agents",
             "npm run nvidia:simready",
         ],
@@ -306,6 +394,27 @@ def planned_commands(runtime_dir: Path, skip_build: bool) -> dict[str, list[str]
 
 def probe_services(ports: dict[str, int]) -> dict[str, dict[str, Any]]:
     return {name: probe_health(name, port) for name, port in ports.items()}
+
+
+def wait_for_services(ports: dict[str, int], wait_seconds: int) -> dict[str, Any]:
+    deadline = time.monotonic() + max(0, wait_seconds)
+    attempts = 0
+    health = probe_services(ports)
+    while not required_services_ready(health) and time.monotonic() < deadline:
+        attempts += 1
+        time.sleep(5)
+        health = probe_services(ports)
+    return {
+        "ready": required_services_ready(health),
+        "attempts": attempts + 1,
+        "wait_seconds": wait_seconds,
+        "service_health": health,
+    }
+
+
+def required_services_ready(health: dict[str, dict[str, Any]]) -> bool:
+    required = ("material", "physics")
+    return all(health.get(name, {}).get("healthy") for name in required)
 
 
 def probe_health(name: str, port: int) -> dict[str, Any]:
@@ -431,7 +540,9 @@ def render_markdown(report: dict[str, Any]) -> str:
         f"- Passed: `{report['passed']}`",
         f"- Upstream: `{report['content_agents_upstream'].get('path') or 'none'}` @ `{report['content_agents_upstream'].get('commit') or 'none'}`",
         f"- Runtime dir: `{report['runtime_dir']}`",
+        f"- Endpoint env: `{report['endpoint_env_path']}`",
         f"- Secret handling: {report['secret_handling']}",
+        f"- GPU assignment: `{report['gpu_assignment'].get('policy')}`; material OVRTX=`{report['gpu_assignment'].get('material_ovrtx_visible_devices') or 'not pinned'}`, physics OVRTX=`{report['gpu_assignment'].get('physics_ovrtx_visible_devices') or 'not pinned'}`",
         "",
         "## Blockers",
         "",

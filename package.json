@@ -25,6 +25,8 @@
     "nvidia:content-agents:deploy-audit": "python3 scripts/nvidia_content_agents_deploy_audit.py --allow-blocked",
     "nvidia:content-agents:deploy": "python3 scripts/nvidia_content_agents_deploy.py",
     "nvidia:content-agents:deploy:plan": "python3 scripts/nvidia_content_agents_deploy.py plan --allow-blocked",
+    "nvidia:content-agents:deploy:status": "python3 scripts/nvidia_content_agents_deploy.py status --allow-blocked",
+    "nvidia:content-agents:deploy:down": "python3 scripts/nvidia_content_agents_deploy.py down",
     "nvidia:content-agents": "python3 scripts/nvidia_content_agents.py",
     "nvidia:content-agents:check": "python3 scripts/nvidia_content_agents.py --allow-blocked"
   },

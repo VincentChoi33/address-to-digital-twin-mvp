@@ -35,7 +35,7 @@ No local NVIDIA GPU was detected. This Mac can author OpenUSD deterministically,
 2. Expose browser delivery through ovstream/WebRTC only; browser WebGL/Three.js is not NVIDIA-only acceptance evidence.
 3. Run `nvidia_warp_flood_smoke.py` on a CUDA GPU host to create NVIDIA Warp flood simulation evidence for the water layer.
 4. Run Omniverse Asset Validator and SimReady validation.
-5. Run `npm run nvidia:content-agents:deploy:plan`, then `npm run nvidia:content-agents:deploy -- up` on a GPU/Docker host with `NVIDIA_API_KEY` if Material/Physics endpoints are not already running.
+5. Run `npm run nvidia:content-agents:deploy:plan`, then `npm run nvidia:content-agents:deploy -- up` on a GPU/Docker host with `NVIDIA_API_KEY` if Material/Physics endpoints are not already running; use `npm run nvidia:content-agents:deploy:status -- --wait-seconds 900` and `source .tmp/nvidia-content-agents/endpoints.env` before assignment.
 6. Run Omniverse Content Agents for material and physics assignment, then rerun SimReady validation.
 7. Use Omniverse USD Performance Tuning for large scene profiling and optimization.
 8. Add cuOpt only for operational routing/dispatch optimization; add NuRec only when camera/LiDAR captures exist.

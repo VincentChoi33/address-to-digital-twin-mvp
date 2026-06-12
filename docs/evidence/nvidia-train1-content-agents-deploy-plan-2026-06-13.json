@@ -1,11 +1,12 @@
 {
   "project_id": "sadang_317_6",
-  "generated_at": "2026-06-12T19:34:52.728909Z",
+  "generated_at": "2026-06-12T19:44:34.914429Z",
   "action": "plan",
   "status": "blocked",
   "passed": false,
   "secret_handling": "secret values are never printed; up mode writes an ignored 0600 runtime env file under .tmp",
   "runtime_dir": ".tmp/nvidia-content-agents",
+  "endpoint_env_path": ".tmp/nvidia-content-agents/endpoints.env",
   "redacted_environment": {
     "NVIDIA_API_KEY": "missing",
     "NVIDIA_API_KEY_FILE": "missing",
@@ -26,6 +27,12 @@
     "material_ovrtx": 8101,
     "physics": 8200,
     "physics_ovrtx": 8201
+  },
+  "gpu_assignment": {
+    "policy": "auto_multi_gpu_split",
+    "detected_gpu_count": 8,
+    "material_ovrtx_visible_devices": "0",
+    "physics_ovrtx_visible_devices": "1"
   },
   "endpoints_after_up": {
     "material": "http://127.0.0.1:8100",
@@ -159,11 +166,15 @@
       "docker compose -p address-twin-material -f /home/choihy/.tmp/nvidia-content-agents/material/docker-compose.yml up -d --build",
       "docker compose -p address-twin-physics -f /home/choihy/.tmp/nvidia-content-agents/physics/docker-compose.yml up -d --build"
     ],
+    "status": [
+      "npm run nvidia:content-agents:deploy -- status"
+    ],
     "down": [
       "docker compose -p address-twin-physics -f /home/choihy/.tmp/nvidia-content-agents/physics/docker-compose.yml down",
       "docker compose -p address-twin-material -f /home/choihy/.tmp/nvidia-content-agents/material/docker-compose.yml down"
     ],
     "run_assignment_after_ready": [
+      "source /home/choihy/.tmp/nvidia-content-agents/endpoints.env",
       "export CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL=http://127.0.0.1:8100",
       "export CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL=http://127.0.0.1:8200",
       "npm run nvidia:content-agents",

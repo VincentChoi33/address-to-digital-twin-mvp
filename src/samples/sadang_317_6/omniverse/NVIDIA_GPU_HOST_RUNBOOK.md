@@ -50,6 +50,7 @@ npm ci
 npm run nvidia:preflight
 npm run nvidia:content-agents:deploy-audit
 npm run nvidia:content-agents:deploy:plan
+npm run nvidia:content-agents:deploy:status
 npm run nvidia:content-agents:check
 npm run nvidia:simready
 ```
@@ -68,8 +69,8 @@ Acceptance threshold: `nvidia_runtime_preflight.json` should move from `openusd_
 
 This package includes an authored SimReady candidate and a self-contained validator asset source. Before saying “Content-Agents-assisted SimReady”:
 
-1. If endpoints already exist, export `CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL` and `CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL`. Otherwise set `NVIDIA_API_KEY` or `NVIDIA_API_KEY_FILE` on the GPU host and run `npm run nvidia:content-agents:deploy -- up`. The repo deploy bridge uses the official NVIDIA upstream Docker Compose files and remaps Material/Physics to `8100/8200` with OVRTX sidecars on `8101/8201`.
-2. Export `CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL=http://127.0.0.1:8100` and `CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL=http://127.0.0.1:8200`, then run `npm run nvidia:content-agents`.
+1. If endpoints already exist, export `CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL` and `CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL`. Otherwise set `NVIDIA_API_KEY` or `NVIDIA_API_KEY_FILE` on the GPU host and run `npm run nvidia:content-agents:deploy -- up`. The repo deploy bridge uses the official NVIDIA upstream Docker Compose files, remaps Material/Physics to `8100/8200` with OVRTX sidecars on `8101/8201`, auto-pins the sidecars to separate GPUs when multiple GPUs are visible, and writes `.tmp/nvidia-content-agents/endpoints.env`.
+2. Run `npm run nvidia:content-agents:deploy:status -- --wait-seconds 900`, then `source .tmp/nvidia-content-agents/endpoints.env` and run `npm run nvidia:content-agents`.
 3. Run `npm run nvidia:simready` or Omniverse Asset Validator / SimReady validation against `simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda`.
 4. Copy validator reports into this package and update `handoff_manifest.json` checksums.
 5. Run USD Performance Tuning if the scene is scaled beyond this MVP sample.

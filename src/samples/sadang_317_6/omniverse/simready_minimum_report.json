@@ -59,7 +59,7 @@
   "next_runtime_commands": [
     "Open the .usda in NVIDIA Omniverse or an ovrtx-based USD viewer.",
     "Run Omniverse Asset Validator / SimReady validation on an NVIDIA runtime host.",
-    "Run npm run nvidia:content-agents:deploy:plan, then run npm run nvidia:content-agents:deploy -- up on a GPU host with NVIDIA_API_KEY if Material/Physics endpoints are not already running.",
+    "Run npm run nvidia:content-agents:deploy:plan, then run npm run nvidia:content-agents:deploy -- up on a GPU host with NVIDIA_API_KEY if Material/Physics endpoints are not already running; use deploy:status -- --wait-seconds 900 and source .tmp/nvidia-content-agents/endpoints.env before assignment.",
     "Run npm run nvidia:content-agents after providing or deploying Content Agents Material/Physics endpoints.",
     "Run npm run nvidia:simready again after Content Agents output is produced.",
     "Run USD Performance Tuning baseline/after profiling once the stage grows beyond this MVP sample."

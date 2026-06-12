@@ -109,6 +109,11 @@ jobs:
             --output-md "$RUNNER_TEMP/nvidia-content-agents-deploy-plan.md"
           grep -Eq '"status": "(blocked|ready_to_deploy)"' "$RUNNER_TEMP/nvidia-content-agents-deploy-plan.json"
           grep -q 'NVIDIA_API_KEY or NVIDIA_API_KEY_FILE is required' "$RUNNER_TEMP/nvidia-content-agents-deploy-plan.json"
+          npm run nvidia:content-agents:deploy:status -- \
+            --output-json "$RUNNER_TEMP/nvidia-content-agents-deploy-status.json" \
+            --output-md "$RUNNER_TEMP/nvidia-content-agents-deploy-status.md"
+          grep -Eq '"status": "(blocked|ready|warming)"' "$RUNNER_TEMP/nvidia-content-agents-deploy-status.json"
+          grep -q 'material endpoint is not healthy' "$RUNNER_TEMP/nvidia-content-agents-deploy-status.json"
           npm run nvidia:content-agents:check -- \
             --output-json "$RUNNER_TEMP/nvidia-content-agents.json" \
             --output-md "$RUNNER_TEMP/nvidia-content-agents.md"
