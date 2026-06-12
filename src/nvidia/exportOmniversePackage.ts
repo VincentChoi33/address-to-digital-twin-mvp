@@ -1,4 +1,4 @@
-import { copyFile, mkdir, writeFile } from "node:fs/promises";
+import { cp, copyFile, mkdir, rm, writeFile } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import sadangManifest from "../samples/sadang_317_6/source_manifest.json";
@@ -44,6 +44,7 @@ async function main(): Promise<void> {
   await writeFile(compositePath, composite.usda, "utf8");
   await copyFile(join(process.cwd(), "scripts/nvidia_ovrtx_first_frame.py"), join(outDir, "nvidia_ovrtx_first_frame.py"));
   await copyFile(join(process.cwd(), "scripts/nvidia_ovstream_smoke_server.py"), join(outDir, "nvidia_ovstream_smoke_server.py"));
+  await copyOvstreamBrowserClient(outDir);
 
   const checkerResult = runtimeProbe.usdChecker === "available" ? spawnSync("usdchecker", [usdPath], { encoding: "utf8" }) : null;
   const checkerStatus = checkerResult ? (checkerResult.status === 0 ? "passed" : "failed") : "not_run";
@@ -89,6 +90,19 @@ async function main(): Promise<void> {
   await writeFile(join(outDir, "README.md"), exported.readme, "utf8");
 
   console.log(JSON.stringify({ outDir, ...exported.summary }, null, 2));
+}
+
+async function copyOvstreamBrowserClient(outDir: string): Promise<void> {
+  const sourceDir = join(process.cwd(), "nvidia-viewer");
+  const targetDir = join(outDir, "ovstream_browser_client");
+  await rm(targetDir, { recursive: true, force: true });
+  await cp(sourceDir, targetDir, {
+    recursive: true,
+    force: true,
+    filter(source) {
+      return !source.includes("/node_modules") && !source.endsWith("/dist") && !source.includes("/dist/");
+    }
+  });
 }
 
 main().catch((error) => {

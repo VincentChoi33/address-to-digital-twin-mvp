@@ -187,16 +187,25 @@ def main() -> int:
         report["ovstream"]["started"] = True
 
         frame = ovstream.VideoFrame.from_cuda_array(stream_bgra)
-        try:
-            stream_server.stream_video(frame)
-            report["ovstream"]["stream_video_first_frame"] = "submitted"
-        except Exception as exc:
-            report["ovstream"]["stream_video_first_frame"] = "transient_without_client"
-            report["ovstream"]["stream_video_error"] = repr(exc)
-
+        submitted_frames = 0
+        transient_frame_errors = 0
         deadline = time.time() + max(0.0, float(args.hold_seconds))
         while time.time() < deadline:
-            time.sleep(0.05)
+            try:
+                stream_server.stream_video(frame)
+                submitted_frames += 1
+            except Exception as exc:
+                transient_frame_errors += 1
+                report["ovstream"]["stream_video_last_error"] = repr(exc)
+            time.sleep(1.0 / max(1, int(args.target_fps)))
+        report["ovstream"]["stream_video_submitted_frames"] = submitted_frames
+        report["ovstream"]["stream_video_transient_errors"] = transient_frame_errors
+        if submitted_frames > 0:
+            report["ovstream"]["stream_video_status"] = "submitted"
+        elif transient_frame_errors > 0:
+            report["ovstream"]["stream_video_status"] = "transient_without_client"
+        else:
+            report["ovstream"]["stream_video_status"] = "not_attempted"
 
         report["status"] = "passed"
         report["reason"] = "ovrtx LdrColor converted to persistent BGRA CUDA buffer; ovstream WebRTC server started; /healthz returned 200 only after the converted frame."

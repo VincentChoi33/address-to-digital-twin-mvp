@@ -7,7 +7,7 @@ Type a Korean address, get a real-data 3D digital twin — actual DEM terrain, a
 
 **One flow, end to end:** `주소 → Juso/VWorld 지오코딩 → WFS 실건물·도로 + 실DEM + 위성 → GPU 수문 격자 베이크 → virtual-pipe-model 침수 해석`. Any address works — keyless/offline runs degrade to deterministic preview twins, so the loop never breaks.
 
-**NVIDIA/Omniverse track:** the app now exports each twin as OpenUSD (`*.usda`) with an NVIDIA stack manifest, SimReady minimum report, USD PhysicsScene/static-collider baseline, ovrtx viewer wrapper, first-frame smoke script, ovrtx→ovstream WebRTC readiness smoke server, runtime preflight, GPU-host handoff manifest, and an ovstream/WebRTC viewer contract that forbids browser-side USD rendering as final NVIDIA evidence. The committed Sadang sample includes a generated Omniverse package under `src/samples/sadang_317_6/omniverse/`; local `usdchecker` validation passes, and a remote `train1` RTX 3090 host produced a real NVIDIA ovrtx LdrColor first frame.
+**NVIDIA/Omniverse track:** the app now exports each twin as OpenUSD (`*.usda`) with an NVIDIA stack manifest, SimReady minimum report, USD PhysicsScene/static-collider baseline, ovrtx viewer wrapper, first-frame smoke script, ovrtx→ovstream WebRTC readiness smoke server, NVIDIA `@nvidia/ov-web-rtc` Direct browser client, runtime preflight, GPU-host handoff manifest, and an ovstream/WebRTC viewer contract that forbids browser-side USD rendering as final NVIDIA evidence. The committed Sadang sample includes a generated Omniverse package under `src/samples/sadang_317_6/omniverse/`; local `usdchecker` validation passes, and a remote `train1` RTX 3090 host produced a real NVIDIA ovrtx LdrColor first frame, ovrtx→ovstream WebRTC server readiness, and browser `@nvidia/ov-web-rtc` Direct video first-frame evidence.
 
 ![Web app](docs/images/app-screenshot.png)
 
@@ -25,7 +25,7 @@ Type a Korean address, get a real-data 3D digital twin — actual DEM terrain, a
 - Geocodes through a graceful fallback chain: Juso → VWorld → Nominatim → deterministic offline coordinates (Node CLI), or straight to the offline path in the browser.
 - Generates target massing, surrounding context (OSM/Overpass best-effort, seeded procedural fallback), parcel boundary, and road hints.
 - Emits core artifacts: `twin.json`, `source_manifest.json` (per-layer source + confidence), human-readable `qa_report.html`, standalone `preview.html`.
-- Emits NVIDIA artifacts: `omniverse.usda`, `nvidia_stack_manifest.json`, and `simready_minimum_report.json`. The committed sample additionally packages an ovrtx viewer/session wrapper and GPU-host first-frame smoke script.
+- Emits NVIDIA artifacts: `omniverse.usda`, `nvidia_stack_manifest.json`, and `simready_minimum_report.json`. The committed sample additionally packages an ovrtx viewer/session wrapper, GPU-host first-frame smoke script, ovstream smoke server, and NVIDIA `@nvidia/ov-web-rtc` browser client with a first-frame probe.
 
 **2. GPU flood solver** (`src/water/`)
 
@@ -102,6 +102,7 @@ src/
   render/            # basemap mosaic loader, Web Audio synth
   types/twin.ts      # shared twin/manifest types
   samples/           # committed Sadang sample artifacts
+nvidia-viewer/        # standalone NVIDIA ov-web-rtc Direct browser client
 deploy/
   server.py          # static + /api/agent (VWorld WFS + Ollama/Gemma) + tile proxy
 ```
@@ -158,6 +159,7 @@ src/samples/sadang_317_6/omniverse/
   sadang_317_6.ovrtx_viewer.usda
   nvidia_ovrtx_first_frame.py
   nvidia_ovstream_smoke_server.py
+  ovstream_browser_client/      # includes scripts/probe-first-frame.mjs
   nvidia_stack_manifest.json
   nvidia_runtime_preflight.json
   nvidia_runtime_preflight.md
@@ -170,7 +172,7 @@ src/samples/sadang_317_6/omniverse/
   README.md
 ```
 
-The USD stage is authored as meter-based, Y-up OpenUSD with `MaterialBindingAPI`, `UsdPreviewSurface` materials, a USD `PhysicsScene`, conservative `PhysicsCollisionAPI` static colliders for terrain/buildings/roads/parcel geometry, official building meshes, road ribbons, parcel boundary, terrain reference, and flood-water reference layer. The ovrtx wrapper sublayers that source stage and adds NVIDIA viewer-owned Camera → RenderProduct → RenderVar → RenderSettings wiring. Remote `train1` evidence under [`docs/evidence/`](docs/evidence/) proves GPU/Docker/NVIDIA Container Toolkit/OpenUSD Python/Python ovrtx/Python ovstream/package-validation gates, a real 1280×720 ovrtx LdrColor first frame, and an ovrtx→ovstream server-readiness smoke (`/healthz` 503→200 after BGRA CUDA conversion). The next gate is browser video first-frame evidence, then Content Agents/SimReady credentials/endpoints.
+The USD stage is authored as meter-based, Y-up OpenUSD with `MaterialBindingAPI`, `UsdPreviewSurface` materials, a USD `PhysicsScene`, conservative `PhysicsCollisionAPI` static colliders for terrain/buildings/roads/parcel geometry, official building meshes, road ribbons, parcel boundary, terrain reference, and flood-water reference layer. The ovrtx wrapper sublayers that source stage and adds NVIDIA viewer-owned Camera → RenderProduct → RenderVar → RenderSettings wiring. Remote `train1` evidence under [`docs/evidence/`](docs/evidence/) proves GPU/Docker/NVIDIA Container Toolkit/OpenUSD Python/Python ovrtx/Python ovstream/package-validation gates, a real 1280×720 ovrtx LdrColor first frame, ovrtx→ovstream server readiness (`/healthz` 503→200 after BGRA CUDA conversion), and an actual browser `@nvidia/ov-web-rtc` Direct video first frame (`videoWidth=1280`, `videoHeight=720`, `readyState=4`). The remaining NVIDIA-only gates are Content Agents/SimReady credentials/endpoints and full Omniverse validator reports.
 
 ## Data source policy
 

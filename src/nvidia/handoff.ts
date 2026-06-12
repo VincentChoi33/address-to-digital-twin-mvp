@@ -74,6 +74,14 @@ function handoffFileSpecs(projectId: string): FileSpec[] {
     { path: `${projectId}.ovrtx_viewer.usda`, role: "ovrtx viewer/session wrapper with Camera, RenderProduct, RenderVar, and RenderSettings", required: true },
     { path: "nvidia_ovrtx_first_frame.py", role: "NVIDIA ovrtx first-frame smoke script for GPU-host evidence capture", required: true },
     { path: "nvidia_ovstream_smoke_server.py", role: "NVIDIA ovrtx-to-ovstream WebRTC readiness smoke server", required: true },
+    { path: "ovstream_browser_client/package.json", role: "NVIDIA ov-web-rtc Direct browser client manifest", required: true },
+    { path: "ovstream_browser_client/package-lock.json", role: "NVIDIA ov-web-rtc Direct browser client lockfile", required: true },
+    { path: "ovstream_browser_client/.npmrc", role: "NVIDIA npm registry scope for ov-web-rtc client", required: true },
+    { path: "ovstream_browser_client/index.html", role: "Browser HTML video surface for ovstream WebRTC", required: true },
+    { path: "ovstream_browser_client/src/main.ts", role: "NVIDIA ov-web-rtc Direct connection logic", required: true },
+    { path: "ovstream_browser_client/src/style.css", role: "Video-only browser viewer layout", required: true },
+    { path: "ovstream_browser_client/scripts/probe-first-frame.mjs", role: "Playwright browser video first-frame validation probe", required: true },
+    { path: "ovstream_browser_client/README.md", role: "Browser client run and validation instructions", required: true },
     { path: "nvidia_stack_manifest.json", role: "NVIDIA product mapping and current local gate status", required: true },
     { path: "nvidia_runtime_preflight.json", role: "machine-readable runtime gate report", required: true },
     { path: "nvidia_runtime_preflight.md", role: "human-readable runtime gate report", required: true },
@@ -142,6 +150,8 @@ export function buildHandoffManifest(input: {
       `usdchecker ${input.twin.project_id}.usda`,
       `python3 nvidia_ovrtx_first_frame.py --stage ${input.twin.project_id}.ovrtx_viewer.usda --output-json ovrtx_first_frame_report.json --output-ppm ovrtx_first_frame.ppm`,
       `python3 nvidia_ovstream_smoke_server.py --stage ${input.twin.project_id}.ovrtx_viewer.usda --output-json ovstream_smoke_report.json`,
+      "cd ovstream_browser_client && npm install && npm run build && npm run dev -- --port 5191",
+      "cd ovstream_browser_client && npm run probe:first-frame -- --url http://127.0.0.1:5191/?server=127.0.0.1\\&signalingport=49100 --output-json browser_first_frame_report.json --screenshot browser_first_frame.png",
       "npm run nvidia:preflight",
       "Open the stage in NVIDIA Omniverse / Kit / ovrtx and capture render evidence.",
       "Expose an ovstream/WebRTC browser viewer and attach first-frame stream evidence.",
@@ -173,6 +183,7 @@ This handoff is for the NVIDIA-only runtime path. The local package can author a
 - ovrtx viewer wrapper: \`${input.twin.project_id}.ovrtx_viewer.usda\`
 - ovrtx first-frame smoke: \`nvidia_ovrtx_first_frame.py\`
 - ovstream readiness smoke: \`nvidia_ovstream_smoke_server.py\`
+- ovstream browser client: \`ovstream_browser_client/\`
 - Local authoring evidence: \`usdchecker_report.txt\`
 - SimReady baseline: \`simready_minimum_report.json\` includes USD units/axis/material binding plus conservative static PhysicsCollisionAPI semantics.
 - Browser viewer replacement: \`ovstream_viewer_contract.json\` + \`OVSTREAM_VIEWER_RUNBOOK.md\` define the NVIDIA-only WebRTC video-stream path.
@@ -197,6 +208,9 @@ usdchecker ${input.twin.project_id}.usda
 export OVRTX_SKIP_USD_CHECK=1
 python3 nvidia_ovrtx_first_frame.py --stage ${input.twin.project_id}.ovrtx_viewer.usda --output-json ovrtx_first_frame_report.json --output-ppm ovrtx_first_frame.ppm
 python3 nvidia_ovstream_smoke_server.py --stage ${input.twin.project_id}.ovrtx_viewer.usda --output-json ovstream_smoke_report.json
+cd ovstream_browser_client
+npm install
+npm run build
 \`\`\`
 
 If running from the full repository checkout, also run:

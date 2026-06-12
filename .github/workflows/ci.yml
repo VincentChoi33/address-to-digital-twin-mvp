@@ -38,6 +38,9 @@ jobs:
           test -s src/samples/sadang_317_6/omniverse/sadang_317_6.ovrtx_viewer.usda
           test -s src/samples/sadang_317_6/omniverse/nvidia_ovrtx_first_frame.py
           test -s src/samples/sadang_317_6/omniverse/nvidia_ovstream_smoke_server.py
+          test -s src/samples/sadang_317_6/omniverse/ovstream_browser_client/package.json
+          test -s src/samples/sadang_317_6/omniverse/ovstream_browser_client/src/main.ts
+          test -s src/samples/sadang_317_6/omniverse/ovstream_browser_client/scripts/probe-first-frame.mjs
           test -s src/samples/sadang_317_6/omniverse/nvidia_runtime_preflight.json
           test -s src/samples/sadang_317_6/omniverse/handoff_manifest.json
           test -s src/samples/sadang_317_6/omniverse/NVIDIA_GPU_HOST_RUNBOOK.md
@@ -51,6 +54,10 @@ jobs:
           grep -q 'RenderVar "LdrColor"' src/samples/sadang_317_6/omniverse/sadang_317_6.ovrtx_viewer.usda
           grep -q 'RendererConfig' src/samples/sadang_317_6/omniverse/nvidia_ovrtx_first_frame.py
           grep -q 'VideoFrame.from_cuda_array' src/samples/sadang_317_6/omniverse/nvidia_ovstream_smoke_server.py
+          grep -q '@nvidia/ov-web-rtc' src/samples/sadang_317_6/omniverse/ovstream_browser_client/package.json
+          grep -q 'probe:first-frame' src/samples/sadang_317_6/omniverse/ovstream_browser_client/package.json
+          grep -q 'StreamType.DIRECT' src/samples/sadang_317_6/omniverse/ovstream_browser_client/src/main.ts
+          grep -q 'document.body.dataset.firstVideoFrame' src/samples/sadang_317_6/omniverse/ovstream_browser_client/scripts/probe-first-frame.mjs
           grep -q 'openusd_authoring_ready' src/samples/sadang_317_6/omniverse/nvidia_runtime_preflight.json
           grep -q 'OMNIVERSE.OVSTREAM.001' src/samples/sadang_317_6/omniverse/nvidia_runtime_preflight.json
           grep -q 'ready_for_gpu_host' src/samples/sadang_317_6/omniverse/handoff_manifest.json

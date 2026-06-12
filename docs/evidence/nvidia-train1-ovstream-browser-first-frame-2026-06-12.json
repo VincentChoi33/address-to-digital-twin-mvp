@@ -1,0 +1,96 @@
+{
+  "status": "passed",
+  "url": "http://127.0.0.1:5191/?server=127.0.0.1&signalingport=49100",
+  "started_at_unix": 1781267969.827,
+  "browser": "playwright-chromium",
+  "checks": [
+    {
+      "type": "console",
+      "level": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "console",
+      "level": "debug",
+      "text": "[vite] connected."
+    },
+    {
+      "type": "console",
+      "level": "log",
+      "text": "{\"type\":\"info\",\"title\":\"inProgress\",\"status\":100,\"detail\":\"Starting stream.\",\"request\":\"start\",\"sessionId\":null,\"requestId\":null,\"timestamp\":\"2026-06-12T12:39:31.017Z\",\"browser\":\"Chromium\",\"browserVersion\":\"148.0.7778.96\",\"os\":\"Android\",\"osVersion\":\"0\",\"platformType\":\"desktop\"}"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "WebSocket connection to 'ws://127.0.0.1:49100/sign_in?peer_id=peer-9100626970&version=2&peer_role=1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "WebSocket connection to 'ws://127.0.0.1:49100/sign_in?peer_id=peer-8984561250&version=2&peer_role=1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "WebSocket connection to 'ws://127.0.0.1:49100/sign_in?peer_id=peer-4914093620&version=2&peer_role=1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "WebSocket connection to 'ws://127.0.0.1:49100/sign_in?peer_id=peer-5979043260&version=2&peer_role=1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "type": "console",
+      "level": "warning",
+      "text": "{\"type\":\"warning\",\"title\":\"warning\",\"status\":100,\"detail\":\"1 of 6 connection attempts have failed. Retrying...\",\"request\":\"start\",\"sessionId\":null,\"requestId\":null,\"timestamp\":\"2026-06-12T12:39:31.060Z\",\"browser\":\"Chromium\",\"browserVersion\":\"148.0.7778.96\",\"os\":\"Android\",\"osVersion\":\"0\",\"platformType\":\"desktop\"}"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "WebSocket connection to 'ws://127.0.0.1:49100/sign_in?peer_id=peer-4138710680&version=2&peer_role=1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "WebSocket connection to 'ws://127.0.0.1:49100/sign_in?peer_id=peer-6884223070&version=2&peer_role=1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "WebSocket connection to 'ws://127.0.0.1:49100/sign_in?peer_id=peer-8821813620&version=2&peer_role=1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "WebSocket connection to 'ws://127.0.0.1:49100/sign_in?peer_id=peer-4370301650&version=2&peer_role=1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "type": "console",
+      "level": "warning",
+      "text": "{\"type\":\"warning\",\"title\":\"warning\",\"status\":100,\"detail\":\"2 of 6 connection attempts have failed. Retrying...\",\"request\":\"start\",\"sessionId\":null,\"requestId\":null,\"timestamp\":\"2026-06-12T12:39:34.103Z\",\"browser\":\"Chromium\",\"browserVersion\":\"148.0.7778.96\",\"os\":\"Android\",\"osVersion\":\"0\",\"platformType\":\"desktop\"}"
+    },
+    {
+      "type": "console",
+      "level": "log",
+      "text": "{\"type\":\"info\",\"title\":\"success\",\"status\":200,\"detail\":\"Session started successfully\",\"request\":\"start\",\"sessionId\":null,\"requestId\":null,\"timestamp\":\"2026-06-12T12:39:37.236Z\",\"browser\":\"Chromium\",\"browserVersion\":\"148.0.7778.96\",\"os\":\"Android\",\"osVersion\":\"0\",\"platformType\":\"desktop\"}"
+    },
+    {
+      "type": "console",
+      "level": "log",
+      "text": "{\"type\":\"info\",\"title\":\"inProgress\",\"status\":100,\"detail\":\"Sending config as 1 part(s) (139 chars total)\",\"request\":\"message\",\"sessionId\":null,\"requestId\":null,\"timestamp\":\"2026-06-12T12:39:37.237Z\",\"browser\":\"Chromium\",\"browserVersion\":\"148.0.7778.96\",\"os\":\"Android\",\"osVersion\":\"0\",\"platformType\":\"desktop\"}"
+    }
+  ],
+  "video": {
+    "bodyStatus": "streaming",
+    "firstVideoFrame": "true",
+    "videoWidth": 1280,
+    "videoHeight": 720,
+    "readyState": 4,
+    "paused": false,
+    "metrics": "resize: 1280×720, readyState=4, paused=false",
+    "events": "[2026-06-12T12:39:37.752Z] browser.firstVideoFrame {\n  \"videoWidth\": 1280,\n  \"videoHeight\": 720,\n  \"readyState\": 4,\n  \"source\": \"resize\"\n}\n[2026-06-12T12:39:37.738Z] stream {\n  \"action\": \"update\",\n  \"status\": \"success\",\n  \"info\": \"stat-update\",\n  \"data\": {\n    \"stats\": {\n      \"codec\": \"UNKNOWN\",\n      \"fps\": 0,\n      \"rtd\": 0,\n      \"avgDecodeTime\": 0,\n      \"frameLoss\": 0,\n      \"packetLoss\": 0,\n      \"totalBandwidth\": 0,\n      \"currentBitrate\": 0,\n      \"utilizedBandwidth\": 4,\n      \"streamingResolutionHeight\": 0,\n      \"streamingResolutionWidth\": 0\n    }\n  }\n}\n[2026-06-12T12:39:37.262Z] stream {\n  \"action\": \"update\",\n  \"status\": \"success\",\n  \"info\": \"stat-update\",\n  \"data\": {\n    \"stats\": {\n      \"codec\": \"UNKNOWN\",\n      \"fps\": 0,\n      \"rtd\": 0,\n      \"avgDecodeTime\": 0,\n      \"frameLoss\": 0,\n      \"packetLoss\": 0,\n      \"totalBandwidth\": 0,\n      \"currentBitrate\": 0,\n      \"utilizedBandwidth\": 4,\n      \"streamingResolutionHeight\": 0,\n      \"streamingResolutionWidth\": 0\n    }\n  }\n}\n[2026-06-12T12:39:37.236Z] stream {\n  \"action\": \"start\",\n  \"status\": \"success\",\n  \"info\": \"Session started successfully\"\n}\n[2026-06-12T12:39:37.231Z] stream {\n  \"action\": \"update\",\n  \"status\": \"success\",\n  \"info\": \"stat-update\",\n  \"data\": {\n    \"stats\": {\n      \"codec\": \"UNKNOWN\",\n      \"fps\": 0,\n      \"rtd\": 0,\n      \"avgDecodeTime\": 0,\n      \"frameLoss\": 0,\n      \"packetLoss\": 0,\n      \"totalBandwidth\": 0,\n      \"currentBitrate\": 0,\n      \"utilizedBandwidth\": 4,\n      \"streamingResolutionHeight\": 0,\n      \"streamingResolutionWidth\": 0\n    }\n  }\n}\n[2026-06-12T12:39:34.104Z] stream {\n  \"action\": \"start\",\n  \"status\": \"warning\",\n  \"info\": \"2 of 6 connection attempts have failed. Retrying...\"\n}\n[2026-06-12T12:39:31.062Z] stream {\n  \"action\": \"start\",\n  \"status\": \"warning\",\n  \"info\": \"1 of 6 connection attempts have failed. Retrying...\"\n}\n[2026-06-12T12:39:31.018Z] stream {\n  \"action\": \"start\",\n  \"status\": \"inProgress\",\n  \"info\": \"Starting stream.\"\n}\n[2026-06-12T12:39:31.018Z] stream {\n  \"action\": \"start\",\n  \"status\": \"inProgress\",\n  \"info\": \"Starting stream.\"\n}\n"
+  },
+  "screenshot": "/home/choihy/address-to-digital-twin-mvp-nvidia-check/src/samples/sadang_317_6/omniverse/ovstream_browser_first_frame.png",
+  "finished_at_unix": 1781267977.993,
+  "elapsed_seconds": 8.166
+}

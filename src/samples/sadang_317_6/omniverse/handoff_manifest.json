@@ -37,8 +37,64 @@
       "path": "nvidia_ovstream_smoke_server.py",
       "role": "NVIDIA ovrtx-to-ovstream WebRTC readiness smoke server",
       "required": true,
-      "size_bytes": 12791,
-      "sha256": "39a34fdeb3bb0bb0224a32865b4801b4dfd60728a265a6557bc8a78bdd7f274f"
+      "size_bytes": 13301,
+      "sha256": "25e093f33ba3f0f8eb7f0b787d89d051f5ae11ef2799a4071ed585ed9a97e7de"
+    },
+    {
+      "path": "ovstream_browser_client/package.json",
+      "role": "NVIDIA ov-web-rtc Direct browser client manifest",
+      "required": true,
+      "size_bytes": 485,
+      "sha256": "5d8883429ce465e463ded1c412a441dea761a7203deff83ae045e999963c0008"
+    },
+    {
+      "path": "ovstream_browser_client/package-lock.json",
+      "role": "NVIDIA ov-web-rtc Direct browser client lockfile",
+      "required": true,
+      "size_bytes": 32221,
+      "sha256": "634cdb3c79b8ca55b0dfa539cc199486f66c60748de256ce2378584eb31bafeb"
+    },
+    {
+      "path": "ovstream_browser_client/.npmrc",
+      "role": "NVIDIA npm registry scope for ov-web-rtc client",
+      "required": true,
+      "size_bytes": 124,
+      "sha256": "3eba8ef9427e0e4896c702404dc70caaafdbe36d9f9cf652f4f5b09c4aa78e0c"
+    },
+    {
+      "path": "ovstream_browser_client/index.html",
+      "role": "Browser HTML video surface for ovstream WebRTC",
+      "required": true,
+      "size_bytes": 1268,
+      "sha256": "de7e92d72bf60d925d563e6102b914639638ba382a4de955d3a56c8f24214259"
+    },
+    {
+      "path": "ovstream_browser_client/src/main.ts",
+      "role": "NVIDIA ov-web-rtc Direct connection logic",
+      "required": true,
+      "size_bytes": 4707,
+      "sha256": "f507a3e2b901eec772ee3a791f14b853c79efbe95d0343de86b2b139f9460382"
+    },
+    {
+      "path": "ovstream_browser_client/src/style.css",
+      "role": "Video-only browser viewer layout",
+      "required": true,
+      "size_bytes": 1992,
+      "sha256": "515f90e9e576e9834fbf9b666bdc8c0dace79ff8cdc108b457a6f8724f9c7a5e"
+    },
+    {
+      "path": "ovstream_browser_client/scripts/probe-first-frame.mjs",
+      "role": "Playwright browser video first-frame validation probe",
+      "required": true,
+      "size_bytes": 3091,
+      "sha256": "652e9baea645efbb739b9e783baa9d7bfe119a096ae969090acea38b54dcb04b"
+    },
+    {
+      "path": "ovstream_browser_client/README.md",
+      "role": "Browser client run and validation instructions",
+      "required": true,
+      "size_bytes": 1506,
+      "sha256": "b9cd7843153adce0b1670afc6b8b62243e2245cf24017cb24a0d6d6a0ae4d162"
     },
     {
       "path": "nvidia_stack_manifest.json",
@@ -79,15 +135,15 @@
       "path": "README.md",
       "role": "package overview",
       "required": true,
-      "size_bytes": 3120,
-      "sha256": "e9872e250ae59757b00eca1135af8db92b441644440e7f7a6711588491d0a8c7"
+      "size_bytes": 3620,
+      "sha256": "73d03cf4f79966410c7a77c1dce451f639233d317c5e6c2fb7c0b66df066078b"
     },
     {
       "path": "NVIDIA_GPU_HOST_RUNBOOK.md",
       "role": "GPU host validation runbook",
       "required": true,
-      "size_bytes": 3480,
-      "sha256": "366788d4ee24102dd3a10c898f9de4aef677277bf8989c383a120a687e60e491"
+      "size_bytes": 3587,
+      "sha256": "0bd486ed3803f1f6267ded648eb8a28301a63f08be42c550edadc841c6d2efe7"
     },
     {
       "path": "ovstream_viewer_contract.json",
@@ -100,8 +156,8 @@
       "path": "OVSTREAM_VIEWER_RUNBOOK.md",
       "role": "NVIDIA ovstream/WebRTC viewer runbook",
       "required": true,
-      "size_bytes": 2250,
-      "sha256": "69b92295b3334893df3a33a7e961514ffee1e1f9f185529a59384b8a5472c827"
+      "size_bytes": 2358,
+      "sha256": "58849a98ca75e2010b6aeacb58b9a47e00b0e035cad898a103de09ac611ad1a6"
     },
     {
       "path": "../twin.json",
@@ -150,6 +206,8 @@
     "usdchecker sadang_317_6.usda",
     "python3 nvidia_ovrtx_first_frame.py --stage sadang_317_6.ovrtx_viewer.usda --output-json ovrtx_first_frame_report.json --output-ppm ovrtx_first_frame.ppm",
     "python3 nvidia_ovstream_smoke_server.py --stage sadang_317_6.ovrtx_viewer.usda --output-json ovstream_smoke_report.json",
+    "cd ovstream_browser_client && npm install && npm run build && npm run dev -- --port 5191",
+    "cd ovstream_browser_client && npm run probe:first-frame -- --url http://127.0.0.1:5191/?server=127.0.0.1\\&signalingport=49100 --output-json browser_first_frame_report.json --screenshot browser_first_frame.png",
     "npm run nvidia:preflight",
     "Open the stage in NVIDIA Omniverse / Kit / ovrtx and capture render evidence.",
     "Expose an ovstream/WebRTC browser viewer and attach first-frame stream evidence.",

@@ -23,13 +23,17 @@ export async function validateNvidiaPackage(packageDir: string): Promise<NvidiaP
   const checks: PackageValidationCheck[] = [];
   const handoff = await readJson<NvidiaHandoffManifest>(join(packageDir, "handoff_manifest.json"));
   const compositeStage = handoff.openusd_stage.replace(/\.usda$/i, ".ovrtx_viewer.usda");
-  const [preflight, viewerContract, usda, compositeUsda, firstFrameScript, ovstreamScript, usdcheckerReport] = await Promise.all([
+  const [preflight, viewerContract, usda, compositeUsda, firstFrameScript, ovstreamScript, browserPackage, browserMain, browserHtml, browserProbe, usdcheckerReport] = await Promise.all([
     readJson<NvidiaRuntimePreflightReport>(join(packageDir, "nvidia_runtime_preflight.json")),
     readJson<NvidiaOvstreamViewerContract>(join(packageDir, "ovstream_viewer_contract.json")),
     readFile(join(packageDir, handoff.openusd_stage), "utf8"),
     readFile(join(packageDir, compositeStage), "utf8"),
     readFile(join(packageDir, "nvidia_ovrtx_first_frame.py"), "utf8"),
     readFile(join(packageDir, "nvidia_ovstream_smoke_server.py"), "utf8"),
+    readFile(join(packageDir, "ovstream_browser_client/package.json"), "utf8"),
+    readFile(join(packageDir, "ovstream_browser_client/src/main.ts"), "utf8"),
+    readFile(join(packageDir, "ovstream_browser_client/index.html"), "utf8"),
+    readFile(join(packageDir, "ovstream_browser_client/scripts/probe-first-frame.mjs"), "utf8"),
     readFile(join(packageDir, "usdchecker_report.txt"), "utf8")
   ]);
 
@@ -43,6 +47,11 @@ export async function validateNvidiaPackage(packageDir: string): Promise<NvidiaP
   checks.push(passIf("OVRTX.RENDER_PIPELINE.001", ["def Camera \"OVCamera\"", "def RenderProduct \"ViewportTexture0\"", "def RenderVar \"LdrColor\"", "def RenderSettings \"OVRenderSettings\""].every((token) => compositeUsda.includes(token)), "ovrtx wrapper authors Camera -> RenderProduct -> RenderVar -> RenderSettings."));
   checks.push(passIf("OVRTX.FIRST_FRAME_SCRIPT.001", firstFrameScript.includes("RendererConfig") && firstFrameScript.includes("LdrColor") && firstFrameScript.includes("OVRTX_SKIP_USD_CHECK"), "first-frame smoke script uses ovrtx RendererConfig and LdrColor."));
   checks.push(passIf("OVSTREAM.SMOKE_SERVER.001", ovstreamScript.includes("ovstream.Server") && ovstreamScript.includes("VideoFrame.from_cuda_array") && ovstreamScript.includes("/healthz") && ovstreamScript.includes("BGRA"), "ovstream smoke server starts WebRTC, gates /healthz, and submits BGRA CUDA frames."));
+  checks.push(passIf("OVSTREAM.BROWSER_CLIENT_DEP.001", browserPackage.includes("\"@nvidia/ov-web-rtc\""), "browser client depends on NVIDIA @nvidia/ov-web-rtc."));
+  checks.push(passIf("OVSTREAM.BROWSER_CLIENT_PROBE_DEP.001", browserPackage.includes("\"playwright\"") && browserPackage.includes("\"probe:first-frame\""), "browser client includes a Playwright first-frame probe script."));
+  checks.push(passIf("OVSTREAM.BROWSER_CLIENT_DIRECT.001", browserMain.includes("StreamType.DIRECT") && browserMain.includes("server:") && browserMain.includes("signalingPort:"), "browser client uses ov-web-rtc Direct config."));
+  checks.push(passIf("OVSTREAM.BROWSER_CLIENT_VIDEO_ONLY.001", browserHtml.includes('id="remote-video"') && !/three|webgl|babylon|model-viewer/i.test(`${browserHtml}\n${browserMain}`), "browser client exposes an HTML video surface and contains no browser-side 3D renderer."));
+  checks.push(passIf("OVSTREAM.BROWSER_FIRST_FRAME_PROBE.001", browserProbe.includes("document.body.dataset.firstVideoFrame") && browserProbe.includes("video.videoWidth") && browserProbe.includes("page.screenshot"), "browser probe waits for nonzero HTML video dimensions and saves screenshot evidence."));
   checks.push(passIf("USD.CHECKER_REPORT.001", /Success!|not available/i.test(usdcheckerReport), "usdchecker report is present and records success or an explicit not-run reason."));
   checks.push(passIf("PREFLIGHT.OVSTREAM_GATE.001", preflight.gates.some((gate) => gate.id === "OMNIVERSE.OVSTREAM.001"), "runtime preflight includes OMNIVERSE.OVSTREAM.001."));
   checks.push(passIf("PREFLIGHT.STREAMING_SUMMARY.001", typeof preflight.summary.omniverse_streaming_ready === "boolean", `omniverse_streaming_ready=${preflight.summary.omniverse_streaming_ready}`));

@@ -158,6 +158,7 @@ Then start the ovrtx/Omniverse server for \`${input.twin.project_id}.ovrtx_viewe
 ## Browser client rules
 
 - Use a WebRTC video element only; use \`object-fit: contain\` and fixed stream resolution per session.
+- Use \`ovstream_browser_client/\` for the generated NVIDIA \`@nvidia/ov-web-rtc\` Direct-mode client scaffold.
 - Send camera/layer/AOV commands over the data channel; the server owns all USD stage mutation.
 - Use NVIDIA native streaming input forwarding for mouse/keyboard/wheel/touch where available.
 - Attach browser first-frame evidence to this package.
