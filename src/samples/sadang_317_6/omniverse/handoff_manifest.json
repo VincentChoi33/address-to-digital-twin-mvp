@@ -128,8 +128,8 @@
       "path": "simready_minimum_report.json",
       "role": "authored SimReady candidate report plus external Content Agents gates",
       "required": true,
-      "size_bytes": 2511,
-      "sha256": "ce98afea91c20772e003ae514aac852a97dc411de950e105f57db9a84555b4a1"
+      "size_bytes": 2703,
+      "sha256": "b10ce91a1f2892a4288dcc4ee5143ff6beec4a79b92ed564d8c8bf3087ef7ed2"
     },
     {
       "path": "simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda",
@@ -156,15 +156,15 @@
       "path": "README.md",
       "role": "package overview",
       "required": true,
-      "size_bytes": 4068,
-      "sha256": "f11cee1bd6f0ab64fc2d2f59ae545dd2bcf364e587facf5fc890bdf40900e0bc"
+      "size_bytes": 4246,
+      "sha256": "8e954fd50bcaf1d2269072f24ac492feaace09e0bdfe5480155ddddfe5e612fe"
     },
     {
       "path": "NVIDIA_GPU_HOST_RUNBOOK.md",
       "role": "GPU host validation runbook",
       "required": true,
-      "size_bytes": 4546,
-      "sha256": "0797ce436eff6c91ed7c80a41634af7799d0a00c583f76d1950dc85f595ba57f"
+      "size_bytes": 5108,
+      "sha256": "f94019d1bdaaf06fbac76c06818824a3174f948219b618e561ebfc7bf9e2f162"
     },
     {
       "path": "ovstream_viewer_contract.json",
@@ -236,6 +236,8 @@
     "cd ovstream_browser_client && npm install && npm run build && npm run dev -- --port 5191",
     "cd ovstream_browser_client && npm run probe:first-frame -- --url http://127.0.0.1:5191/?server=127.0.0.1\\&signalingport=49100 --output-json browser_first_frame_report.json --screenshot browser_first_frame.png",
     "npm run nvidia:preflight",
+    "npm run nvidia:content-agents:deploy:plan",
+    "NVIDIA_API_KEY_FILE=/secure/path/nvidia_api_key npm run nvidia:content-agents:deploy -- up",
     "npm run nvidia:content-agents",
     "npm run nvidia:simready",
     "Open the stage in NVIDIA Omniverse / Kit / ovrtx and capture render evidence.",

@@ -75,8 +75,10 @@ npm run nvidia:simready        # requires simready-validate + SimReady Foundatio
 # or: npm run nvidia:simready:auto  # auto-installs validator and auto-clones Foundation
 npm run nvidia:warp-flood:check    # records blocked locally, passes on a CUDA/Warp GPU host
 npm run nvidia:content-agents:deploy-audit  # audits deploy prerequisites without printing secrets
+npm run nvidia:content-agents:deploy:plan   # writes the concrete NVIDIA-only Docker launch plan
 npm run nvidia:content-agents:check  # records blocked gate until Material/Physics endpoints or deployment auth exist
-# with healthy Content Agents endpoints or deployment auth: npm run nvidia:content-agents
+# with NVIDIA_API_KEY on a GPU host: npm run nvidia:content-agents:deploy -- up
+# with healthy Content Agents endpoints: npm run nvidia:content-agents
 usdchecker src/samples/sadang_317_6/omniverse/sadang_317_6.usda
 ```
 
@@ -99,6 +101,8 @@ usdchecker src/samples/sadang_317_6/omniverse/sadang_317_6.usda
 | `npm run nvidia:warp-flood` | run the NVIDIA Warp/CUDA shallow-water smoke and write JSON/PGM evidence; requires CUDA + `warp-lang` |
 | `npm run nvidia:warp-flood:check` | write a blocked report instead of faking success when CUDA/Warp is missing |
 | `npm run nvidia:content-agents:deploy-audit` | read-only audit for official NVIDIA Content Agents deployment prerequisites: GPU, Docker/Compose, NVIDIA Container Toolkit, upstream checkout, ports, and redacted provider env |
+| `npm run nvidia:content-agents:deploy:plan` | render the concrete NVIDIA-only Content Agents deployment plan without printing secrets; Material/Physics are remapped to `8100/8200` so both can run on one host |
+| `npm run nvidia:content-agents:deploy -- up` | start official NVIDIA Material and Physics Agent Docker Compose stacks from the upstream checkout when `NVIDIA_API_KEY` is present on a GPU host |
 | `npm run nvidia:content-agents` | run NVIDIA Content Agents Material→Physics assignment when real Material/Physics endpoints are configured |
 | `npm run nvidia:content-agents:check` | write a blocked-gate report without faking Content Agents success when endpoints or deployment auth are missing |
 | `npm run prepare:deploy` | build `dist/` + copy samples for deployment |
@@ -187,7 +191,7 @@ src/samples/sadang_317_6/omniverse/
   README.md
 ```
 
-The USD stage is authored as meter-based, Y-up OpenUSD with `MaterialBindingAPI`, `UsdPreviewSurface` materials, a USD `PhysicsScene`, conservative `PhysicsCollisionAPI` static colliders for terrain/buildings/roads/parcel geometry, `PhysicsMassAPI` building rigid bodies, official building meshes, road ribbons, parcel boundary, terrain reference, and flood-water reference layer. The ovrtx wrapper sublayers that source stage and adds NVIDIA viewer-owned Camera → RenderProduct → RenderVar → RenderSettings wiring. Remote `train1` evidence under [`docs/evidence/`](docs/evidence/) proves GPU/Docker/NVIDIA Container Toolkit/OpenUSD Python/Python ovrtx/Python ovstream/package-validation gates, a real 1280×720 ovrtx LdrColor first frame, ovrtx→ovstream server readiness (`/healthz` 503→200 after BGRA CUDA conversion), an actual browser `@nvidia/ov-web-rtc` Direct video first frame (`videoWidth=1280`, `videoHeight=720`, `readyState=4`), a passed NVIDIA Warp/CUDA shallow-water smoke (`max_depth_m=0.1577`, `flooded_area_m2_gt_10cm=147019.7`), and a read-only Content Agents deployment audit showing GPU/Docker/Compose/NVIDIA Container Toolkit/upstream checkout/ports are ready on `train1`. Local SimReady evidence under [`docs/evidence/nvidia-simready-validate-sadang-2026-06-12.md`](docs/evidence/nvidia-simready-validate-sadang-2026-06-12.md) proves `Prop-Robotics-Neutral@1.0.0` validation on the self-contained asset-source copy. Remaining NVIDIA-only gate: provide healthy Content Agents Material/Physics endpoints, or provide `NVIDIA_API_KEY` to deploy missing Content Agents services from the NVIDIA upstream checkout, run `npm run nvidia:content-agents`, then revalidate with `npm run nvidia:simready`.
+The USD stage is authored as meter-based, Y-up OpenUSD with `MaterialBindingAPI`, `UsdPreviewSurface` materials, a USD `PhysicsScene`, conservative `PhysicsCollisionAPI` static colliders for terrain/buildings/roads/parcel geometry, `PhysicsMassAPI` building rigid bodies, official building meshes, road ribbons, parcel boundary, terrain reference, and flood-water reference layer. The ovrtx wrapper sublayers that source stage and adds NVIDIA viewer-owned Camera → RenderProduct → RenderVar → RenderSettings wiring. Remote `train1` evidence under [`docs/evidence/`](docs/evidence/) proves GPU/Docker/NVIDIA Container Toolkit/OpenUSD Python/Python ovrtx/Python ovstream/package-validation gates, a real 1280×720 ovrtx LdrColor first frame, ovrtx→ovstream server readiness (`/healthz` 503→200 after BGRA CUDA conversion), an actual browser `@nvidia/ov-web-rtc` Direct video first frame (`videoWidth=1280`, `videoHeight=720`, `readyState=4`), a passed NVIDIA Warp/CUDA shallow-water smoke (`max_depth_m=0.1577`, `flooded_area_m2_gt_10cm=147019.7`), and a read-only Content Agents deployment audit plus concrete deploy-plan showing GPU/Docker/Compose/NVIDIA Container Toolkit/upstream checkout/ports are ready on `train1`; the official Material/Physics stacks are remapped to `8100/8200` for simultaneous same-host deployment. Local SimReady evidence under [`docs/evidence/nvidia-simready-validate-sadang-2026-06-12.md`](docs/evidence/nvidia-simready-validate-sadang-2026-06-12.md) proves `Prop-Robotics-Neutral@1.0.0` validation on the self-contained asset-source copy. Remaining NVIDIA-only gate: provide healthy Content Agents Material/Physics endpoints, or provide `NVIDIA_API_KEY` to deploy missing Content Agents services from the NVIDIA upstream checkout, run `npm run nvidia:content-agents`, then revalidate with `npm run nvidia:simready`.
 
 ## Data source policy
 

@@ -76,6 +76,9 @@ jobs:
           grep -q 'CONTENT_AGENTS.ENDPOINTS.001' src/samples/sadang_317_6/omniverse/nvidia_runtime_preflight.json
           grep -q 'SIMREADY.VALIDATOR.001' src/samples/sadang_317_6/omniverse/nvidia_runtime_preflight.json
           grep -q 'ready_for_gpu_host' src/samples/sadang_317_6/omniverse/handoff_manifest.json
+          grep -q 'nvidia:content-agents:deploy:plan' src/samples/sadang_317_6/omniverse/NVIDIA_GPU_HOST_RUNBOOK.md
+          grep -q 'nvidia:content-agents:deploy -- up' src/samples/sadang_317_6/omniverse/NVIDIA_GPU_HOST_RUNBOOK.md
+          grep -q 'nvidia:content-agents:deploy:plan' src/samples/sadang_317_6/omniverse/README.md
           grep -q 'video_stream_only' src/samples/sadang_317_6/omniverse/ovstream_viewer_contract.json
           grep -q 'Three.js' src/samples/sadang_317_6/omniverse/ovstream_viewer_contract.json
 
@@ -100,6 +103,12 @@ jobs:
             --output-json "$RUNNER_TEMP/nvidia-content-agents-deploy.json" \
             --output-md "$RUNNER_TEMP/nvidia-content-agents-deploy.md"
           grep -Eq '"status": "(blocked|ready)"' "$RUNNER_TEMP/nvidia-content-agents-deploy.json"
+          npm run nvidia:content-agents:deploy:plan -- \
+            --skip-docker-gpu-smoke \
+            --output-json "$RUNNER_TEMP/nvidia-content-agents-deploy-plan.json" \
+            --output-md "$RUNNER_TEMP/nvidia-content-agents-deploy-plan.md"
+          grep -Eq '"status": "(blocked|ready_to_deploy)"' "$RUNNER_TEMP/nvidia-content-agents-deploy-plan.json"
+          grep -q 'NVIDIA_API_KEY or NVIDIA_API_KEY_FILE is required' "$RUNNER_TEMP/nvidia-content-agents-deploy-plan.json"
           npm run nvidia:content-agents:check -- \
             --output-json "$RUNNER_TEMP/nvidia-content-agents.json" \
             --output-md "$RUNNER_TEMP/nvidia-content-agents.md"

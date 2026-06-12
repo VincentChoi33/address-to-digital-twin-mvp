@@ -600,7 +600,8 @@ function buildSimReadyMinimumReport(
     next_runtime_commands: [
       "Open the .usda in NVIDIA Omniverse or an ovrtx-based USD viewer.",
       "Run Omniverse Asset Validator / SimReady validation on an NVIDIA runtime host.",
-      "Run npm run nvidia:content-agents after providing Content Agents Material/Physics/OVRTX endpoints plus auth.",
+      "Run npm run nvidia:content-agents:deploy:plan, then run npm run nvidia:content-agents:deploy -- up on a GPU host with NVIDIA_API_KEY if Material/Physics endpoints are not already running.",
+      "Run npm run nvidia:content-agents after providing or deploying Content Agents Material/Physics endpoints.",
       "Run npm run nvidia:simready again after Content Agents output is produced.",
       "Run USD Performance Tuning baseline/after profiling once the stage grows beyond this MVP sample."
     ]
@@ -649,9 +650,10 @@ ${runtimeProbe.note}
 2. Expose browser delivery through ovstream/WebRTC only; browser WebGL/Three.js is not NVIDIA-only acceptance evidence.
 3. Run \`nvidia_warp_flood_smoke.py\` on a CUDA GPU host to create NVIDIA Warp flood simulation evidence for the water layer.
 4. Run Omniverse Asset Validator and SimReady validation.
-5. Run Omniverse Content Agents for material and physics assignment when a GPU/Docker/NVIDIA_API_KEY runtime is available.
-6. Use Omniverse USD Performance Tuning for large scene profiling and optimization.
-7. Add cuOpt only for operational routing/dispatch optimization; add NuRec only when camera/LiDAR captures exist.
+5. Run \`npm run nvidia:content-agents:deploy:plan\`, then \`npm run nvidia:content-agents:deploy -- up\` on a GPU/Docker host with \`NVIDIA_API_KEY\` if Material/Physics endpoints are not already running.
+6. Run Omniverse Content Agents for material and physics assignment, then rerun SimReady validation.
+7. Use Omniverse USD Performance Tuning for large scene profiling and optimization.
+8. Add cuOpt only for operational routing/dispatch optimization; add NuRec only when camera/LiDAR captures exist.
 
 ## GPU-host first-frame smoke
 
