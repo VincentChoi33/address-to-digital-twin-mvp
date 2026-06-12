@@ -65,6 +65,7 @@ jobs:
           grep -q 'VideoFrame.from_cuda_array' src/samples/sadang_317_6/omniverse/nvidia_ovstream_smoke_server.py
           grep -q 'shallow_water_step' src/samples/sadang_317_6/omniverse/nvidia_warp_flood_smoke.py
           grep -q '@wp.kernel' src/samples/sadang_317_6/omniverse/nvidia_warp_flood_smoke.py
+          grep -q 'flooded_area_gt_10cm' src/samples/sadang_317_6/omniverse/nvidia_warp_flood_smoke.py
           grep -q '@nvidia/ov-web-rtc' src/samples/sadang_317_6/omniverse/ovstream_browser_client/package.json
           grep -q 'probe:first-frame' src/samples/sadang_317_6/omniverse/ovstream_browser_client/package.json
           grep -q 'StreamType.DIRECT' src/samples/sadang_317_6/omniverse/ovstream_browser_client/src/main.ts

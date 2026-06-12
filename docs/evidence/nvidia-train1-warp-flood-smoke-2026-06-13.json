@@ -1,0 +1,32 @@
+{
+  "status": "passed",
+  "passed": true,
+  "nvidia_product": "NVIDIA Warp / CUDA",
+  "generated_at": "2026-06-12T19:00:37.648945Z",
+  "stage": "sadang_317_6.usda",
+  "device": "cuda:0",
+  "warp_version": "1.14.0",
+  "grid_size": 128,
+  "cell_size_m": 3.4375,
+  "steps": 240,
+  "dt_seconds": 0.055,
+  "rain_mm_per_hour": 140.0,
+  "rain_amplifier": 300.0,
+  "kernel": "shallow_water_step",
+  "outputs": {
+    "depth_pgm": "warp_flood_depth.pgm"
+  },
+  "stats": {
+    "max_depth_m": 0.1576678603887558,
+    "mean_depth_m": 0.13089096546173096,
+    "flooded_area_m2_gt_10cm": 147019.7265625,
+    "water_volume_m3": 23243.21875,
+    "nonzero_cells": 14044
+  },
+  "acceptance": {
+    "nonzero_water": true,
+    "max_depth_positive": true,
+    "flooded_area_gt_10cm": true,
+    "cuda_device": true
+  }
+}

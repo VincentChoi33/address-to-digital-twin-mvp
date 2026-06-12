@@ -7,7 +7,7 @@ Type a Korean address, get a real-data 3D digital twin — actual DEM terrain, a
 
 **One flow, end to end:** `주소 → Juso/VWorld 지오코딩 → WFS 실건물·도로 + 실DEM + 위성 → GPU 수문 격자 베이크 → virtual-pipe-model 침수 해석`. Any address works — keyless/offline runs degrade to deterministic preview twins, so the loop never breaks.
 
-**NVIDIA/Omniverse track:** the app now exports each twin as OpenUSD (`*.usda`) with an NVIDIA stack manifest, SimReady minimum report, USD PhysicsScene/static-collider baseline, ovrtx viewer wrapper, first-frame smoke script, ovrtx→ovstream WebRTC readiness smoke server, NVIDIA `@nvidia/ov-web-rtc` Direct browser client, runtime preflight, GPU-host handoff manifest, a self-contained SimReady validator asset source, and an ovstream/WebRTC viewer contract that forbids browser-side USD rendering as final NVIDIA evidence. The committed Sadang sample includes a generated Omniverse package under `src/samples/sadang_317_6/omniverse/`; local `usdchecker` validation passes, `simready-validate 2026.4.9` passes `Prop-Robotics-Neutral@1.0.0` on the self-contained asset-source copy, and a remote `train1` RTX 3090 host produced a real NVIDIA ovrtx LdrColor first frame, ovrtx→ovstream WebRTC server readiness, and browser `@nvidia/ov-web-rtc` Direct video first-frame evidence.
+**NVIDIA/Omniverse track:** the app now exports each twin as OpenUSD (`*.usda`) with an NVIDIA stack manifest, SimReady minimum report, USD PhysicsScene/static-collider baseline, ovrtx viewer wrapper, first-frame smoke script, ovrtx→ovstream WebRTC readiness smoke server, NVIDIA `@nvidia/ov-web-rtc` Direct browser client, runtime preflight, GPU-host handoff manifest, a self-contained SimReady validator asset source, NVIDIA Warp/CUDA flood smoke, and an ovstream/WebRTC viewer contract that forbids browser-side USD rendering as final NVIDIA evidence. The committed Sadang sample includes a generated Omniverse package under `src/samples/sadang_317_6/omniverse/`; local `usdchecker` validation passes, `simready-validate 2026.4.9` passes `Prop-Robotics-Neutral@1.0.0` on the self-contained asset-source copy, and a remote `train1` RTX 3090 host produced a real NVIDIA ovrtx LdrColor first frame, ovrtx→ovstream WebRTC server readiness, browser `@nvidia/ov-web-rtc` Direct video first-frame evidence, and a passed NVIDIA Warp/CUDA shallow-water flood smoke.
 
 ![Web app](docs/images/app-screenshot.png)
 
@@ -73,9 +73,9 @@ Generate the committed NVIDIA Omniverse package for the Sadang sample:
 npm run nvidia:package
 npm run nvidia:simready        # requires simready-validate + SimReady Foundation
 # or: npm run nvidia:simready:auto  # auto-installs validator and auto-clones Foundation
+npm run nvidia:warp-flood:check    # records blocked locally, passes on a CUDA/Warp GPU host
 npm run nvidia:content-agents:check  # records blocked gate until NVIDIA endpoints/auth exist
 # with Content Agents endpoints/auth: npm run nvidia:content-agents
-python3 scripts/nvidia_warp_flood_smoke.py --allow-missing --output-json /tmp/warp-flood.json --output-pgm /tmp/warp-flood.pgm
 usdchecker src/samples/sadang_317_6/omniverse/sadang_317_6.usda
 ```
 
@@ -95,9 +95,10 @@ usdchecker src/samples/sadang_317_6/omniverse/sadang_317_6.usda
 | `npm run nvidia:package` | export OpenUSD, run preflight, write the handoff package, then run package validation |
 | `npm run nvidia:simready` | run formal SimReady profile validation on `simready_asset/.../sadang_317_6.usda` when `simready-validate` + SimReady Foundation are available |
 | `npm run nvidia:simready:auto` | CI/dev convenience: auto-install `simready-validate` and auto-clone NVIDIA SimReady Foundation before validation |
+| `npm run nvidia:warp-flood` | run the NVIDIA Warp/CUDA shallow-water smoke and write JSON/PGM evidence; requires CUDA + `warp-lang` |
+| `npm run nvidia:warp-flood:check` | write a blocked report instead of faking success when CUDA/Warp is missing |
 | `npm run nvidia:content-agents` | run NVIDIA Content Agents Material→Physics assignment when real endpoints/auth are configured |
 | `npm run nvidia:content-agents:check` | write a blocked-gate report without faking Content Agents success when endpoints/auth are missing |
-| `python3 scripts/nvidia_warp_flood_smoke.py ...` | run the NVIDIA Warp/CUDA shallow-water smoke on a GPU host, or write a blocked report with `--allow-missing` |
 | `npm run prepare:deploy` | build `dist/` + copy samples for deployment |
 
 ## Project structure
@@ -184,7 +185,7 @@ src/samples/sadang_317_6/omniverse/
   README.md
 ```
 
-The USD stage is authored as meter-based, Y-up OpenUSD with `MaterialBindingAPI`, `UsdPreviewSurface` materials, a USD `PhysicsScene`, conservative `PhysicsCollisionAPI` static colliders for terrain/buildings/roads/parcel geometry, `PhysicsMassAPI` building rigid bodies, official building meshes, road ribbons, parcel boundary, terrain reference, and flood-water reference layer. The ovrtx wrapper sublayers that source stage and adds NVIDIA viewer-owned Camera → RenderProduct → RenderVar → RenderSettings wiring. Remote `train1` evidence under [`docs/evidence/`](docs/evidence/) proves GPU/Docker/NVIDIA Container Toolkit/OpenUSD Python/Python ovrtx/Python ovstream/package-validation gates, a real 1280×720 ovrtx LdrColor first frame, ovrtx→ovstream server readiness (`/healthz` 503→200 after BGRA CUDA conversion), and an actual browser `@nvidia/ov-web-rtc` Direct video first frame (`videoWidth=1280`, `videoHeight=720`, `readyState=4`). The package now also includes `nvidia_warp_flood_smoke.py`, a CUDA-only NVIDIA Warp shallow-water smoke; local Mac/CI runs record the gate as blocked unless `warp-lang` plus a CUDA GPU are available. Local SimReady evidence under [`docs/evidence/nvidia-simready-validate-sadang-2026-06-12.md`](docs/evidence/nvidia-simready-validate-sadang-2026-06-12.md) proves `Prop-Robotics-Neutral@1.0.0` validation on the self-contained asset-source copy. Remaining NVIDIA-only gates: run the Warp flood smoke on a CUDA host, provide NVIDIA/NGC/NVCF credentials or healthy Content Agents endpoints, run `npm run nvidia:content-agents`, then revalidate with `npm run nvidia:simready`.
+The USD stage is authored as meter-based, Y-up OpenUSD with `MaterialBindingAPI`, `UsdPreviewSurface` materials, a USD `PhysicsScene`, conservative `PhysicsCollisionAPI` static colliders for terrain/buildings/roads/parcel geometry, `PhysicsMassAPI` building rigid bodies, official building meshes, road ribbons, parcel boundary, terrain reference, and flood-water reference layer. The ovrtx wrapper sublayers that source stage and adds NVIDIA viewer-owned Camera → RenderProduct → RenderVar → RenderSettings wiring. Remote `train1` evidence under [`docs/evidence/`](docs/evidence/) proves GPU/Docker/NVIDIA Container Toolkit/OpenUSD Python/Python ovrtx/Python ovstream/package-validation gates, a real 1280×720 ovrtx LdrColor first frame, ovrtx→ovstream server readiness (`/healthz` 503→200 after BGRA CUDA conversion), an actual browser `@nvidia/ov-web-rtc` Direct video first frame (`videoWidth=1280`, `videoHeight=720`, `readyState=4`), and a passed NVIDIA Warp/CUDA shallow-water smoke (`max_depth_m=0.1577`, `flooded_area_m2_gt_10cm=147019.7`). Local SimReady evidence under [`docs/evidence/nvidia-simready-validate-sadang-2026-06-12.md`](docs/evidence/nvidia-simready-validate-sadang-2026-06-12.md) proves `Prop-Robotics-Neutral@1.0.0` validation on the self-contained asset-source copy. Remaining NVIDIA-only gate: provide NVIDIA/NGC/NVCF credentials or healthy Content Agents endpoints, run `npm run nvidia:content-agents`, then revalidate with `npm run nvidia:simready`.
 
 ## Data source policy
 

@@ -43,11 +43,11 @@ def main() -> int:
     parser.add_argument("--output-json", default="warp_flood_report.json")
     parser.add_argument("--output-pgm", default="warp_flood_depth.pgm")
     parser.add_argument("--device", default="cuda:0")
-    parser.add_argument("--grid-size", type=int, default=96)
-    parser.add_argument("--steps", type=int, default=180)
+    parser.add_argument("--grid-size", type=int, default=128)
+    parser.add_argument("--steps", type=int, default=240)
     parser.add_argument("--dt", type=float, default=0.055)
     parser.add_argument("--rain-mm-per-hour", type=float, default=140.0)
-    parser.add_argument("--rain-amplifier", type=float, default=120.0, help="Smoke acceleration factor; report keeps physical rainfall separately.")
+    parser.add_argument("--rain-amplifier", type=float, default=300.0, help="Smoke acceleration factor; report keeps physical rainfall separately.")
     parser.add_argument("--allow-missing", action="store_true", help="Write blocked report with exit 0 when Warp/CUDA is unavailable.")
     args = parser.parse_args()
 
@@ -110,9 +110,16 @@ def main() -> int:
         "nonzero_cells": int((wet > 0.001).sum()),
     }
     write_pgm(Path(args.output_pgm), final, solid_np)
+    acceptance = {
+        "nonzero_water": stats["nonzero_cells"] > 0,
+        "max_depth_positive": stats["max_depth_m"] > 0.0,
+        "flooded_area_gt_10cm": stats["flooded_area_m2_gt_10cm"] > 0.0,
+        "cuda_device": True,
+    }
+    passed = all(acceptance.values())
     report = {
-        "status": "passed",
-        "passed": True,
+        "status": "passed" if passed else "failed",
+        "passed": passed,
         "nvidia_product": "NVIDIA Warp / CUDA",
         "generated_at": dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z"),
         "stage": args.stage,
@@ -127,15 +134,11 @@ def main() -> int:
         "kernel": "shallow_water_step",
         "outputs": {"depth_pgm": args.output_pgm},
         "stats": stats,
-        "acceptance": {
-            "nonzero_water": stats["nonzero_cells"] > 0,
-            "max_depth_positive": stats["max_depth_m"] > 0.0,
-            "cuda_device": True,
-        },
+        "acceptance": acceptance,
     }
     write_json(Path(args.output_json), report)
-    print(json.dumps({"status": "passed", "stats": stats, "output_json": args.output_json, "output_pgm": args.output_pgm}, indent=2))
-    return 0
+    print(json.dumps({"status": report["status"], "stats": stats, "acceptance": acceptance, "output_json": args.output_json, "output_pgm": args.output_pgm}, indent=2))
+    return 0 if passed else 1
 
 
 def build_smoke_domain(n: int):
