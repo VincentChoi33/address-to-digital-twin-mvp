@@ -16,6 +16,10 @@ jobs:
           node-version: 22
           cache: npm
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Install dependencies
         run: npm ci
 
@@ -46,10 +50,14 @@ jobs:
           test -s src/samples/sadang_317_6/omniverse/NVIDIA_GPU_HOST_RUNBOOK.md
           test -s src/samples/sadang_317_6/omniverse/ovstream_viewer_contract.json
           test -s src/samples/sadang_317_6/omniverse/OVSTREAM_VIEWER_RUNBOOK.md
+          test -s src/samples/sadang_317_6/omniverse/simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda
+          test -s src/samples/sadang_317_6/omniverse/simready_asset/sadang_317_6/simready_usd/sadang_317_6.json
           grep -q 'metersPerUnit = 1' src/samples/sadang_317_6/omniverse/sadang_317_6.usda
           grep -q 'MaterialBindingAPI' src/samples/sadang_317_6/omniverse/sadang_317_6.usda
           grep -q 'PhysicsScene' src/samples/sadang_317_6/omniverse/sadang_317_6.usda
           grep -q 'PhysicsCollisionAPI' src/samples/sadang_317_6/omniverse/sadang_317_6.usda
+          grep -q 'PhysicsMassAPI' src/samples/sadang_317_6/omniverse/sadang_317_6.usda
+          grep -q 'SimReady_Metadata' src/samples/sadang_317_6/omniverse/simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda
           grep -q 'RenderProduct "ViewportTexture0"' src/samples/sadang_317_6/omniverse/sadang_317_6.ovrtx_viewer.usda
           grep -q 'RenderVar "LdrColor"' src/samples/sadang_317_6/omniverse/sadang_317_6.ovrtx_viewer.usda
           grep -q 'RendererConfig' src/samples/sadang_317_6/omniverse/nvidia_ovrtx_first_frame.py
@@ -65,3 +73,12 @@ jobs:
           grep -q 'ready_for_gpu_host' src/samples/sadang_317_6/omniverse/handoff_manifest.json
           grep -q 'video_stream_only' src/samples/sadang_317_6/omniverse/ovstream_viewer_contract.json
           grep -q 'Three.js' src/samples/sadang_317_6/omniverse/ovstream_viewer_contract.json
+
+      - name: NVIDIA SimReady profile validation
+        run: |
+          NVIDIA_SIMREADY_AUTO_INSTALL=1 NVIDIA_SIMREADY_AUTO_CLONE=1 NVIDIA_SIMREADY_FOUNDATION_REF=a1e9dd68ee2d107f74dc6cd6da875b54ad3f8fd3 \
+            npm run nvidia:simready -- \
+              --output-json "$RUNNER_TEMP/nvidia-simready-validation.json" \
+              --output-md "$RUNNER_TEMP/nvidia-simready-validation.md"
+          grep -q '"status": "passed"' "$RUNNER_TEMP/nvidia-simready-validation.json"
+          grep -q 'FET006_BASE_MDL' "$RUNNER_TEMP/nvidia-simready-validation.json"

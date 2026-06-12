@@ -17,7 +17,9 @@
     "nvidia:preflight": "tsx src/nvidia/runPreflight.ts",
     "nvidia:handoff": "tsx src/nvidia/packageHandoff.ts",
     "nvidia:package": "npm run export:omniverse && npm run nvidia:preflight && npm run nvidia:handoff && npm run nvidia:validate",
-    "nvidia:validate": "tsx src/nvidia/validatePackage.ts"
+    "nvidia:validate": "tsx src/nvidia/validatePackage.ts",
+    "nvidia:simready": "python3 scripts/nvidia_simready_validate.py",
+    "nvidia:simready:auto": "NVIDIA_SIMREADY_AUTO_INSTALL=1 NVIDIA_SIMREADY_AUTO_CLONE=1 python3 scripts/nvidia_simready_validate.py"
   },
   "dependencies": {
     "three": "^0.160.0"

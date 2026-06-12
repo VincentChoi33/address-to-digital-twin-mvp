@@ -71,6 +71,8 @@ Generate the committed NVIDIA Omniverse package for the Sadang sample:
 
 ```bash
 npm run nvidia:package
+npm run nvidia:simready        # requires simready-validate + SimReady Foundation
+# or: npm run nvidia:simready:auto  # auto-installs validator and auto-clones Foundation
 usdchecker src/samples/sadang_317_6/omniverse/sadang_317_6.usda
 ```
 
@@ -88,6 +90,8 @@ usdchecker src/samples/sadang_317_6/omniverse/sadang_317_6.usda
 | `npm run nvidia:handoff` | write GPU-host runbook + SHA-256 handoff manifest from an already-generated package |
 | `npm run nvidia:validate` | verify the generated NVIDIA package: SHA inventory, USD physics/material/unit gates, preflight ovstream gate, and viewer no-WebGL contract |
 | `npm run nvidia:package` | export OpenUSD, run preflight, write the handoff package, then run package validation |
+| `npm run nvidia:simready` | run formal SimReady profile validation on `simready_asset/.../sadang_317_6.usda` when `simready-validate` + SimReady Foundation are available |
+| `npm run nvidia:simready:auto` | CI/dev convenience: auto-install `simready-validate` and auto-clone NVIDIA SimReady Foundation before validation |
 | `npm run prepare:deploy` | build `dist/` + copy samples for deployment |
 
 ## Project structure

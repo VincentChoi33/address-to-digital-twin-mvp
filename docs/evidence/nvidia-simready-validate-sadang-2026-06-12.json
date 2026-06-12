@@ -1,6 +1,6 @@
 {
   "status": "passed",
-  "generated_at": "2026-06-12T22:20:07+09:00",
+  "generated_at": "2026-06-12T13:35:33.797123Z",
   "project_id": "sadang_317_6",
   "validator_tool": "simready-validate",
   "simready_validate_version": "2026.4.9",
@@ -50,9 +50,10 @@
     }
   ],
   "failing_requirements": [],
+  "validator_exit_status": 0,
   "command": [
-    "/tmp/simready-runner-venv-312-1781269817/bin/simready-validate",
-    "src/samples/sadang_317_6/omniverse/simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda",
+    "/private/tmp/simready-runner-venv-312-1781269817/bin/simready-validate",
+    "./src/samples/sadang_317_6/omniverse/simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda",
     "--profile",
     "Prop-Robotics-Neutral",
     "--version",
@@ -62,6 +63,11 @@
     "--features-path",
     "~/.physical-ai-skill-hub/upstreams/simready-foundation/nv_core/sr_specs/docs/features",
     "--profiles-path",
-    "~/.physical-ai-skill-hub/upstreams/simready-foundation/nv_core/sr_specs/docs/profiles/profiles.toml"
-  ]
+    "~/.physical-ai-skill-hub/upstreams/simready-foundation/nv_core/sr_specs/docs/profiles/profiles.toml",
+    "--output",
+    "/var/folders/6r/r8nvhwrj1c98mpx36fynj9fm0000gn/T/nvidia-simready-2o_g3d0n/simready-profile-raw.json"
+  ],
+  "stdout_tail": "ysics_joints.validation.ArticulationChecker'>\nINFO:SimReady Validation:  Requirement: JT.ART.003: Rule: <class 'capabilities.physics_bodies.physics_joints.validation.ArticulationChecker'>\nINFO:SimReady Validation:  Requirement: JT.ART.004: Rule: <class 'capabilities.physics_bodies.physics_joints.validation.ArticulationChecker'>\nINFO:SimReady Validation:  Requirement: RB.001: Rule: <class 'capabilities.physics_bodies.physics_rigid_bodies.validation.RigidBodyCapabilityChecker'>\nINFO:SimReady Validation:  Requirement: RB.003: Rule: <class 'capabilities.physics_bodies.physics_rigid_bodies.validation.RigidBodyChecker'>\nINFO:SimReady Validation:  Requirement: RB.005: Rule: <class 'capabilities.physics_bodies.physics_rigid_bodies.validation.RigidBodyChecker'>\nINFO:SimReady Validation:  Requirement: RB.006: Rule: <class 'capabilities.physics_bodies.physics_rigid_bodies.validation.RigidBodyChecker'>\nINFO:SimReady Validation:  Requirement: RB.007: Rule: <class 'capabilities.physics_bodies.physics_rigid_bodies.validation.RigidBodyMassChecker'>\nINFO:SimReady Validation:  Requirement: RB.009: Rule: <class 'capabilities.physics_bodies.physics_rigid_bodies.validation.RigidBodyChecker'>\nINFO:SimReady Validation:  Requirement: RB.010: Rule: <class 'capabilities.physics_bodies.physics_rigid_bodies.validation.InvisibleCollisionMeshHasPurposeGuide'>\nINFO:SimReady Validation:  Requirement: RB.COL.001: Rule: <class 'capabilities.physics_bodies.physics_rigid_bodies.validation.RigidBodyColliderCapabilityChecker'>\nINFO:SimReady Validation:  Requirement: RB.COL.002: Rule: <class 'capabilities.physics_bodies.physics_rigid_bodies.validation.RigidBodyColliderMeshChecker'>\nINFO:SimReady Validation:  Requirement: RB.COL.003: Rule: <class 'capabilities.physics_bodies.physics_rigid_bodies.validation.RigidBodyColliderNonUniformScaleChecker'>\nINFO:SimReady Validation:  Requirement: RB.COL.004: Rule: <class 'capabilities.physics_bodies.physics_rigid_bodies.validation.ColliderChecker'>\nINFO:SimReady Validation:  Requirement: RB.MB.001: Rule: <class 'capabilities.physics_bodies.physics_rigid_bodies.validation.MultibodyChecker'>\nINFO:SimReady Validation:Validation feature: FET005_BASE_NEUTRAL (0.1.0)\nINFO:SimReady Validation:  Requirement: GSP.001: Rule: <class 'capabilities.physics_bodies.physics_graspable.validation.GraspableVectorLineChecker'>\nINFO:SimReady Validation:  Requirement: PMT.001: Rule: <class 'capabilities.physics_bodies.physics_materials.validation.PhysicsMaterialsCapabilityChecker'>\nINFO:SimReady Validation:Validation feature: FET006_BASE_MDL (0.1.0)\nINFO:SimReady Validation:  Requirement: VM.BIND.001: Rule: <class 'capabilities.visualization.materials.validation.VisualMaterialsCapabilityChecker'>\nINFO:SimReady Validation:  Requirement: VM.BIND.002: Rule: <class 'capabilities.visualization.materials.validation.VisualMaterialsCapabilityChecker'>\nINFO:SimReady Validation:  Requirement: VM.MAT.001: Rule: <class 'capabilities.visualization.materials.validation.VisualMaterialsCapabilityChecker'>\nINFO:SimReady Validation:  Requirement: VM.MDL.001: Rule: <class 'capabilities.visualization.materials.validation.VisualMaterialsCapabilityChecker'>\nINFO:SimReady Validation:  Requirement: VM.MDL.002: Rule: <class 'capabilities.visualization.materials.validation.VisualMaterialsCapabilityChecker'>\nINFO:SimReady Validation:  Requirement: VM.TEX.001: Rule: <class 'capabilities.visualization.materials.validation.VisualMaterialsCapabilityChecker'>\nINFO:SimReady Validation:  Requirement: VM.TEX.002: Rule: <class 'capabilities.visualization.materials.validation.VisualMaterialsCapabilityChecker'>\nINFO:SimReady Validation:Asset validation complete.\n\nAsset: /Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda\n  [PASSED] Prop-Robotics-Neutral v1.0.0\n\nResults written to: /var/folders/6r/r8nvhwrj1c98mpx36fynj9fm0000gn/T/nvidia-simready-2o_g3d0n/simready-profile-raw.json\n",
+  "stderr_tail": "",
+  "raw_output": "/var/folders/6r/r8nvhwrj1c98mpx36fynj9fm0000gn/T/nvidia-simready-2o_g3d0n/simready-profile-raw.json"
 }
