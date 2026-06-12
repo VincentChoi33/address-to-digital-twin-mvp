@@ -129,16 +129,21 @@ export function runNvidiaRuntimePreflight(
     envState.OVSTREAM_SIGNALING_URL === "present" ||
     envState.OMNIVERSE_STREAM_URL === "present" ||
     envState.OVRTX_WEBRTC_URL === "present";
-  const hasContentAgentAuth = envState.NVIDIA_API_KEY === "present" || envState.NGC_API_KEY === "present" || envState.NVCF_API_KEY === "present";
+  const hasContentAgentDeploymentAuth = envState.NVIDIA_API_KEY === "present";
+  const hasContentAgentUsageAuth =
+    envState.CONTENT_AGENTS_TOKEN === "present" ||
+    envState.CONTENT_AGENTS_MATERIAL_AGENT_TOKEN === "present" ||
+    envState.CONTENT_AGENTS_PHYSICS_AGENT_TOKEN === "present" ||
+    envState.NGC_API_KEY === "present" ||
+    envState.NVCF_API_KEY === "present";
   const hasMaterialEndpoint = envState.CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL === "present" || envState.CONTENT_AGENTS_MATERIAL_BASE_URL === "present";
   const hasPhysicsEndpoint = envState.CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL === "present" || envState.CONTENT_AGENTS_PHYSICS_BASE_URL === "present";
   const hasOvrtxEndpoint = envState.CONTENT_AGENTS_OVRTX_BASE_URL === "present" || envState.OVRTX_RENDER_ENDPOINT === "present" || envState.RENDER_ENDPOINT === "present";
   const hasProvidedContentAgentEndpoints =
     hasMaterialEndpoint &&
-    hasPhysicsEndpoint &&
-    hasOvrtxEndpoint;
+    hasPhysicsEndpoint;
   const contentAgentsReady =
-    hasProvidedContentAgentEndpoints || (hasNvidiaGpu && dockerInstalled && dockerDaemonReady && dockerHasNvidiaRuntime && hasContentAgentAuth);
+    hasProvidedContentAgentEndpoints || (hasNvidiaGpu && dockerInstalled && dockerDaemonReady && dockerHasNvidiaRuntime && hasContentAgentDeploymentAuth);
   const simreadyFoundationRoot = findSimReadyFoundationRoot(runner);
   const hasSimReadyValidator = commands.simready_validate.ok || Boolean(simreadyFoundationRoot);
 
@@ -234,14 +239,16 @@ export function runNvidiaRuntimePreflight(
     {
       id: "CONTENT_AGENTS.AUTH.001",
       product: "NVIDIA API / NGC / NVCF credentials",
-      status: hasContentAgentAuth || hasProvidedContentAgentEndpoints ? "passed" : "blocked",
+      status: hasContentAgentDeploymentAuth || hasContentAgentUsageAuth || hasProvidedContentAgentEndpoints ? "passed" : "blocked",
       required_for: ["Omniverse Content Agents material/physics assignment"],
-      evidence: hasContentAgentAuth
-        ? "A required NVIDIA/NGC/NVCF auth variable is present (redacted)."
+      evidence: hasContentAgentDeploymentAuth
+        ? "NVIDIA_API_KEY is present for local Content Agents deployment (redacted)."
+        : hasContentAgentUsageAuth
+          ? "A Content Agents usage token variable is present for provided endpoints (redacted)."
         : hasProvidedContentAgentEndpoints
           ? "Provided Content Agents endpoints are present; auth may be endpoint-managed."
-          : "No NVIDIA_API_KEY, NGC_API_KEY, NVCF_API_KEY, or complete provided Content Agents endpoint set was found.",
-      remediation: hasContentAgentAuth || hasProvidedContentAgentEndpoints ? undefined : "Provide NVIDIA_API_KEY for local deployment or set provided Content Agents endpoint URLs/tokens."
+          : "No NVIDIA_API_KEY deployment credential, usage token, or complete Material/Physics endpoint set was found.",
+      remediation: hasContentAgentDeploymentAuth || hasContentAgentUsageAuth || hasProvidedContentAgentEndpoints ? undefined : "Provide NVIDIA_API_KEY for local deployment or set provided Material/Physics endpoint URLs; add endpoint usage tokens only when those endpoints require auth."
     },
     {
       id: "CONTENT_AGENTS.ENDPOINTS.001",
@@ -249,9 +256,9 @@ export function runNvidiaRuntimePreflight(
       status: hasProvidedContentAgentEndpoints ? "passed" : "blocked",
       required_for: ["reuse of already-running Content Agents services"],
       evidence: hasProvidedContentAgentEndpoints
-        ? "Material, Physics, and OVRTX/render endpoints are present (redacted)."
+        ? `Material and Physics endpoints are present (redacted); ovrtx/render=${hasOvrtxEndpoint ? "present" : "missing"}.`
         : `material=${hasMaterialEndpoint ? "present" : "missing"}, physics=${hasPhysicsEndpoint ? "present" : "missing"}, ovrtx/render=${hasOvrtxEndpoint ? "present" : "missing"}`,
-      remediation: hasProvidedContentAgentEndpoints ? undefined : "Set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL, CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL, and CONTENT_AGENTS_OVRTX_BASE_URL/OVRTX_RENDER_ENDPOINT, or deploy local Content Agents with NVIDIA_API_KEY."
+      remediation: hasProvidedContentAgentEndpoints ? undefined : "Set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL and CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL, or deploy local Content Agents with NVIDIA_API_KEY. Set OVRTX/render endpoint when deploying or troubleshooting render-dependent services."
     },
     {
       id: "CONTENT_AGENTS.RUNTIME.001",
@@ -261,7 +268,7 @@ export function runNvidiaRuntimePreflight(
       evidence: contentAgentsReady
         ? "Content Agents prerequisites are present through provided endpoints or local GPU/Docker/auth."
         : "Content Agents prerequisites are incomplete.",
-      remediation: contentAgentsReady ? undefined : "Satisfy NVIDIA GPU + Docker daemon + NVIDIA runtime + auth, or provide healthy service endpoints."
+      remediation: contentAgentsReady ? undefined : "Satisfy NVIDIA GPU + Docker daemon + NVIDIA runtime + NVIDIA_API_KEY deployment auth, or provide healthy Material/Physics service endpoints."
     },
     {
       id: "SIMREADY.FOUNDATION.001",

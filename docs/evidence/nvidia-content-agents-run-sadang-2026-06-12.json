@@ -1,6 +1,6 @@
 {
   "project_id": "sadang_317_6",
-  "generated_at": "2026-06-12T13:46:28.289322Z",
+  "generated_at": "2026-06-12T19:14:01.856190Z",
   "skill": "content-agents",
   "status": "blocked",
   "passed": false,
@@ -13,8 +13,7 @@
   "blockers": [
     "Missing Material Agent endpoint: set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL or MATERIAL_AGENT_BASE_URL.",
     "Missing Physics Agent endpoint: set CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL or PHYSICS_AGENT_BASE_URL.",
-    "Missing OVRTX/render endpoint: set CONTENT_AGENTS_OVRTX_BASE_URL, OVRTX_RENDER_ENDPOINT, or RENDER_ENDPOINT.",
-    "Missing Content Agents auth token/key: set CONTENT_AGENTS_TOKEN, agent-specific token, NGC_API_KEY, NVCF_API_KEY, or NVIDIA_API_KEY."
+    "Missing NVIDIA_API_KEY for deploying missing Content Agents services from NVIDIA build/upstream deployment skills."
   ],
   "materialized_usd_path": null,
   "physics_usd_path": null,
@@ -33,13 +32,55 @@
     "CONTENT_AGENTS_PHYSICS_AGENT_TOKEN": "missing",
     "NGC_API_KEY": "missing",
     "NVCF_API_KEY": "missing",
-    "NVIDIA_API_KEY": "missing"
+    "NVIDIA_API_KEY": "missing",
+    "CONTENT_AGENTS_TOKEN_FILE": "missing",
+    "CONTENT_AGENTS_MATERIAL_AGENT_TOKEN_FILE": "missing",
+    "CONTENT_AGENTS_PHYSICS_AGENT_TOKEN_FILE": "missing",
+    "NGC_API_KEY_FILE": "missing",
+    "NVCF_API_KEY_FILE": "missing",
+    "NVIDIA_API_KEY_FILE": "missing"
   },
   "provided_endpoints": {
     "material": null,
     "physics": null,
     "ovrtx_render": null,
-    "auth": null
+    "usage_auth": null,
+    "deployment_auth": null
+  },
+  "auth_policy": {
+    "usage_token_required": false,
+    "render_endpoint_required": false,
+    "usage_auth_present": false,
+    "deployment_auth_present": false,
+    "note": "Provided local/service endpoints may manage auth themselves; deployment of missing services requires NVIDIA_API_KEY."
+  },
+  "deployment_handoffs": [
+    {
+      "target": "ovrtx",
+      "upstream_skill": "deploy-ovrtx-docker",
+      "reason": "Shared OVRTX renderer is needed before deploying or troubleshooting render-dependent Content Agents services."
+    },
+    {
+      "target": "material",
+      "upstream_skill": "deploy-material-agent-docker",
+      "reason": "Material Agent endpoint is missing for visual material assignment."
+    },
+    {
+      "target": "physics",
+      "upstream_skill": "deploy-physics-agent-docker",
+      "reason": "Physics Agent endpoint is missing for physics property assignment."
+    }
+  ],
+  "content_agents_upstream": {
+    "available": true,
+    "path": "~/.physical-ai-skill-hub/upstreams/content-agents",
+    "commit": "5be4f88",
+    "branch": "main",
+    "deployment_skill_paths": {
+      "ovrtx": "~/.physical-ai-skill-hub/upstreams/content-agents/.agents/skills/deploy-ovrtx-docker/SKILL.md",
+      "material": "~/.physical-ai-skill-hub/upstreams/content-agents/.agents/skills/deploy-material-agent-docker/SKILL.md",
+      "physics": "~/.physical-ai-skill-hub/upstreams/content-agents/.agents/skills/deploy-physics-agent-docker/SKILL.md"
+    }
   },
   "router": {
     "path": "~/.codex/.tmp/plugins/plugins/nvidia/skills/omniverse-cad-to-simready/references/content-agents/scripts/run.py",

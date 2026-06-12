@@ -1,7 +1,7 @@
 {
   "status": "blocked",
   "passed": false,
-  "generated_at": "2026-06-12T19:05:29.804303Z",
+  "generated_at": "2026-06-12T19:16:23.174028Z",
   "host": "train1 / gpu1",
   "audit_scope": "presence-only environment audit; secret values were not printed or persisted",
   "checked_environment": {
@@ -17,10 +17,26 @@
     "NVCF_API_KEY": "missing",
     "NVIDIA_API_KEY": "missing"
   },
+  "provided_endpoints": {
+    "material": "missing",
+    "physics": "missing",
+    "ovrtx_render": "missing",
+    "usage_auth": "missing",
+    "deployment_auth": "missing"
+  },
+  "auth_policy": {
+    "usage_token_required": false,
+    "deployment_auth_required_for_missing_services": true,
+    "note": "Existing endpoints may manage auth themselves; deploying missing services requires NVIDIA_API_KEY."
+  },
+  "deployment_handoffs": [
+    "ovrtx",
+    "material",
+    "physics"
+  ],
   "blockers": [
     "Missing Material Agent endpoint: CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL or MATERIAL_AGENT_BASE_URL.",
     "Missing Physics Agent endpoint: CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL or PHYSICS_AGENT_BASE_URL.",
-    "Missing OVRTX/render endpoint: CONTENT_AGENTS_OVRTX_BASE_URL, OVRTX_RENDER_ENDPOINT, or RENDER_ENDPOINT.",
-    "Missing Content Agents auth token/key: CONTENT_AGENTS_TOKEN, NGC_API_KEY, NVCF_API_KEY, or NVIDIA_API_KEY."
+    "Missing NVIDIA_API_KEY for deploying missing OVRTX/Material/Physics services from NVIDIA upstream deployment skills."
   ]
 }

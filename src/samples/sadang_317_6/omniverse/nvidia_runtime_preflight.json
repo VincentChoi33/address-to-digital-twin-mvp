@@ -196,8 +196,8 @@
       "required_for": [
         "Omniverse Content Agents material/physics assignment"
       ],
-      "evidence": "No NVIDIA_API_KEY, NGC_API_KEY, NVCF_API_KEY, or complete provided Content Agents endpoint set was found.",
-      "remediation": "Provide NVIDIA_API_KEY for local deployment or set provided Content Agents endpoint URLs/tokens."
+      "evidence": "No NVIDIA_API_KEY deployment credential, usage token, or complete Material/Physics endpoint set was found.",
+      "remediation": "Provide NVIDIA_API_KEY for local deployment or set provided Material/Physics endpoint URLs; add endpoint usage tokens only when those endpoints require auth."
     },
     {
       "id": "CONTENT_AGENTS.ENDPOINTS.001",
@@ -207,7 +207,7 @@
         "reuse of already-running Content Agents services"
       ],
       "evidence": "material=missing, physics=missing, ovrtx/render=missing",
-      "remediation": "Set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL, CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL, and CONTENT_AGENTS_OVRTX_BASE_URL/OVRTX_RENDER_ENDPOINT, or deploy local Content Agents with NVIDIA_API_KEY."
+      "remediation": "Set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL and CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL, or deploy local Content Agents with NVIDIA_API_KEY. Set OVRTX/render endpoint when deploying or troubleshooting render-dependent services."
     },
     {
       "id": "CONTENT_AGENTS.RUNTIME.001",
@@ -217,7 +217,7 @@
         "full SimReady material/physics assignment"
       ],
       "evidence": "Content Agents prerequisites are incomplete.",
-      "remediation": "Satisfy NVIDIA GPU + Docker daemon + NVIDIA runtime + auth, or provide healthy service endpoints."
+      "remediation": "Satisfy NVIDIA GPU + Docker daemon + NVIDIA runtime + NVIDIA_API_KEY deployment auth, or provide healthy Material/Physics service endpoints."
     },
     {
       "id": "SIMREADY.FOUNDATION.001",

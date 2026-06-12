@@ -26,12 +26,14 @@ TOKEN_ENVS = (
     "CONTENT_AGENTS_PHYSICS_AGENT_TOKEN",
     "NGC_API_KEY",
     "NVCF_API_KEY",
-    "NVIDIA_API_KEY",
 )
+DEPLOYMENT_AUTH_ENVS = ("NVIDIA_API_KEY",)
 ROUTER_CANDIDATES = (
     "~/.codex/.tmp/plugins/plugins/nvidia/skills/omniverse-cad-to-simready/references/content-agents/scripts/run.py",
     "~/.codex/plugins/cache/nvidia/skills/omniverse-cad-to-simready/references/content-agents/scripts/run.py",
 )
+def env_truthy(name: str) -> bool:
+    return os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
 
 
 def main() -> int:
@@ -46,6 +48,9 @@ def main() -> int:
     parser.add_argument("--timeout", type=int, default=1800)
     parser.add_argument("--request-timeout", type=int, default=120)
     parser.add_argument("--poll-interval", type=float, default=2.0)
+    parser.add_argument("--require-auth", action="store_true", default=env_truthy("CONTENT_AGENTS_REQUIRE_AUTH"), help="Block unless a Content Agents usage token is present. Existing local endpoints may not require this.")
+    parser.add_argument("--require-render-endpoint", action="store_true", default=env_truthy("CONTENT_AGENTS_REQUIRE_RENDER_ENDPOINT"), help="Block unless OVRTX/render endpoint is present.")
+    parser.add_argument("--convert-physics-output-to-usd", action=argparse.BooleanOptionalAction, default=True, help="Ask the reference router to convert Physics Agent output to USD for downstream SimReady validation.")
     parser.add_argument("--allow-blocked", action="store_true", help="Return 0 for blocked prerequisite reports.")
     args = parser.parse_args()
 
@@ -56,11 +61,21 @@ def main() -> int:
     report_path = (repo_root / args.output_json).resolve()
     markdown_path = (repo_root / args.output_md).resolve()
     router = resolve_router(args.router)
+    upstream = resolve_content_agents_upstream()
 
     report = base_report(args.project_id, asset, output_dir, router, repo_root)
     endpoint_state = endpoint_status()
     report["redacted_environment"] = endpoint_state["redacted_environment"]
     report["provided_endpoints"] = endpoint_state["provided_endpoints"]
+    report["auth_policy"] = {
+        "usage_token_required": bool(args.require_auth),
+        "render_endpoint_required": bool(args.require_render_endpoint),
+        "usage_auth_present": endpoint_state["has_usage_token"],
+        "deployment_auth_present": endpoint_state["has_deployment_auth"],
+        "note": "Provided local/service endpoints may manage auth themselves; deployment of missing services requires NVIDIA_API_KEY.",
+    }
+    report["deployment_handoffs"] = deployment_handoffs(endpoint_state)
+    report["content_agents_upstream"] = upstream_report(upstream, repo_root)
     report["router"] = {
         "path": display_path(router, repo_root) if router else None,
         "available": bool(router and router.is_file()),
@@ -74,10 +89,14 @@ def main() -> int:
         blockers.append("Missing Material Agent endpoint: set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL or MATERIAL_AGENT_BASE_URL.")
     if not endpoint_state["has_physics_endpoint"]:
         blockers.append("Missing Physics Agent endpoint: set CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL or PHYSICS_AGENT_BASE_URL.")
-    if not endpoint_state["has_ovrtx_endpoint"]:
-        blockers.append("Missing OVRTX/render endpoint: set CONTENT_AGENTS_OVRTX_BASE_URL, OVRTX_RENDER_ENDPOINT, or RENDER_ENDPOINT.")
-    if not endpoint_state["has_token"]:
-        blockers.append("Missing Content Agents auth token/key: set CONTENT_AGENTS_TOKEN, agent-specific token, NGC_API_KEY, NVCF_API_KEY, or NVIDIA_API_KEY.")
+    if args.require_render_endpoint and not endpoint_state["has_ovrtx_endpoint"]:
+        blockers.append("Missing required OVRTX/render endpoint: set CONTENT_AGENTS_OVRTX_BASE_URL, OVRTX_RENDER_ENDPOINT, or RENDER_ENDPOINT.")
+    if args.require_auth and not endpoint_state["has_usage_token"]:
+        blockers.append("Missing required Content Agents usage token/key: set CONTENT_AGENTS_TOKEN, service-specific token, NGC_API_KEY, or NVCF_API_KEY.")
+    if report["deployment_handoffs"] and not endpoint_state["has_deployment_auth"]:
+        blockers.append("Missing NVIDIA_API_KEY for deploying missing Content Agents services from NVIDIA build/upstream deployment skills.")
+    if report["deployment_handoffs"] and not upstream:
+        blockers.append("NVIDIA Content Agents upstream checkout not found; set CONTENT_AGENTS_UPSTREAM_ROOT or PHYSICAL_AI_SKILL_HUB_UPSTREAM_ROOT for deployment handoff docs.")
     if not router or not router.is_file():
         blockers.append("NVIDIA Content Agents reference router not found; set NVIDIA_CONTENT_AGENTS_ROUTER to the official router run.py.")
 
@@ -109,6 +128,8 @@ def main() -> int:
         "--poll-interval",
         str(args.poll_interval),
     ]
+    if args.convert_physics_output_to_usd:
+        command.append("--convert-physics-output-to-usd")
     completed = subprocess.run(command, text=True, capture_output=True)
     child_report = load_json(router_report)
     passed = completed.returncode == 0 and bool(child_report.get("passed"))
@@ -156,20 +177,24 @@ def base_report(project_id: str, asset: Path, output_dir: Path, router: Path | N
 
 
 def endpoint_status() -> dict[str, Any]:
-    envs = [*MATERIAL_ENDPOINT_ENVS, *PHYSICS_ENDPOINT_ENVS, *OVRTX_ENDPOINT_ENVS, *TOKEN_ENVS]
+    envs = [*MATERIAL_ENDPOINT_ENVS, *PHYSICS_ENDPOINT_ENVS, *OVRTX_ENDPOINT_ENVS, *TOKEN_ENVS, *DEPLOYMENT_AUTH_ENVS]
+    file_envs = [f"{name}_FILE" for name in [*TOKEN_ENVS, *DEPLOYMENT_AUTH_ENVS]]
     redacted = {name: "present" if os.environ.get(name) else "missing" for name in envs}
+    redacted.update({name: "present" if os.environ.get(name) else "missing" for name in file_envs})
     return {
         "redacted_environment": redacted,
         "provided_endpoints": {
             "material": present_name(MATERIAL_ENDPOINT_ENVS),
             "physics": present_name(PHYSICS_ENDPOINT_ENVS),
             "ovrtx_render": present_name(OVRTX_ENDPOINT_ENVS),
-            "auth": present_name(TOKEN_ENVS),
+            "usage_auth": present_name((*TOKEN_ENVS, *(f"{name}_FILE" for name in TOKEN_ENVS))),
+            "deployment_auth": present_name((*DEPLOYMENT_AUTH_ENVS, *(f"{name}_FILE" for name in DEPLOYMENT_AUTH_ENVS))),
         },
         "has_material_endpoint": any(os.environ.get(name) for name in MATERIAL_ENDPOINT_ENVS),
         "has_physics_endpoint": any(os.environ.get(name) for name in PHYSICS_ENDPOINT_ENVS),
         "has_ovrtx_endpoint": any(os.environ.get(name) for name in OVRTX_ENDPOINT_ENVS),
-        "has_token": any(os.environ.get(name) for name in TOKEN_ENVS),
+        "has_usage_token": any(os.environ.get(name) for name in TOKEN_ENVS) or any(os.environ.get(f"{name}_FILE") for name in TOKEN_ENVS),
+        "has_deployment_auth": any(os.environ.get(name) for name in DEPLOYMENT_AUTH_ENVS) or any(os.environ.get(f"{name}_FILE") for name in DEPLOYMENT_AUTH_ENVS),
     }
 
 
@@ -178,6 +203,81 @@ def present_name(names: tuple[str, ...]) -> str | None:
         if os.environ.get(name):
             return name
     return None
+
+
+def deployment_handoffs(endpoint_state: dict[str, Any]) -> list[dict[str, str]]:
+    handoffs: list[dict[str, str]] = []
+    if not endpoint_state["has_ovrtx_endpoint"]:
+        handoffs.append(
+            {
+                "target": "ovrtx",
+                "upstream_skill": "deploy-ovrtx-docker",
+                "reason": "Shared OVRTX renderer is needed before deploying or troubleshooting render-dependent Content Agents services.",
+            }
+        )
+    if not endpoint_state["has_material_endpoint"]:
+        handoffs.append(
+            {
+                "target": "material",
+                "upstream_skill": "deploy-material-agent-docker",
+                "reason": "Material Agent endpoint is missing for visual material assignment.",
+            }
+        )
+    if not endpoint_state["has_physics_endpoint"]:
+        handoffs.append(
+            {
+                "target": "physics",
+                "upstream_skill": "deploy-physics-agent-docker",
+                "reason": "Physics Agent endpoint is missing for physics property assignment.",
+            }
+        )
+    return handoffs
+
+
+def resolve_content_agents_upstream() -> Path | None:
+    candidates: list[Path] = []
+    explicit = os.environ.get("CONTENT_AGENTS_UPSTREAM_ROOT")
+    if explicit:
+        candidates.append(Path(explicit).expanduser())
+    hub_root = os.environ.get("PHYSICAL_AI_SKILL_HUB_UPSTREAM_ROOT")
+    if hub_root:
+        candidates.append(Path(hub_root).expanduser() / "content-agents")
+    candidates.append(Path.home() / ".physical-ai-skill-hub/upstreams/content-agents")
+    for candidate in candidates:
+        if (candidate / ".git").is_dir() and (candidate / ".agents/skills").is_dir():
+            return candidate.resolve()
+    return None
+
+
+def upstream_report(upstream: Path | None, repo_root: Path) -> dict[str, Any]:
+    if not upstream:
+        return {
+            "available": False,
+            "path": None,
+            "commit": None,
+            "branch": None,
+            "deployment_skill_paths": {},
+        }
+    return {
+        "available": True,
+        "path": display_path(upstream, repo_root),
+        "commit": git_output(upstream, ["rev-parse", "--short", "HEAD"]),
+        "branch": git_output(upstream, ["rev-parse", "--abbrev-ref", "HEAD"]),
+        "deployment_skill_paths": {
+            "ovrtx": display_path(upstream / ".agents/skills/deploy-ovrtx-docker/SKILL.md", repo_root),
+            "material": display_path(upstream / ".agents/skills/deploy-material-agent-docker/SKILL.md", repo_root),
+            "physics": display_path(upstream / ".agents/skills/deploy-physics-agent-docker/SKILL.md", repo_root),
+        },
+    }
+
+
+def git_output(repo: Path, args: list[str]) -> str | None:
+    try:
+        completed = subprocess.run(["git", "-C", str(repo), *args], text=True, capture_output=True, timeout=10)
+    except Exception:
+        return None
+    value = completed.stdout.strip()
+    return value if completed.returncode == 0 and value else None
 
 
 def resolve_router(explicit: str | None) -> Path | None:
@@ -250,6 +350,9 @@ def render_markdown(report: dict[str, Any]) -> str:
         f"- Materialized USD: `{report.get('materialized_usd_path') or 'none'}`",
         f"- Physics USD: `{report.get('physics_usd_path') or 'none'}`",
         f"- Next step: `{report['next_step']}`",
+        f"- Usage token required: `{(report.get('auth_policy') or {}).get('usage_token_required')}`",
+        f"- Render endpoint required: `{(report.get('auth_policy') or {}).get('render_endpoint_required')}`",
+        f"- Upstream checkout: `{(report.get('content_agents_upstream') or {}).get('path') or 'none'}`",
         "",
     ]
     blockers = report.get("blockers") or []
@@ -257,8 +360,25 @@ def render_markdown(report: dict[str, Any]) -> str:
         lines.extend(["## Blockers", ""])
         lines.extend(f"- {blocker}" for blocker in blockers)
         lines.append("")
+    handoffs = report.get("deployment_handoffs") or []
+    if handoffs:
+        lines.extend(["## Deployment handoffs", ""])
+        for handoff in handoffs:
+            lines.append(f"- `{handoff['target']}` → `{handoff['upstream_skill']}`: {handoff['reason']}")
+        lines.append("")
     lines.extend(
         [
+            "## Provided endpoints",
+            "",
+            "| Endpoint | Source env |",
+            "| --- | --- |",
+        ]
+    )
+    for name, state in sorted((report.get("provided_endpoints") or {}).items()):
+        lines.append(f"| `{name}` | `{state or 'missing'}` |")
+    lines.extend(
+        [
+            "",
             "## Redacted environment",
             "",
             "| Variable | State |",
@@ -268,7 +388,7 @@ def render_markdown(report: dict[str, Any]) -> str:
     for name, state in sorted((report.get("redacted_environment") or {}).items()):
         lines.append(f"| `{name}` | `{state}` |")
     lines.append("")
-    lines.append("This report is blocked until real NVIDIA Content Agents endpoints/auth are provided; it does not substitute browser or mock material/physics assignment.")
+    lines.append("This report is blocked until real NVIDIA Content Agents endpoints or deployment prerequisites are provided; it does not substitute browser or mock material/physics assignment.")
     lines.append("")
     return "\n".join(lines)
 

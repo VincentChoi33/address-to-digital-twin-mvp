@@ -90,8 +90,7 @@ describe("NVIDIA runtime preflight", () => {
         },
         {
           CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL: "http://material.example.invalid",
-          CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL: "http://physics.example.invalid",
-          OVRTX_RENDER_ENDPOINT: "http://ovrtx.example.invalid"
+          CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL: "http://physics.example.invalid"
         }
       )
     );

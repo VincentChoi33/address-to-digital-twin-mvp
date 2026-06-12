@@ -100,3 +100,4 @@ jobs:
             --output-md "$RUNNER_TEMP/nvidia-content-agents.md"
           grep -q '"status": "blocked"' "$RUNNER_TEMP/nvidia-content-agents.json"
           grep -q 'Missing Material Agent endpoint' "$RUNNER_TEMP/nvidia-content-agents.json"
+          grep -q 'Missing NVIDIA_API_KEY for deploying missing Content Agents services' "$RUNNER_TEMP/nvidia-content-agents.json"

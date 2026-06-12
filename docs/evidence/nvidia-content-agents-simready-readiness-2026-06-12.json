@@ -26,9 +26,9 @@
     "Self-contained SimReady asset source passed Prop-Robotics-Neutral@1.0.0 profile validation across FET000/FET001/FET003/FET004/FET005/FET006"
   ],
   "remaining_blockers": [
-    "No NVIDIA_API_KEY/NGC_API_KEY/NVCF_API_KEY or complete provided Content Agents Material/Physics/OVRTX endpoint set is present locally.",
-    "Content Agents material/physics wrapper cannot run until CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL, CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL, and OVRTX_RENDER_ENDPOINT/CONTENT_AGENTS_OVRTX_BASE_URL are provided, or a GPU-host NVIDIA_API_KEY deployment is configured.",
-    "Local Mac still has no NVIDIA GPU/Omniverse runtime; RTX/ovstream evidence remains from train1 and must be reproduced on the target persistent GPU host."
+    "No healthy Content Agents Material/Physics endpoint set is present locally.",
+    "NVIDIA_API_KEY deployment auth is missing, so missing OVRTX/Material/Physics services cannot be deployed from the NVIDIA upstream deployment skills.",
+    "Local Mac still has no NVIDIA GPU/Omniverse runtime; RTX/ovstream/Warp evidence remains from train1 and must be reproduced on the target persistent GPU host."
   ],
   "local_redacted_environment": {
     "NVIDIA_API_KEY": "missing",
@@ -67,8 +67,8 @@
       "required_for": [
         "Omniverse Content Agents material/physics assignment"
       ],
-      "evidence": "No NVIDIA_API_KEY, NGC_API_KEY, NVCF_API_KEY, or complete provided Content Agents endpoint set was found.",
-      "remediation": "Provide NVIDIA_API_KEY for local deployment or set provided Content Agents endpoint URLs/tokens."
+      "evidence": "No NVIDIA_API_KEY deployment credential, usage token, or complete Material/Physics endpoint set was found.",
+      "remediation": "Provide NVIDIA_API_KEY for local deployment or set provided Material/Physics endpoint URLs; add endpoint usage tokens only when those endpoints require auth."
     },
     {
       "id": "CONTENT_AGENTS.ENDPOINTS.001",
@@ -78,7 +78,7 @@
         "reuse of already-running Content Agents services"
       ],
       "evidence": "material=missing, physics=missing, ovrtx/render=missing",
-      "remediation": "Set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL, CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL, and CONTENT_AGENTS_OVRTX_BASE_URL/OVRTX_RENDER_ENDPOINT, or deploy local Content Agents with NVIDIA_API_KEY."
+      "remediation": "Set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL and CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL, or deploy local Content Agents with NVIDIA_API_KEY. Set OVRTX/render endpoint when deploying or troubleshooting render-dependent services."
     },
     {
       "id": "CONTENT_AGENTS.RUNTIME.001",
@@ -88,7 +88,7 @@
         "full SimReady material/physics assignment"
       ],
       "evidence": "Content Agents prerequisites are incomplete.",
-      "remediation": "Satisfy NVIDIA GPU + Docker daemon + NVIDIA runtime + auth, or provide healthy service endpoints."
+      "remediation": "Satisfy local deployment prerequisites with NVIDIA_API_KEY, or provide healthy Material/Physics service endpoints."
     },
     {
       "id": "SIMREADY.FOUNDATION.001",
@@ -119,7 +119,7 @@
       "passed": true,
       "root": "~/.physical-ai-skill-hub/upstreams/content-agents",
       "commit": "5be4f88",
-      "note": "Upstream wrappers are present, but service auth/endpoints are not."
+      "note": "Upstream wrappers and deployment skills are present, but service endpoints and deployment auth are not."
     },
     "simready_validate_runner": {
       "passed": true,
@@ -198,13 +198,39 @@
       "passed": false,
       "status": "BLOCKED",
       "errors": [
-        "Set --base-url or one of CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL, MATERIAL_AGENT_BASE_URL"
+        "Missing Material Agent endpoint: set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL or MATERIAL_AGENT_BASE_URL.",
+        "Missing Physics Agent endpoint: set CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL or PHYSICS_AGENT_BASE_URL.",
+        "Missing NVIDIA_API_KEY for deploying missing Content Agents services from NVIDIA build/upstream deployment skills."
       ],
       "selected_calls": [
         "material",
         "physics"
       ],
-      "note": "Wrapper scripts are available, but no Content Agents service endpoints or NVIDIA/NGC/NVCF auth are configured."
+      "note": "Wrapper scripts are available. Existing endpoints may manage auth themselves; deployment of missing services requires NVIDIA_API_KEY.",
+      "deployment_handoffs": [
+        {
+          "target": "ovrtx",
+          "upstream_skill": "deploy-ovrtx-docker",
+          "reason": "Shared OVRTX renderer is needed before deploying or troubleshooting render-dependent Content Agents services."
+        },
+        {
+          "target": "material",
+          "upstream_skill": "deploy-material-agent-docker",
+          "reason": "Material Agent endpoint is missing for visual material assignment."
+        },
+        {
+          "target": "physics",
+          "upstream_skill": "deploy-physics-agent-docker",
+          "reason": "Physics Agent endpoint is missing for physics property assignment."
+        }
+      ],
+      "auth_policy": {
+        "usage_token_required": false,
+        "render_endpoint_required": false,
+        "usage_auth_present": false,
+        "deployment_auth_present": false,
+        "note": "Provided local/service endpoints may manage auth themselves; deployment of missing services requires NVIDIA_API_KEY."
+      }
     },
     "content_agents_repo_command": {
       "command": "npm run nvidia:content-agents:check",
@@ -218,16 +244,40 @@
       "blockers": [
         "Missing Material Agent endpoint: set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL or MATERIAL_AGENT_BASE_URL.",
         "Missing Physics Agent endpoint: set CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL or PHYSICS_AGENT_BASE_URL.",
-        "Missing OVRTX/render endpoint: set CONTENT_AGENTS_OVRTX_BASE_URL, OVRTX_RENDER_ENDPOINT, or RENDER_ENDPOINT.",
-        "Missing Content Agents auth token/key: set CONTENT_AGENTS_TOKEN, agent-specific token, NGC_API_KEY, NVCF_API_KEY, or NVIDIA_API_KEY."
+        "Missing NVIDIA_API_KEY for deploying missing Content Agents services from NVIDIA build/upstream deployment skills."
       ],
       "report": "docs/evidence/nvidia-content-agents-run-sadang-2026-06-12.json",
       "markdown_report": "docs/evidence/nvidia-content-agents-run-sadang-2026-06-12.md",
-      "next_step": "Set real endpoints/auth and run npm run nvidia:content-agents, then npm run nvidia:simready."
+      "next_step": "Set real Material/Physics endpoints or NVIDIA_API_KEY deployment auth and run npm run nvidia:content-agents, then npm run nvidia:simready.",
+      "deployment_handoffs": [
+        {
+          "target": "ovrtx",
+          "upstream_skill": "deploy-ovrtx-docker",
+          "reason": "Shared OVRTX renderer is needed before deploying or troubleshooting render-dependent Content Agents services."
+        },
+        {
+          "target": "material",
+          "upstream_skill": "deploy-material-agent-docker",
+          "reason": "Material Agent endpoint is missing for visual material assignment."
+        },
+        {
+          "target": "physics",
+          "upstream_skill": "deploy-physics-agent-docker",
+          "reason": "Physics Agent endpoint is missing for physics property assignment."
+        }
+      ],
+      "auth_policy": {
+        "usage_token_required": false,
+        "render_endpoint_required": false,
+        "usage_auth_present": false,
+        "deployment_auth_present": false,
+        "note": "Provided local/service endpoints may manage auth themselves; deployment of missing services requires NVIDIA_API_KEY."
+      }
     }
   },
   "next_required_inputs": [
-    "Provide NVIDIA_API_KEY/NGC_API_KEY/NVCF_API_KEY or Content Agents token plus healthy CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL, CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL, and OVRTX_RENDER_ENDPOINT/CONTENT_AGENTS_OVRTX_BASE_URL.",
+    "Provide healthy CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL and CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL; set endpoint usage tokens only if those endpoints require bearer auth.",
+    "Or provide NVIDIA_API_KEY to deploy missing OVRTX/Material/Physics services from the NVIDIA upstream content-agents checkout, then export the resulting Material/Physics endpoints.",
     "Run npm run nvidia:content-agents to execute NVIDIA Material→Physics assignment and persist the output USD/reports.",
     "Run npm run nvidia:simready again on the resulting asset/output and keep CI green."
   ]
