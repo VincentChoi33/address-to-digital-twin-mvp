@@ -4,7 +4,7 @@
   "status": "openusd_ready",
   "summary": {
     "openusd_authoring_ready": true,
-    "omniverse_rtx_ready": false,
+    "omniverse_rtx_ready": true,
     "omniverse_streaming_ready": false,
     "simready_automation_ready": false,
     "content_agents_ready": false
@@ -32,6 +32,18 @@
       "ok": true,
       "code": 0,
       "stdout": "pxr-usd-ok",
+      "stderr": ""
+    },
+    "python_ovrtx": {
+      "ok": true,
+      "code": 0,
+      "stdout": "ovrtx-python-ok 0.3.0",
+      "stderr": ""
+    },
+    "python_ovstream": {
+      "ok": true,
+      "code": 0,
+      "stdout": "ovstream-python-ok (0, 3, 0)",
       "stderr": ""
     },
     "usdchecker": {
@@ -132,24 +144,23 @@
     {
       "id": "OMNIVERSE.VIEWER.001",
       "product": "NVIDIA Omniverse / ovrtx / Kit viewer",
-      "status": "blocked",
+      "status": "passed",
       "required_for": [
         "NVIDIA-only visual runtime",
         "RTX/ovrtx render verification"
       ],
-      "evidence": "No ovrtx, kit, usdview, or known Omniverse app path was found.",
-      "remediation": "Install/use an Omniverse Kit or ovrtx runtime on an NVIDIA GPU machine."
+      "evidence": "ovrtx-python-ok 0.3.0"
     },
     {
       "id": "OMNIVERSE.OVSTREAM.001",
       "product": "NVIDIA Omniverse Streaming / ovstream WebRTC",
-      "status": "blocked",
+      "status": "warning",
       "required_for": [
         "browser-delivered NVIDIA-only viewer",
         "remote RTX/ovrtx stream acceptance"
       ],
-      "evidence": "No OVSTREAM_SIGNALING_URL, OMNIVERSE_STREAM_URL, or OVRTX_WEBRTC_URL was provided.",
-      "remediation": "Expose an ovstream/WebRTC endpoint from the NVIDIA GPU host after ovrtx/Omniverse first-frame readiness."
+      "evidence": "ovstream-python-ok (0, 3, 0); endpoint=missing",
+      "remediation": "Install ovstream on the NVIDIA GPU host and expose OVSTREAM_SIGNALING_URL, OMNIVERSE_STREAM_URL, or OVRTX_WEBRTC_URL after first-frame readiness."
     },
     {
       "id": "CONTENT_AGENTS.AUTH.001",
@@ -186,7 +197,6 @@
     "OVRTX_WEBRTC_URL": "missing"
   },
   "next_actions": [
-    "Install or expose NVIDIA Omniverse Kit/ovrtx/usdview runtime for the USD stage.",
     "Expose an ovstream/WebRTC endpoint from the NVIDIA GPU host for the browser-delivered NVIDIA-only viewer.",
     "Configure Content Agents prerequisites: NVIDIA API/NGC/NVCF auth plus GPU Docker runtime, or provided service endpoints.",
     "After runtime gates pass, run SimReady/Asset Validator and USD Performance Tuning baseline profiling."
