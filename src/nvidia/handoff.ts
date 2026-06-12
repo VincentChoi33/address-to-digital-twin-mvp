@@ -155,9 +155,11 @@ export function buildHandoffManifest(input: {
       "cd ovstream_browser_client && npm install && npm run build && npm run dev -- --port 5191",
       "cd ovstream_browser_client && npm run probe:first-frame -- --url http://127.0.0.1:5191/?server=127.0.0.1\\&signalingport=49100 --output-json browser_first_frame_report.json --screenshot browser_first_frame.png",
       "npm run nvidia:preflight",
+      "npm run nvidia:content-agents",
+      "npm run nvidia:simready",
       "Open the stage in NVIDIA Omniverse / Kit / ovrtx and capture render evidence.",
       "Expose an ovstream/WebRTC browser viewer and attach first-frame stream evidence.",
-      "Run Content Agents material/physics assignment, then SimReady/Asset Validator."
+      "Run Content Agents Material→Physics assignment, then rerun SimReady/Asset Validator on the updated output."
     ],
     nvidia_only_constraints: [
       "Do not use the browser Three.js/WebGL viewer as final USD-render acceptance evidence.",
@@ -221,6 +223,8 @@ If running from the full repository checkout, also run:
 \`\`\`bash
 npm ci
 npm run nvidia:preflight
+npm run nvidia:content-agents:check
+npm run nvidia:simready
 \`\`\`
 
 Acceptance threshold: \`nvidia_runtime_preflight.json\` should move from \`${input.preflight.status}\` to \`nvidia_runtime_ready\` before claiming local NVIDIA runtime readiness.
@@ -236,8 +240,8 @@ Acceptance threshold: \`nvidia_runtime_preflight.json\` should move from \`${inp
 
 This package includes an authored SimReady candidate and a self-contained validator asset source. Before saying “Content-Agents-assisted SimReady”:
 
-1. Run Omniverse Content Agents for material and physics assignment.
-2. Run Omniverse Asset Validator / SimReady validation against \`simready_asset/${input.twin.project_id}/simready_usd/${input.twin.project_id}.usda\`.
+1. Provide Content Agents Material/Physics/OVRTX endpoints plus auth, then run \`npm run nvidia:content-agents\`.
+2. Run \`npm run nvidia:simready\` or Omniverse Asset Validator / SimReady validation against \`simready_asset/${input.twin.project_id}/simready_usd/${input.twin.project_id}.usda\`.
 3. Copy validator reports into this package and update \`handoff_manifest.json\` checksums.
 4. Run USD Performance Tuning if the scene is scaled beyond this MVP sample.
 

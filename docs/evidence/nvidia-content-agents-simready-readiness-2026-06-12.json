@@ -18,10 +18,10 @@
   "completed_gates": [
     "OpenUSD package authored and local usdchecker passed",
     "train1 ovrtx first-frame evidence passed",
-    "train1 ovrtx\u2192ovstream server readiness passed",
+    "train1 ovrtx→ovstream server readiness passed",
     "train1 @nvidia/ov-web-rtc Direct browser first-frame evidence passed",
     "train1 package validation passed with SimReady/Content Agents preflight gates present",
-    "Local SimReady Foundation checkout found at /Users/handy_choi/.physical-ai-skill-hub/upstreams/simready-foundation @ a1e9dd6",
+    "Local SimReady Foundation checkout found at ~/.physical-ai-skill-hub/upstreams/simready-foundation @ a1e9dd6",
     "simready-validate 2026.4.9 installed in Python 3.12 runner venv and executed",
     "Self-contained SimReady asset source passed Prop-Robotics-Neutral@1.0.0 profile validation across FET000/FET001/FET003/FET004/FET005/FET006"
   ],
@@ -97,7 +97,7 @@
       "required_for": [
         "formal SimReady profile conformance"
       ],
-      "evidence": "SimReady Foundation root exists at /Users/handy_choi/.physical-ai-skill-hub/upstreams/simready-foundation."
+      "evidence": "SimReady Foundation root exists at ~/.physical-ai-skill-hub/upstreams/simready-foundation."
     },
     {
       "id": "SIMREADY.VALIDATOR.001",
@@ -112,12 +112,12 @@
   "nvidia_reference_dependency_checks": {
     "simready_foundation": {
       "passed": true,
-      "root": "/Users/handy_choi/.physical-ai-skill-hub/upstreams/simready-foundation",
+      "root": "~/.physical-ai-skill-hub/upstreams/simready-foundation",
       "commit": "a1e9dd6"
     },
     "content_agents_upstream": {
       "passed": true,
-      "root": "/Users/handy_choi/.physical-ai-skill-hub/upstreams/content-agents",
+      "root": "~/.physical-ai-skill-hub/upstreams/content-agents",
       "commit": "5be4f88",
       "note": "Upstream wrappers are present, but service auth/endpoints are not."
     },
@@ -205,11 +205,30 @@
         "physics"
       ],
       "note": "Wrapper scripts are available, but no Content Agents service endpoints or NVIDIA/NGC/NVCF auth are configured."
+    },
+    "content_agents_repo_command": {
+      "command": "npm run nvidia:content-agents:check",
+      "status": "blocked",
+      "passed": false,
+      "selected_calls": [
+        "material",
+        "physics"
+      ],
+      "input_usd_path": "src/samples/sadang_317_6/omniverse/simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda",
+      "blockers": [
+        "Missing Material Agent endpoint: set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL or MATERIAL_AGENT_BASE_URL.",
+        "Missing Physics Agent endpoint: set CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL or PHYSICS_AGENT_BASE_URL.",
+        "Missing OVRTX/render endpoint: set CONTENT_AGENTS_OVRTX_BASE_URL, OVRTX_RENDER_ENDPOINT, or RENDER_ENDPOINT.",
+        "Missing Content Agents auth token/key: set CONTENT_AGENTS_TOKEN, agent-specific token, NGC_API_KEY, NVCF_API_KEY, or NVIDIA_API_KEY."
+      ],
+      "report": "docs/evidence/nvidia-content-agents-run-sadang-2026-06-12.json",
+      "markdown_report": "docs/evidence/nvidia-content-agents-run-sadang-2026-06-12.md",
+      "next_step": "Set real endpoints/auth and run npm run nvidia:content-agents, then npm run nvidia:simready."
     }
   },
   "next_required_inputs": [
-    "Provide NVIDIA_API_KEY from build.nvidia.com for local Content Agents deployment on a GPU host, or provide healthy CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL, CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL, and OVRTX_RENDER_ENDPOINT/CONTENT_AGENTS_OVRTX_BASE_URL.",
-    "Run Content Agents material+physics assignment and persist the generated materialized/physics USD plus reports.",
-    "Re-run npm run nvidia:package and simready-validate after Content Agents output if you want a full Content-Agents-assisted SimReady claim rather than the current authored-profile pass."
+    "Provide NVIDIA_API_KEY/NGC_API_KEY/NVCF_API_KEY or Content Agents token plus healthy CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL, CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL, and OVRTX_RENDER_ENDPOINT/CONTENT_AGENTS_OVRTX_BASE_URL.",
+    "Run npm run nvidia:content-agents to execute NVIDIA Material→Physics assignment and persist the output USD/reports.",
+    "Run npm run nvidia:simready again on the resulting asset/output and keep CI green."
   ]
 }

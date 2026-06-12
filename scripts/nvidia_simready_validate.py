@@ -76,17 +76,17 @@ def main() -> int:
         "project_id": args.project_id,
         "validator_tool": "simready-validate",
         "simready_validate_version": validator_version(validator),
-        "foundation_root": str(foundation_root),
+        "foundation_root": display_path(foundation_root, repo_root),
         "foundation_commit": git_short(foundation_root),
         "asset_path": str(asset_path.relative_to(repo_root)) if asset_path.is_relative_to(repo_root) else str(asset_path),
         "profile_target": {"name": args.profile, "version": args.version},
         "feature_results": parsed["feature_results"],
         "failing_requirements": parsed["failing_requirements"],
         "validator_exit_status": result.returncode,
-        "command": redact_paths(command, repo_root),
-        "stdout_tail": tail(result.stdout),
-        "stderr_tail": tail(result.stderr),
-        "raw_output": str(raw_output),
+        "command": [redact_text(item, repo_root) for item in command],
+        "stdout_tail": redact_text(tail(result.stdout), repo_root),
+        "stderr_tail": redact_text(tail(result.stderr), repo_root),
+        "raw_output": redact_text(str(raw_output), repo_root),
     }
 
     output_json = (repo_root / args.output_json).resolve()
@@ -240,13 +240,18 @@ def parse_simready_report(raw: Any, asset_path: str) -> dict[str, Any]:
     return {"passed": False, "feature_results": [], "failing_requirements": ["Unrecognized simready-validate output schema"]}
 
 
-def redact_paths(command: list[str], repo_root: Path) -> list[str]:
-    home = str(Path.home())
-    root = str(repo_root)
-    redacted = []
-    for item in command:
-        redacted.append(item.replace(root, ".").replace(home, "~"))
+def redact_text(value: str, repo_root: Path) -> str:
+    redacted = value.replace(str(repo_root), ".").replace(str(Path.home()), "~")
+    for tmp_root in {tempfile.gettempdir(), "/private/tmp", "/tmp"}:
+        redacted = redacted.replace(tmp_root, "<tmp>")
     return redacted
+
+
+def display_path(path: Path, repo_root: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(repo_root))
+    except ValueError:
+        return str(path).replace(str(Path.home()), "~")
 
 
 def tail(value: str, max_chars: int = 4000) -> str:

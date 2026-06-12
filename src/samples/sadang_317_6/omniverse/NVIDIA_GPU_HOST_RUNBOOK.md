@@ -46,6 +46,8 @@ If running from the full repository checkout, also run:
 ```bash
 npm ci
 npm run nvidia:preflight
+npm run nvidia:content-agents:check
+npm run nvidia:simready
 ```
 
 Acceptance threshold: `nvidia_runtime_preflight.json` should move from `openusd_ready` to `nvidia_runtime_ready` before claiming local NVIDIA runtime readiness.
@@ -61,8 +63,8 @@ Acceptance threshold: `nvidia_runtime_preflight.json` should move from `openusd_
 
 This package includes an authored SimReady candidate and a self-contained validator asset source. Before saying “Content-Agents-assisted SimReady”:
 
-1. Run Omniverse Content Agents for material and physics assignment.
-2. Run Omniverse Asset Validator / SimReady validation against `simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda`.
+1. Provide Content Agents Material/Physics/OVRTX endpoints plus auth, then run `npm run nvidia:content-agents`.
+2. Run `npm run nvidia:simready` or Omniverse Asset Validator / SimReady validation against `simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda`.
 3. Copy validator reports into this package and update `handoff_manifest.json` checksums.
 4. Run USD Performance Tuning if the scene is scaled beyond this MVP sample.
 

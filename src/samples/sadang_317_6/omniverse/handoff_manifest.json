@@ -121,8 +121,8 @@
       "path": "simready_minimum_report.json",
       "role": "authored SimReady candidate report plus external Content Agents gates",
       "required": true,
-      "size_bytes": 2497,
-      "sha256": "69666ec5e7b2a8ab2837c6a9b01154d24fb0828e5db5968c9fa5d558aa7e3b48"
+      "size_bytes": 2511,
+      "sha256": "ce98afea91c20772e003ae514aac852a97dc411de950e105f57db9a84555b4a1"
     },
     {
       "path": "simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda",
@@ -156,8 +156,8 @@
       "path": "NVIDIA_GPU_HOST_RUNBOOK.md",
       "role": "GPU host validation runbook",
       "required": true,
-      "size_bytes": 3923,
-      "sha256": "fea29a40f11e3943ea1851a0357b7713be3b437c53464cba5f0829fca205e766"
+      "size_bytes": 4055,
+      "sha256": "8d8ac34c0b5cfeeb121b84550791cdb9658c7545ec543ee84cd87d6678ebdd69"
     },
     {
       "path": "ovstream_viewer_contract.json",
@@ -223,9 +223,11 @@
     "cd ovstream_browser_client && npm install && npm run build && npm run dev -- --port 5191",
     "cd ovstream_browser_client && npm run probe:first-frame -- --url http://127.0.0.1:5191/?server=127.0.0.1\\&signalingport=49100 --output-json browser_first_frame_report.json --screenshot browser_first_frame.png",
     "npm run nvidia:preflight",
+    "npm run nvidia:content-agents",
+    "npm run nvidia:simready",
     "Open the stage in NVIDIA Omniverse / Kit / ovrtx and capture render evidence.",
     "Expose an ovstream/WebRTC browser viewer and attach first-frame stream evidence.",
-    "Run Content Agents material/physics assignment, then SimReady/Asset Validator."
+    "Run Content Agents Material→Physics assignment, then rerun SimReady/Asset Validator on the updated output."
   ],
   "nvidia_only_constraints": [
     "Do not use the browser Three.js/WebGL viewer as final USD-render acceptance evidence.",

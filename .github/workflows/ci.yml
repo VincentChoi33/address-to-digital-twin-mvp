@@ -82,3 +82,11 @@ jobs:
               --output-md "$RUNNER_TEMP/nvidia-simready-validation.md"
           grep -q '"status": "passed"' "$RUNNER_TEMP/nvidia-simready-validation.json"
           grep -q 'FET006_BASE_MDL' "$RUNNER_TEMP/nvidia-simready-validation.json"
+
+      - name: NVIDIA Content Agents blocked-gate audit
+        run: |
+          npm run nvidia:content-agents:check -- \
+            --output-json "$RUNNER_TEMP/nvidia-content-agents.json" \
+            --output-md "$RUNNER_TEMP/nvidia-content-agents.md"
+          grep -q '"status": "blocked"' "$RUNNER_TEMP/nvidia-content-agents.json"
+          grep -q 'Missing Material Agent endpoint' "$RUNNER_TEMP/nvidia-content-agents.json"

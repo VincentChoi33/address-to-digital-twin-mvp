@@ -1,0 +1,49 @@
+{
+  "project_id": "sadang_317_6",
+  "generated_at": "2026-06-12T13:46:28.289322Z",
+  "skill": "content-agents",
+  "status": "blocked",
+  "passed": false,
+  "input_usd_path": "src/samples/sadang_317_6/omniverse/simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda",
+  "output_dir": "src/samples/sadang_317_6/omniverse/content_agents_run",
+  "selected_calls": [
+    "material",
+    "physics"
+  ],
+  "blockers": [
+    "Missing Material Agent endpoint: set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL or MATERIAL_AGENT_BASE_URL.",
+    "Missing Physics Agent endpoint: set CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL or PHYSICS_AGENT_BASE_URL.",
+    "Missing OVRTX/render endpoint: set CONTENT_AGENTS_OVRTX_BASE_URL, OVRTX_RENDER_ENDPOINT, or RENDER_ENDPOINT.",
+    "Missing Content Agents auth token/key: set CONTENT_AGENTS_TOKEN, agent-specific token, NGC_API_KEY, NVCF_API_KEY, or NVIDIA_API_KEY."
+  ],
+  "materialized_usd_path": null,
+  "physics_usd_path": null,
+  "output_usd_path": "src/samples/sadang_317_6/omniverse/simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda",
+  "next_step": "provide-content-agents-endpoints-and-auth",
+  "redacted_environment": {
+    "CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL": "missing",
+    "MATERIAL_AGENT_BASE_URL": "missing",
+    "CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL": "missing",
+    "PHYSICS_AGENT_BASE_URL": "missing",
+    "CONTENT_AGENTS_OVRTX_BASE_URL": "missing",
+    "OVRTX_RENDER_ENDPOINT": "missing",
+    "RENDER_ENDPOINT": "missing",
+    "CONTENT_AGENTS_TOKEN": "missing",
+    "CONTENT_AGENTS_MATERIAL_AGENT_TOKEN": "missing",
+    "CONTENT_AGENTS_PHYSICS_AGENT_TOKEN": "missing",
+    "NGC_API_KEY": "missing",
+    "NVCF_API_KEY": "missing",
+    "NVIDIA_API_KEY": "missing"
+  },
+  "provided_endpoints": {
+    "material": null,
+    "physics": null,
+    "ovrtx_render": null,
+    "auth": null
+  },
+  "router": {
+    "path": "~/.codex/.tmp/plugins/plugins/nvidia/skills/omniverse-cad-to-simready/references/content-agents/scripts/run.py",
+    "available": true,
+    "source": "local-codex-nvidia-plugin"
+  }
+}
