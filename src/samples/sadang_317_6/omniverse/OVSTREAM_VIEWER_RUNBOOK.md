@@ -21,9 +21,10 @@ python3 -c "import ovstream; ovstream.initialize(); print('ovstream OK', ovstrea
 export OVRTX_SKIP_USD_CHECK=1
 usdchecker sadang_317_6.usda
 python3 nvidia_ovrtx_first_frame.py --stage sadang_317_6.ovrtx_viewer.usda --output-json ovrtx_first_frame_report.json --output-ppm ovrtx_first_frame.ppm
+python3 nvidia_ovstream_smoke_server.py --stage sadang_317_6.ovrtx_viewer.usda --output-json ovstream_smoke_report.json
 ```
 
-Then start the ovrtx/Omniverse server for `sadang_317_6.ovrtx_viewer.usda`, register ovstream callbacks before serving clients, and expose a readiness endpoint only after the first valid RTX frame has been copied into the stream buffer.
+Then start the ovrtx/Omniverse server for `sadang_317_6.ovrtx_viewer.usda`, register ovstream callbacks before serving clients, and expose a readiness endpoint only after the first valid RTX frame has been copied into the stream buffer. The smoke server proves this server readiness rule; final acceptance still needs a browser video first-frame capture.
 
 ## Browser client rules
 

@@ -94,7 +94,7 @@ export function buildOvstreamViewerContract(input: {
         id: "OMNIVERSE.OVSTREAM.001",
         required_for: "browser-delivered NVIDIA-only viewer",
         current_status: gateStatus(input.preflight, "OMNIVERSE.OVSTREAM.001"),
-        evidence_required: "ovstream import/lifecycle check, signaling URL, and browser video first-frame capture"
+        evidence_required: "ovstream import/lifecycle check, ovstream smoke server /healthz report, signaling URL, and browser video first-frame capture"
       }
     ],
     browser_client_contract: {
@@ -113,6 +113,7 @@ export function buildOvstreamViewerContract(input: {
     validation_artifacts_to_attach: [
       "nvidia-smi output",
       "ovrtx/Kit first-frame server log",
+      "ovrtx-to-ovstream smoke server report",
       "ovstream import/lifecycle check output",
       "browser video first-frame screenshot or stream capture",
       "updated nvidia_runtime_preflight.json from the GPU host"
@@ -149,9 +150,10 @@ python3 -c "import ovstream; ovstream.initialize(); print('ovstream OK', ovstrea
 export OVRTX_SKIP_USD_CHECK=1
 usdchecker ${contract.usd_stage}
 python3 nvidia_ovrtx_first_frame.py --stage ${input.twin.project_id}.ovrtx_viewer.usda --output-json ovrtx_first_frame_report.json --output-ppm ovrtx_first_frame.ppm
+python3 nvidia_ovstream_smoke_server.py --stage ${input.twin.project_id}.ovrtx_viewer.usda --output-json ovstream_smoke_report.json
 \`\`\`
 
-Then start the ovrtx/Omniverse server for \`${input.twin.project_id}.ovrtx_viewer.usda\`, register ovstream callbacks before serving clients, and expose a readiness endpoint only after the first valid RTX frame has been copied into the stream buffer.
+Then start the ovrtx/Omniverse server for \`${input.twin.project_id}.ovrtx_viewer.usda\`, register ovstream callbacks before serving clients, and expose a readiness endpoint only after the first valid RTX frame has been copied into the stream buffer. The smoke server proves this server readiness rule; final acceptance still needs a browser video first-frame capture.
 
 ## Browser client rules
 

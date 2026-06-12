@@ -34,11 +34,18 @@
       "sha256": "b491bdec9406e4b8ba8cb698e2f47771ac6940677db1916ca5c875ae05286711"
     },
     {
+      "path": "nvidia_ovstream_smoke_server.py",
+      "role": "NVIDIA ovrtx-to-ovstream WebRTC readiness smoke server",
+      "required": true,
+      "size_bytes": 12791,
+      "sha256": "39a34fdeb3bb0bb0224a32865b4801b4dfd60728a265a6557bc8a78bdd7f274f"
+    },
+    {
       "path": "nvidia_stack_manifest.json",
       "role": "NVIDIA product mapping and current local gate status",
       "required": true,
-      "size_bytes": 3801,
-      "sha256": "0bdb0b78d15c3d27cb9f7bf44803b0e481841a5bf2118e40be9bbab0820914c7"
+      "size_bytes": 4018,
+      "sha256": "60dc62f347b33232b6646a81804c85d94ca52908eb4dfe729e355ab989e8f55f"
     },
     {
       "path": "nvidia_runtime_preflight.json",
@@ -72,29 +79,29 @@
       "path": "README.md",
       "role": "package overview",
       "required": true,
-      "size_bytes": 2798,
-      "sha256": "d2b9d2a824a66c09033400b2a1574d65ca992d5bb5e56dee3368addbff392798"
+      "size_bytes": 3120,
+      "sha256": "e9872e250ae59757b00eca1135af8db92b441644440e7f7a6711588491d0a8c7"
     },
     {
       "path": "NVIDIA_GPU_HOST_RUNBOOK.md",
       "role": "GPU host validation runbook",
       "required": true,
-      "size_bytes": 3200,
-      "sha256": "fa8cd9f785851c80a4ea48448f7b9e8b391dabfc6885a08334cda5bf37a702f7"
+      "size_bytes": 3480,
+      "sha256": "366788d4ee24102dd3a10c898f9de4aef677277bf8989c383a120a687e60e491"
     },
     {
       "path": "ovstream_viewer_contract.json",
       "role": "NVIDIA ovstream/WebRTC viewer contract",
       "required": true,
-      "size_bytes": 3472,
-      "sha256": "7891bf600c79b8d5068adf21196b3ade5952468939e5f3391d9cdc61a4679b1a"
+      "size_bytes": 3556,
+      "sha256": "3e7b0d60639342c9e3037b1d72a35f0563065474dc1a888ce04711ddc7bb6427"
     },
     {
       "path": "OVSTREAM_VIEWER_RUNBOOK.md",
       "role": "NVIDIA ovstream/WebRTC viewer runbook",
       "required": true,
-      "size_bytes": 2012,
-      "sha256": "4bddd7931305cd85db5f8c18a257900633e9483b12c1b7a5a46b1fde864f3c21"
+      "size_bytes": 2250,
+      "sha256": "69b92295b3334893df3a33a7e961514ffee1e1f9f185529a59384b8a5472c827"
     },
     {
       "path": "../twin.json",
@@ -125,7 +132,7 @@
     {
       "id": "OMNIVERSE.OVSTREAM.001",
       "required_status": "passed for browser-delivered NVIDIA-only viewer",
-      "evidence_to_attach": "ovstream lifecycle check, signaling/stream URL, server first-frame readiness log, and browser video first-frame capture."
+      "evidence_to_attach": "ovstream lifecycle check, signaling/stream URL, ovstream smoke server /healthz report, server first-frame readiness log, and browser video first-frame capture."
     },
     {
       "id": "CONTENT_AGENTS.RUNTIME.001",
@@ -142,6 +149,7 @@
     "nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader",
     "usdchecker sadang_317_6.usda",
     "python3 nvidia_ovrtx_first_frame.py --stage sadang_317_6.ovrtx_viewer.usda --output-json ovrtx_first_frame_report.json --output-ppm ovrtx_first_frame.ppm",
+    "python3 nvidia_ovstream_smoke_server.py --stage sadang_317_6.ovrtx_viewer.usda --output-json ovstream_smoke_report.json",
     "npm run nvidia:preflight",
     "Open the stage in NVIDIA Omniverse / Kit / ovrtx and capture render evidence.",
     "Expose an ovstream/WebRTC browser viewer and attach first-frame stream evidence.",

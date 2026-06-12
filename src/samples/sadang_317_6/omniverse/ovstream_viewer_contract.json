@@ -41,7 +41,7 @@
       "id": "OMNIVERSE.OVSTREAM.001",
       "required_for": "browser-delivered NVIDIA-only viewer",
       "current_status": "blocked",
-      "evidence_required": "ovstream import/lifecycle check, signaling URL, and browser video first-frame capture"
+      "evidence_required": "ovstream import/lifecycle check, ovstream smoke server /healthz report, signaling URL, and browser video first-frame capture"
     }
   ],
   "browser_client_contract": {
@@ -88,6 +88,7 @@
   "validation_artifacts_to_attach": [
     "nvidia-smi output",
     "ovrtx/Kit first-frame server log",
+    "ovrtx-to-ovstream smoke server report",
     "ovstream import/lifecycle check output",
     "browser video first-frame screenshot or stream capture",
     "updated nvidia_runtime_preflight.json from the GPU host"

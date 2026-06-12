@@ -9,6 +9,7 @@ This handoff is for the NVIDIA-only runtime path. The local package can author a
 - OpenUSD stage: `sadang_317_6.usda`
 - ovrtx viewer wrapper: `sadang_317_6.ovrtx_viewer.usda`
 - ovrtx first-frame smoke: `nvidia_ovrtx_first_frame.py`
+- ovstream readiness smoke: `nvidia_ovstream_smoke_server.py`
 - Local authoring evidence: `usdchecker_report.txt`
 - SimReady baseline: `simready_minimum_report.json` includes USD units/axis/material binding plus conservative static PhysicsCollisionAPI semantics.
 - Browser viewer replacement: `ovstream_viewer_contract.json` + `OVSTREAM_VIEWER_RUNBOOK.md` define the NVIDIA-only WebRTC video-stream path.
@@ -32,6 +33,7 @@ nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader
 usdchecker sadang_317_6.usda
 export OVRTX_SKIP_USD_CHECK=1
 python3 nvidia_ovrtx_first_frame.py --stage sadang_317_6.ovrtx_viewer.usda --output-json ovrtx_first_frame_report.json --output-ppm ovrtx_first_frame.ppm
+python3 nvidia_ovstream_smoke_server.py --stage sadang_317_6.ovrtx_viewer.usda --output-json ovstream_smoke_report.json
 ```
 
 If running from the full repository checkout, also run:
@@ -47,7 +49,7 @@ Acceptance threshold: `nvidia_runtime_preflight.json` should move from `openusd_
 
 1. Open `sadang_317_6.ovrtx_viewer.usda` in NVIDIA Omniverse, Kit, or ovrtx for the first-frame smoke; open `sadang_317_6.usda` directly for source-stage inspection.
 2. Confirm the stage loads with meter units, Y-up axis, official buildings, roads, parcel boundary, terrain reference, flood-water reference layer, materials, and static collider APIs.
-3. Follow `OVSTREAM_VIEWER_RUNBOOK.md` to expose browser delivery through ovstream/WebRTC only.
+3. Follow `OVSTREAM_VIEWER_RUNBOOK.md` to expose browser delivery through ovstream/WebRTC only. The smoke server proves server readiness; browser decode still needs a video first-frame capture.
 4. Attach screenshot, stream URL, or render log back to the package.
 
 ## 4. SimReady completion gates

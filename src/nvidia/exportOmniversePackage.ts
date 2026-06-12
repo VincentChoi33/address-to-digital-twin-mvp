@@ -43,6 +43,7 @@ async function main(): Promise<void> {
   await writeFile(usdPath, exported.usda, "utf8");
   await writeFile(compositePath, composite.usda, "utf8");
   await copyFile(join(process.cwd(), "scripts/nvidia_ovrtx_first_frame.py"), join(outDir, "nvidia_ovrtx_first_frame.py"));
+  await copyFile(join(process.cwd(), "scripts/nvidia_ovstream_smoke_server.py"), join(outDir, "nvidia_ovstream_smoke_server.py"));
 
   const checkerResult = runtimeProbe.usdChecker === "available" ? spawnSync("usdchecker", [usdPath], { encoding: "utf8" }) : null;
   const checkerStatus = checkerResult ? (checkerResult.status === 0 ? "passed" : "failed") : "not_run";
@@ -64,7 +65,9 @@ async function main(): Promise<void> {
       camera_path: composite.cameraPath,
       resolution: [composite.width, composite.height],
       first_frame_smoke_script: "nvidia_ovrtx_first_frame.py",
-      first_frame_command: `python3 nvidia_ovrtx_first_frame.py --stage ${composite.fileName} --output-json ovrtx_first_frame_report.json --output-ppm ovrtx_first_frame.ppm`
+      first_frame_command: `python3 nvidia_ovrtx_first_frame.py --stage ${composite.fileName} --output-json ovrtx_first_frame_report.json --output-ppm ovrtx_first_frame.ppm`,
+      ovstream_smoke_script: "nvidia_ovstream_smoke_server.py",
+      ovstream_smoke_command: `python3 nvidia_ovstream_smoke_server.py --stage ${composite.fileName} --output-json ovstream_smoke_report.json`
     }
   });
   const report = exported.simreadyReport as {

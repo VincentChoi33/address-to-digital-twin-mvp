@@ -25,6 +25,8 @@ Juso/VWorld/WFS twin.json
   - Generates `sadang_317_6.ovrtx_viewer.usda`, a viewer/session wrapper that sublayers the source OpenUSD stage and adds NVIDIA ovrtx Camera → RenderProduct → RenderVar → RenderSettings wiring.
 - `scripts/nvidia_ovrtx_first_frame.py`
   - GPU-host smoke test that uses NVIDIA ovrtx `Renderer(RendererConfig(...))`, steps `/Render/OVServer/ViewportTexture0`, maps `LdrColor`, and saves JSON + image evidence.
+- `scripts/nvidia_ovstream_smoke_server.py`
+  - GPU-host smoke server that uses ovrtx CUDA `LdrColor`, converts RGBA8 to a persistent BGRA8 Warp CUDA buffer, starts `ovstream.Server(ServerType.WEBRTC)`, and gates `/healthz` on the first converted frame.
 - `src/nvidia/preflight.ts` and `src/nvidia/runPreflight.ts`
   - Probes the true NVIDIA-only runtime gates: `nvidia-smi`, Docker daemon, NVIDIA Container Toolkit, USD Python/usdchecker, Omniverse/ovrtx/Kit viewer, and Content Agents credentials/endpoints.
   - Writes `nvidia_runtime_preflight.json` and `.md` with redacted environment state and remediation.
@@ -46,6 +48,7 @@ src/samples/sadang_317_6/omniverse/
   sadang_317_6.usda
   sadang_317_6.ovrtx_viewer.usda
   nvidia_ovrtx_first_frame.py
+  nvidia_ovstream_smoke_server.py
   nvidia_stack_manifest.json
   nvidia_runtime_preflight.json
   nvidia_runtime_preflight.md
@@ -68,10 +71,10 @@ Current generated evidence:
 - Local `usdchecker` exit code 0 (`Validation Result ... Success!`).
 - ovrtx wrapper USD validates with local `usdchecker` after adding root `metersPerUnit`, `upAxis`, and `defaultPrim` metadata.
 - GPU-host handoff manifest status is `ready_for_gpu_host` with SHA-256 inventory.
-- ovstream viewer contract status is `contract_authored_runtime_gated`: the browser viewer contract is authored, but this Mac still cannot run the NVIDIA GPU stream endpoint.
+- ovstream viewer contract status is `contract_authored_runtime_gated`: the browser viewer contract is authored, and a GPU-host smoke server now exists to prove server readiness before browser decode validation.
 - Local package validator status is `passed` after `npm run nvidia:package`.
 - Runtime preflight status is `openusd_ready`: local OpenUSD/usdchecker and Docker are present, but local NVIDIA GPU, Omniverse/ovrtx/Kit viewer, Content Agents auth/endpoints, and NVIDIA Container Toolkit gates are not ready on this Mac.
-- RTX first-frame rendering is now proven on `train1`; full ovstream delivery and full SimReady validation remain external NVIDIA runtime gates.
+- RTX first-frame rendering is proven on `train1`; ovstream server readiness is the next GPU-host smoke gate; browser video decode and full SimReady validation remain external NVIDIA runtime gates.
 
 Remote GPU evidence captured on 2026-06-12:
 
@@ -80,8 +83,9 @@ Remote GPU evidence captured on 2026-06-12:
 - [`docs/evidence/nvidia-train1-package-validation-2026-06-12.md`](evidence/nvidia-train1-package-validation-2026-06-12.md)
 - [`docs/evidence/nvidia-train1-ovrtx-first-frame-2026-06-12.json`](evidence/nvidia-train1-ovrtx-first-frame-2026-06-12.json)
 - [`docs/evidence/nvidia-train1-ovrtx-first-frame-2026-06-12.png`](evidence/nvidia-train1-ovrtx-first-frame-2026-06-12.png)
+- [`docs/evidence/nvidia-train1-ovstream-smoke-2026-06-12.json`](evidence/nvidia-train1-ovstream-smoke-2026-06-12.json)
 
-On `train1` (`gpu1`, 8 × RTX 3090), GPU/driver, Docker, NVIDIA Container Toolkit, OpenUSD Python runtime, Python `ovrtx` runtime, Python `ovstream` lifecycle, `npm run nvidia:package` self-validation, and a real ovrtx first-frame render passed. The first frame used renderer version `(0, 3, 0)`, output `LdrColor` shape `720×1280×4 uint8`, `nonblank_rgb=true`, and step time `115.33351s` on the cold shader-cache run. Remaining remote blockers are explicit: no ovstream/WebRTC endpoint URL and no NVIDIA/NGC/NVCF or Content Agents credentials/endpoints.
+On `train1` (`gpu1`, 8 × RTX 3090), GPU/driver, Docker, NVIDIA Container Toolkit, OpenUSD Python runtime, Python `ovrtx` runtime, Python `ovstream` lifecycle, `npm run nvidia:package` self-validation, a real ovrtx first-frame render, and the ovrtx→ovstream server-readiness smoke passed. The first frame used renderer version `(0, 3, 0)`, output `LdrColor` shape `720×1280×4 uint8`, `nonblank_rgb=true`, and step time `115.33351s` on the cold shader-cache run. The ovstream smoke converted `LdrColor` from RGBA8 CUDA to a persistent BGRA8 CUDA buffer, started `ovstream.Server(ServerType.WEBRTC)`, observed `/healthz` as `503 not ready` before the converted frame and `200 ok` after it, and reported the expected no-client transient when submitting a frame without a browser attached. Remaining remote blockers are explicit: browser WebRTC video first-frame evidence and NVIDIA/NGC/NVCF or Content Agents credentials/endpoints.
 
 ![NVIDIA ovrtx first frame from train1](evidence/nvidia-train1-ovrtx-first-frame-2026-06-12.png)
 
@@ -91,7 +95,7 @@ On `train1` (`gpu1`, 8 × RTX 3090), GPU/driver, Docker, NVIDIA Container Toolki
 | --- | --- | --- |
 | OpenUSD | Canonical scene interchange replacing ad-hoc browser geometry exports | Implemented |
 | NVIDIA Omniverse / RTX Renderer / ovrtx | Final NVIDIA viewer/render path for USD | Implemented wrapper + first-frame smoke; passed on remote RTX 3090 host |
-| NVIDIA ovstream / WebRTC | Browser delivery path for NVIDIA-only viewer; browser displays video stream, not USD geometry | Contract authored; runtime-gated |
+| NVIDIA ovstream / WebRTC | Browser delivery path for NVIDIA-only viewer; browser displays video stream, not USD geometry | Server readiness smoke passed on remote RTX 3090 host; browser decode evidence pending |
 | NVIDIA SimReady | Simulation-ready material/physics/profile target | Minimum candidate metadata + static-collider baseline authored; full conformance requires runtime validation |
 | Omniverse Content Agents | Material/physics assignment | Planned; requires NVIDIA_API_KEY, Docker, NVIDIA Container Toolkit, GPU or service endpoints |
 | Omniverse USD Performance Tuning / Asset Validator / Scene Optimizer | Stage validation, profiling, optimization | `usdchecker` local pass; full Omniverse validator pending |
@@ -101,7 +105,7 @@ On `train1` (`gpu1`, 8 × RTX 3090), GPU/driver, Docker, NVIDIA Container Toolki
 
 ## Next hard gates for a true NVIDIA-only runtime
 
-1. Expose an ovstream/WebRTC endpoint from the NVIDIA GPU host and attach browser video first-frame evidence.
+1. Keep the ovstream/WebRTC endpoint alive from the NVIDIA GPU host and attach browser video first-frame evidence using `@nvidia/ov-web-rtc` Direct mode.
 2. Re-run `npm run nvidia:preflight` on that NVIDIA host until `omniverse_streaming_ready` and `content_agents_ready` become true.
 3. Use `handoff_manifest.json` and `NVIDIA_GPU_HOST_RUNBOOK.md` to keep the exact package checksums, `nvidia-smi`, `usdchecker`, ovrtx first-frame report/image, and validator reports together.
 4. Replace the browser-side 3D viewport with an Omniverse/ovstream viewer path. The generated `ovstream_viewer_contract.json` requires an HTML video/WebRTC surface and explicitly forbids substituting browser-side WebGL as the final USD renderer.

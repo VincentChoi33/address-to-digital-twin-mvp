@@ -73,6 +73,7 @@ function handoffFileSpecs(projectId: string): FileSpec[] {
     { path: `${projectId}.usda`, role: "OpenUSD stage to open in Omniverse/ovrtx", required: true },
     { path: `${projectId}.ovrtx_viewer.usda`, role: "ovrtx viewer/session wrapper with Camera, RenderProduct, RenderVar, and RenderSettings", required: true },
     { path: "nvidia_ovrtx_first_frame.py", role: "NVIDIA ovrtx first-frame smoke script for GPU-host evidence capture", required: true },
+    { path: "nvidia_ovstream_smoke_server.py", role: "NVIDIA ovrtx-to-ovstream WebRTC readiness smoke server", required: true },
     { path: "nvidia_stack_manifest.json", role: "NVIDIA product mapping and current local gate status", required: true },
     { path: "nvidia_runtime_preflight.json", role: "machine-readable runtime gate report", required: true },
     { path: "nvidia_runtime_preflight.md", role: "human-readable runtime gate report", required: true },
@@ -123,7 +124,7 @@ export function buildHandoffManifest(input: {
       {
         id: "OMNIVERSE.OVSTREAM.001",
         required_status: "passed for browser-delivered NVIDIA-only viewer",
-        evidence_to_attach: "ovstream lifecycle check, signaling/stream URL, server first-frame readiness log, and browser video first-frame capture."
+        evidence_to_attach: "ovstream lifecycle check, signaling/stream URL, ovstream smoke server /healthz report, server first-frame readiness log, and browser video first-frame capture."
       },
       {
         id: "CONTENT_AGENTS.RUNTIME.001",
@@ -140,6 +141,7 @@ export function buildHandoffManifest(input: {
       "nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader",
       `usdchecker ${input.twin.project_id}.usda`,
       `python3 nvidia_ovrtx_first_frame.py --stage ${input.twin.project_id}.ovrtx_viewer.usda --output-json ovrtx_first_frame_report.json --output-ppm ovrtx_first_frame.ppm`,
+      `python3 nvidia_ovstream_smoke_server.py --stage ${input.twin.project_id}.ovrtx_viewer.usda --output-json ovstream_smoke_report.json`,
       "npm run nvidia:preflight",
       "Open the stage in NVIDIA Omniverse / Kit / ovrtx and capture render evidence.",
       "Expose an ovstream/WebRTC browser viewer and attach first-frame stream evidence.",
@@ -170,6 +172,7 @@ This handoff is for the NVIDIA-only runtime path. The local package can author a
 - OpenUSD stage: \`${input.twin.project_id}.usda\`
 - ovrtx viewer wrapper: \`${input.twin.project_id}.ovrtx_viewer.usda\`
 - ovrtx first-frame smoke: \`nvidia_ovrtx_first_frame.py\`
+- ovstream readiness smoke: \`nvidia_ovstream_smoke_server.py\`
 - Local authoring evidence: \`usdchecker_report.txt\`
 - SimReady baseline: \`simready_minimum_report.json\` includes USD units/axis/material binding plus conservative static PhysicsCollisionAPI semantics.
 - Browser viewer replacement: \`ovstream_viewer_contract.json\` + \`OVSTREAM_VIEWER_RUNBOOK.md\` define the NVIDIA-only WebRTC video-stream path.
@@ -193,6 +196,7 @@ nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader
 usdchecker ${input.twin.project_id}.usda
 export OVRTX_SKIP_USD_CHECK=1
 python3 nvidia_ovrtx_first_frame.py --stage ${input.twin.project_id}.ovrtx_viewer.usda --output-json ovrtx_first_frame_report.json --output-ppm ovrtx_first_frame.ppm
+python3 nvidia_ovstream_smoke_server.py --stage ${input.twin.project_id}.ovrtx_viewer.usda --output-json ovstream_smoke_report.json
 \`\`\`
 
 If running from the full repository checkout, also run:
@@ -208,7 +212,7 @@ Acceptance threshold: \`nvidia_runtime_preflight.json\` should move from \`${inp
 
 1. Open \`${input.twin.project_id}.ovrtx_viewer.usda\` in NVIDIA Omniverse, Kit, or ovrtx for the first-frame smoke; open \`${input.twin.project_id}.usda\` directly for source-stage inspection.
 2. Confirm the stage loads with meter units, Y-up axis, official buildings, roads, parcel boundary, terrain reference, flood-water reference layer, materials, and static collider APIs.
-3. Follow \`OVSTREAM_VIEWER_RUNBOOK.md\` to expose browser delivery through ovstream/WebRTC only.
+3. Follow \`OVSTREAM_VIEWER_RUNBOOK.md\` to expose browser delivery through ovstream/WebRTC only. The smoke server proves server readiness; browser decode still needs a video first-frame capture.
 4. Attach screenshot, stream URL, or render log back to the package.
 
 ## 4. SimReady completion gates

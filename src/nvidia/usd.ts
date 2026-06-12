@@ -540,6 +540,7 @@ This folder is the NVIDIA-targeted export of the address digital twin. It is aut
 - \`${twin.project_id}.usda\` — OpenUSD ASCII stage with official building, road, parcel, terrain-reference, and flood-water layer prims.
 - \`${twin.project_id}.ovrtx_viewer.usda\` — viewer/session wrapper that sublayers the source stage and adds NVIDIA ovrtx Camera → RenderProduct → RenderVar → RenderSettings wiring.
 - \`nvidia_ovrtx_first_frame.py\` — GPU-host ovrtx smoke script that renders the wrapper through NVIDIA RTX and saves first-frame evidence.
+- \`nvidia_ovstream_smoke_server.py\` — GPU-host smoke server that converts ovrtx \`LdrColor\` to a persistent BGRA CUDA buffer, starts ovstream WebRTC, and gates \`/healthz\` on the first converted frame.
 - \`nvidia_stack_manifest.json\` — product mapping and runtime gate status.
 - \`nvidia_runtime_preflight.json\` / \`.md\` — local NVIDIA/Omniverse/SimReady runtime gate probe.
 - \`simready_minimum_report.json\` — minimum SimReady-candidate checks and blocked external gates.
@@ -572,6 +573,7 @@ ${runtimeProbe.note}
 \`\`\`bash
 export OVRTX_SKIP_USD_CHECK=1
 python3 nvidia_ovrtx_first_frame.py --stage ${twin.project_id}.ovrtx_viewer.usda --output-json ovrtx_first_frame_report.json --output-ppm ovrtx_first_frame.ppm
+python3 nvidia_ovstream_smoke_server.py --stage ${twin.project_id}.ovrtx_viewer.usda --output-json ovstream_smoke_report.json
 \`\`\`
 `;
 }

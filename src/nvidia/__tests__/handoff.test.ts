@@ -44,6 +44,7 @@ describe("NVIDIA GPU host handoff", () => {
     expect(manifest.gpu_host_acceptance_gates.map((gate) => gate.id)).toContain("OMNIVERSE.VIEWER.001");
     expect(manifest.gpu_host_acceptance_gates.map((gate) => gate.id)).toContain("OMNIVERSE.OVSTREAM.001");
     expect(manifest.gpu_host_commands.join(" ")).toContain("nvidia_ovrtx_first_frame.py");
+    expect(manifest.gpu_host_commands.join(" ")).toContain("nvidia_ovstream_smoke_server.py");
     expect(manifest.nvidia_only_constraints.join(" ")).toContain("Do not use the browser Three.js/WebGL viewer");
   });
 
@@ -53,6 +54,7 @@ describe("NVIDIA GPU host handoff", () => {
     expect(runbook).toContain("nvidia-smi");
     expect(runbook).toContain(`usdchecker ${twin.project_id}.usda`);
     expect(runbook).toContain(`${twin.project_id}.ovrtx_viewer.usda`);
+    expect(runbook).toContain("nvidia_ovstream_smoke_server.py");
     expect(runbook).toContain("nvidia_runtime_ready");
     expect(runbook).toContain("Browser Three.js screenshots do not count");
   });

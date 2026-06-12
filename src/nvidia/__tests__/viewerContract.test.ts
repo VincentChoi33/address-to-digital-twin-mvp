@@ -46,6 +46,7 @@ describe("NVIDIA ovstream viewer contract", () => {
     expect(runbook).toContain("ovstream.initialize");
     expect(runbook).toContain("OVRTX_SKIP_USD_CHECK=1");
     expect(runbook).toContain("nvidia_ovrtx_first_frame.py");
+    expect(runbook).toContain("nvidia_ovstream_smoke_server.py");
     expect(runbook).toContain("WebRTC video");
     expect(runbook).toContain("not NVIDIA-only viewer acceptance evidence");
   });
