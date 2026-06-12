@@ -9,10 +9,11 @@
     "build": "npm run lint && vite build",
     "sample:sadang": "tsx src/core/runAddressTwin.ts --sample sadang",
     "export:sadang": "tsx src/core/runAddressTwin.ts --sample sadang",
-    "prepare:deploy": "npm run export:sadang && npm run build && rm -rf dist/samples && mkdir -p dist/samples && cp -R src/samples/sadang_317_6 dist/samples/",
+    "prepare:deploy": "npm run export:sadang && npm run export:omniverse && npm run build && rm -rf dist/samples && mkdir -p dist/samples && cp -R src/samples/sadang_317_6 dist/samples/",
     "lint": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "export:omniverse": "tsx src/nvidia/exportOmniversePackage.ts"
   },
   "dependencies": {
     "three": "^0.160.0"

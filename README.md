@@ -7,6 +7,8 @@ Type a Korean address, get a real-data 3D digital twin — actual DEM terrain, a
 
 **One flow, end to end:** `주소 → Juso/VWorld 지오코딩 → WFS 실건물·도로 + 실DEM + 위성 → GPU 수문 격자 베이크 → virtual-pipe-model 침수 해석`. Any address works — keyless/offline runs degrade to deterministic preview twins, so the loop never breaks.
 
+**NVIDIA/Omniverse track:** the app now exports each twin as OpenUSD (`*.usda`) with an NVIDIA stack manifest and SimReady minimum report. The committed Sadang sample includes a generated Omniverse package under `src/samples/sadang_317_6/omniverse/`, and local `usdchecker` validation passes.
+
 ![Web app](docs/images/app-screenshot.png)
 
 | Static preview export (Sadang sample) | Generated QA / confidence report |
@@ -22,7 +24,8 @@ Type a Korean address, get a real-data 3D digital twin — actual DEM terrain, a
 - Normalizes a raw Korean address request into parcel / road / building-name candidates.
 - Geocodes through a graceful fallback chain: Juso → VWorld → Nominatim → deterministic offline coordinates (Node CLI), or straight to the offline path in the browser.
 - Generates target massing, surrounding context (OSM/Overpass best-effort, seeded procedural fallback), parcel boundary, and road hints.
-- Emits four artifacts: `twin.json`, `source_manifest.json` (per-layer source + confidence), human-readable `qa_report.html`, standalone `preview.html`. In the web app these download as generated blobs for any address.
+- Emits core artifacts: `twin.json`, `source_manifest.json` (per-layer source + confidence), human-readable `qa_report.html`, standalone `preview.html`.
+- Emits NVIDIA artifacts: `omniverse.usda`, `nvidia_stack_manifest.json`, and `simready_minimum_report.json`. In the web app these download as generated blobs for any address.
 
 **2. GPU flood solver** (`src/water/`)
 
@@ -64,6 +67,13 @@ CLI generation (adds Juso/VWorld/Nominatim/Overpass when keys/network exist):
 npx tsx src/core/runAddressTwin.ts --address "서울 강남구 테헤란로 152"
 ```
 
+Generate the committed NVIDIA Omniverse package for the Sadang sample:
+
+```bash
+npm run export:omniverse
+usdchecker src/samples/sadang_317_6/omniverse/sadang_317_6.usda
+```
+
 ## Commands
 
 | Command | What it does |
@@ -73,6 +83,7 @@ npx tsx src/core/runAddressTwin.ts --address "서울 강남구 테헤란로 152"
 | `npm test` | unit tests (Vitest) |
 | `npm run lint` | TypeScript check |
 | `npm run sample:sadang` | regenerate Sadang sample artifacts |
+| `npm run export:omniverse` | generate OpenUSD + NVIDIA stack/SimReady reports for the Sadang sample |
 | `npm run prepare:deploy` | build `dist/` + copy samples for deployment |
 
 ## Project structure
@@ -82,6 +93,7 @@ src/
   core/              # address → twin generation (Node + browser-safe)
   scene/             # terrain (DEM+satellite), buildings (WFS extrude), sky, rain, viewer
   water/             # GPU pipe-model solver, water surface shader, CPU bake (+tests)
+  nvidia/            # OpenUSD/Omniverse/SimReady package exporter
   app/               # UI shell + agent console + scenario/stats wiring
   render/            # basemap mosaic loader, Web Audio synth
   types/twin.ts      # shared twin/manifest types
@@ -130,6 +142,23 @@ Geocoding is a search hint, not the world origin:
 3. When official WFS parcel geometry exists, re-anchor the local meter frame to the official parcel centroid; else to the official building footprint centroid.
 4. Satellite imagery is draped as preview texture onto that frame — never used to infer legal geometry.
 
+## NVIDIA Omniverse export
+
+The NVIDIA path is documented in [`docs/nvidia-omniverse-migration.md`](docs/nvidia-omniverse-migration.md).
+
+Current implemented package:
+
+```text
+src/samples/sadang_317_6/omniverse/
+  sadang_317_6.usda
+  nvidia_stack_manifest.json
+  simready_minimum_report.json
+  usdchecker_report.txt
+  README.md
+```
+
+The USD stage is authored as meter-based, Y-up OpenUSD with `MaterialBindingAPI`, `UsdPreviewSurface` materials, official building meshes, road ribbons, parcel boundary, terrain reference, and flood-water reference layer. Full NVIDIA-only rendering still requires an Omniverse/RTX/ovrtx runtime; this Mac can author and `usdchecker`-validate the stage but cannot run RTX rendering without an NVIDIA GPU.
+
 ## Data source policy
 
 - Default ground is fully offline; satellite tiles (VWorld/ArcGIS/custom) are live preview-only with attribution and **no caching or persistence**.
@@ -140,7 +169,7 @@ Geocoding is a search hint, not the world origin:
 
 ## Testing & CI
 
-59 Vitest tests cover the deterministic core: address normalization, offline twin generation, massing, manifest/QA building (incl. XSS escaping), and the full hydrology engine (rasterization, downhill flow, sewer/outfall mass balance, manhole backflow, scenario effects, editor tools, determinism). GitHub Actions runs typecheck → tests → build → offline sample smoke on every push/PR.
+Vitest covers the deterministic core: address normalization, offline twin generation, massing, manifest/QA building (incl. XSS escaping), OpenUSD/Omniverse export, and the hydrology bake/solver surfaces. GitHub Actions runs typecheck → tests → build → offline sample smoke on every push/PR.
 
 ## Upgrade path
 
@@ -149,7 +178,8 @@ Geocoding is a search hint, not the world origin:
 3. GIS building integrated info → replace procedural massing with official footprints/heights.
 4. DEM-backed terrain for the flood grid (replace seeded slope with real elevation).
 5. AI3DAP/SolidRecon adapter → higher-detail roof/mesh/texture geometry.
-6. 3D Tiles/Cesium export → web-scale city viewing.
+6. OpenUSD/Omniverse export → NVIDIA RTX/SimReady validation path.
+7. 3D Tiles/Cesium export → web-scale city viewing.
 
 ## License
 

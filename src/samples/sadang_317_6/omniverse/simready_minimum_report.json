@@ -1,0 +1,55 @@
+{
+  "project_id": "sadang_317_6",
+  "generated_at": "2026-06-12T04:12:45Z",
+  "status": "minimum_openusd_candidate_authored",
+  "simready_profile_target": "Prop-Robotics-Neutral / site digital-twin candidate",
+  "source_manifest_confidence": "high",
+  "checks": [
+    {
+      "id": "USD.UNITS.001",
+      "status": "passed",
+      "evidence": "Root layer authors metersPerUnit = 1."
+    },
+    {
+      "id": "USD.AXIS.001",
+      "status": "passed",
+      "evidence": "Root layer authors upAxis = Y."
+    },
+    {
+      "id": "USD.DEFAULT_PRIM.001",
+      "status": "passed",
+      "evidence": "defaultPrim = sadang_317_6."
+    },
+    {
+      "id": "USD.MATERIAL_BINDING.001",
+      "status": "passed",
+      "evidence": "28 generated meshes include material:binding relationships."
+    },
+    {
+      "id": "SRC.OFFICIAL_GEOMETRY.001",
+      "status": "passed",
+      "evidence": "17 official building footprints, 8 official roads, parcel=official."
+    },
+    {
+      "id": "SIMREADY.CONTENT_AGENTS.001",
+      "status": "blocked",
+      "evidence": "Material/Physics Content Agents were not run in this local environment; requires NVIDIA_API_KEY, Docker, NVIDIA Container Toolkit, and NVIDIA GPU or provided endpoints."
+    },
+    {
+      "id": "OVRTX.RENDER.001",
+      "status": "blocked",
+      "evidence": "No local nvidia-smi runtime was detected on this workstation."
+    },
+    {
+      "id": "USD.RUNTIME_VALIDATOR.001",
+      "status": "passed",
+      "evidence": "Local usdchecker completed with exit code 0; see usdchecker_report.txt."
+    }
+  ],
+  "next_runtime_commands": [
+    "Open the .usda in NVIDIA Omniverse or an ovrtx-based USD viewer.",
+    "Run Omniverse Asset Validator / SimReady validation on an NVIDIA runtime host.",
+    "Run Content Agents material/physics assignment before claiming full SimReady conformance.",
+    "Run USD Performance Tuning baseline/after profiling once the stage grows beyond this MVP sample."
+  ]
+}

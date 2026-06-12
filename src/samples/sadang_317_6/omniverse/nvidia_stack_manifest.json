@@ -1,0 +1,87 @@
+{
+  "project_id": "sadang_317_6",
+  "generated_at": "2026-06-12T04:12:45Z",
+  "source_artifacts": {
+    "twin_json": "../twin.json",
+    "source_manifest_json": "../source_manifest.json"
+  },
+  "nvidia_only_target_stack": [
+    {
+      "product": "OpenUSD",
+      "role": "Canonical authored scene interchange for terrain, official buildings, roads, parcel boundary, and hydrology layers.",
+      "status": "authored"
+    },
+    {
+      "product": "NVIDIA Omniverse / RTX Renderer / ovrtx",
+      "role": "Required renderer/viewer target for the generated USD stage; browser WebGL is not the final NVIDIA path.",
+      "status": "blocked_missing_local_nvidia_runtime"
+    },
+    {
+      "product": "NVIDIA SimReady",
+      "role": "Conformance target for simulation-ready materials, units, metadata, and physics semantics.",
+      "status": "minimum_candidate_authored"
+    },
+    {
+      "product": "Omniverse Content Agents",
+      "role": "Future automated material and physics assignment for SimReady conformance.",
+      "status": "not_run_requires_nvidia_api_key_gpu_docker"
+    },
+    {
+      "product": "Omniverse USD Performance Tuning / Asset Validator / Scene Optimizer",
+      "role": "Future validation, profiling, and optimization gates for large USD scenes.",
+      "status": "partial_runtime_available"
+    },
+    {
+      "product": "NVIDIA cuOpt",
+      "role": "Optional emergency routing, inspection route, and drainage operation optimization layer.",
+      "status": "planned_not_needed_for_static_usd_export"
+    },
+    {
+      "product": "NVIDIA Physical AI Neural Reconstruction / NuRec",
+      "role": "Optional future camera/LiDAR reconstruction path for replacing preview massing with captured scene assets.",
+      "status": "planned_requires_sensor_data"
+    }
+  ],
+  "source_quality": {
+    "geocoding_provider": "vworld",
+    "confidence": "high",
+    "official_buildings": 17,
+    "official_roads": 8,
+    "official_parcel": true,
+    "spatial_reference": {
+      "crs": "EPSG:4326",
+      "local_frame": "local_meter_tangent_plane",
+      "projection": "WebMercator-derived local meters with latitude scale correction",
+      "anchor_source": "official_parcel_centroid",
+      "anchor_lon_lat": [
+        126.97340690692307,
+        37.482346503094895
+      ],
+      "search_lon_lat": [
+        126.97339874031411,
+        37.48233599943097
+      ],
+      "texture_alignment": "Satellite WMTS tiles are draped as a visual texture onto the cadastral/WFS local meter frame; cadastral geometry is the alignment authority."
+    }
+  },
+  "stage_summary": {
+    "openusd_stage": "sadang_317_6.usda",
+    "mesh_count": 28,
+    "building_meshes": 17,
+    "road_meshes": 8,
+    "meters_per_unit": 1,
+    "up_axis": "Y"
+  },
+  "local_runtime_probe": {
+    "nvidiaSmi": "missing",
+    "docker": "available",
+    "usdPython": "missing",
+    "usdChecker": "available",
+    "note": "No local NVIDIA GPU was detected. This Mac can author OpenUSD deterministically, but RTX/ovrtx rendering and SimReady runtime validation must run on an NVIDIA workstation/container."
+  },
+  "local_validation": {
+    "command": "usdchecker sadang_317_6.usda",
+    "status": "passed",
+    "report": "usdchecker_report.txt"
+  }
+}

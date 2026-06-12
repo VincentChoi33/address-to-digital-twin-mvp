@@ -2,6 +2,7 @@ import sadangTwin from "../samples/sadang_317_6/twin.json";
 import sadangManifest from "../samples/sadang_317_6/source_manifest.json";
 import { generateQaReport } from "../core/qa";
 import { escapeHtml } from "../lib/html";
+import { exportTwinToOmniversePackage } from "../nvidia/usd";
 import { BASEMAP_ATTRIBUTION, resolveBasemapMode } from "../render/basemap";
 import { SoundSynth } from "../render/sound";
 import { CityViewer, WebGLUnavailableError } from "../scene/viewer";
@@ -92,6 +93,7 @@ try {
 function rebuildArtifactLinks(): void {
   for (const url of blobUrls) URL.revokeObjectURL(url);
   blobUrls = [];
+  const omniverse = exportTwinToOmniversePackage(twin, manifest);
   const makeBlobLink = (label: string, kind: string, content: string, mime: string, filename: string): string => {
     const url = URL.createObjectURL(new Blob([content], { type: mime }));
     blobUrls.push(url);
@@ -100,7 +102,22 @@ function rebuildArtifactLinks(): void {
   controls.agentOutputs.innerHTML = [
     makeBlobLink("twin.json", "data", JSON.stringify(twin, null, 2), "application/json", `${twin.project_id}_twin.json`),
     makeBlobLink("source_manifest.json", "manifest", JSON.stringify(manifest, null, 2), "application/json", `${twin.project_id}_manifest.json`),
-    makeBlobLink("qa_report.html", "qa", generateQaReport(twin, manifest), "text/html", `${twin.project_id}_qa.html`)
+    makeBlobLink("qa_report.html", "qa", generateQaReport(twin, manifest), "text/html", `${twin.project_id}_qa.html`),
+    makeBlobLink("omniverse.usda", "omniverse", omniverse.usda, "model/vnd.usda", `${twin.project_id}.usda`),
+    makeBlobLink(
+      "nvidia_stack_manifest.json",
+      "manifest",
+      JSON.stringify(omniverse.stackManifest, null, 2),
+      "application/json",
+      `${twin.project_id}_nvidia_stack_manifest.json`
+    ),
+    makeBlobLink(
+      "simready_minimum_report.json",
+      "qa",
+      JSON.stringify(omniverse.simreadyReport, null, 2),
+      "application/json",
+      `${twin.project_id}_simready_minimum_report.json`
+    )
   ].join("");
 }
 

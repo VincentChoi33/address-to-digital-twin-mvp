@@ -642,6 +642,12 @@ a:focus-visible {
   border-color: var(--accent-strong);
 }
 
+.output-link.omniverse {
+  border-color: rgba(118, 185, 0, 0.48);
+  color: #b7ff4a;
+  background: rgba(118, 185, 0, 0.12);
+}
+
 .trace-card {
   max-height: 310px;
 }
