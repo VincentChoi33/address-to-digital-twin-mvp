@@ -90,8 +90,10 @@ Remote GPU evidence captured on 2026-06-12:
 - [`docs/evidence/nvidia-train1-ovstream-browser-server-2026-06-12.json`](evidence/nvidia-train1-ovstream-browser-server-2026-06-12.json)
 - [`docs/evidence/nvidia-train1-ovstream-browser-first-frame-2026-06-12.json`](evidence/nvidia-train1-ovstream-browser-first-frame-2026-06-12.json)
 - [`docs/evidence/nvidia-train1-ovstream-browser-first-frame-2026-06-12.png`](evidence/nvidia-train1-ovstream-browser-first-frame-2026-06-12.png)
+- [`docs/evidence/nvidia-content-agents-simready-readiness-2026-06-12.md`](evidence/nvidia-content-agents-simready-readiness-2026-06-12.md)
+- [`docs/evidence/nvidia-content-agents-simready-readiness-2026-06-12.json`](evidence/nvidia-content-agents-simready-readiness-2026-06-12.json)
 
-On `train1` (`gpu1`, 8 × RTX 3090), GPU/driver, Docker, NVIDIA Container Toolkit, OpenUSD Python runtime, Python `ovrtx` runtime, Python `ovstream` lifecycle, `npm run nvidia:package` self-validation, a real ovrtx first-frame render, ovrtx→ovstream server readiness, and browser `@nvidia/ov-web-rtc` Direct decode passed. The ovrtx frame used renderer version `(0, 3, 0)`, output `LdrColor` shape `720×1280×4 uint8`, `nonblank_rgb=true`, and step time `115.33351s` on the cold shader-cache run. The browser validation connected through NVIDIA `@nvidia/ov-web-rtc` Direct mode and observed `firstVideoFrame=true`, `videoWidth=1280`, `videoHeight=720`, `readyState=4`, with screenshot evidence. The server report streamed 76 BGRA CUDA frames after `/healthz` flipped from `503 not ready` to `200 ok`. Remaining remote blockers are explicit: NVIDIA/NGC/NVCF or Content Agents credentials/endpoints and full SimReady/Asset Validator reports.
+On `train1` (`gpu1`, 8 × RTX 3090), GPU/driver, Docker, NVIDIA Container Toolkit, OpenUSD Python runtime, Python `ovrtx` runtime, Python `ovstream` lifecycle, `npm run nvidia:package` self-validation, a real ovrtx first-frame render, ovrtx→ovstream server readiness, and browser `@nvidia/ov-web-rtc` Direct decode passed. The ovrtx frame used renderer version `(0, 3, 0)`, output `LdrColor` shape `720×1280×4 uint8`, `nonblank_rgb=true`, and step time `115.33351s` on the cold shader-cache run. The browser validation connected through NVIDIA `@nvidia/ov-web-rtc` Direct mode and observed `firstVideoFrame=true`, `videoWidth=1280`, `videoHeight=720`, `readyState=4`, with screenshot evidence. The server report streamed 76 BGRA CUDA frames after `/healthz` flipped from `503 not ready` to `200 ok`. Remaining remote blockers are explicit and now runner-audited: no NVIDIA/NGC/NVCF auth or Content Agents endpoints are present, the Content Agents material wrapper blocks on missing `CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL`, and `simready-validate`/SimReady Foundation is not configured locally or on `train1`.
 
 ![NVIDIA ovrtx first frame from train1](evidence/nvidia-train1-ovrtx-first-frame-2026-06-12.png)
 
@@ -102,8 +104,8 @@ On `train1` (`gpu1`, 8 × RTX 3090), GPU/driver, Docker, NVIDIA Container Toolki
 | OpenUSD | Canonical scene interchange replacing ad-hoc browser geometry exports | Implemented |
 | NVIDIA Omniverse / RTX Renderer / ovrtx | Final NVIDIA viewer/render path for USD | Implemented wrapper + first-frame smoke; passed on remote RTX 3090 host |
 | NVIDIA ovstream / WebRTC | Browser delivery path for NVIDIA-only viewer; browser displays video stream, not USD geometry | Server readiness and browser Direct video first-frame evidence passed on remote RTX 3090 host |
-| NVIDIA SimReady | Simulation-ready material/physics/profile target | Minimum candidate metadata + static-collider baseline authored; full conformance requires runtime validation |
-| Omniverse Content Agents | Material/physics assignment | Planned; requires NVIDIA_API_KEY, Docker, NVIDIA Container Toolkit, GPU or service endpoints |
+| NVIDIA SimReady | Simulation-ready material/physics/profile target | Minimum candidate metadata + static-collider baseline authored; formal validation blocked by missing `simready-validate`/SimReady Foundation checkout |
+| Omniverse Content Agents | Material/physics assignment | Runner attempted; blocked by missing Material/Physics/OVRTX service endpoints or NVIDIA_API_KEY-backed deployment |
 | Omniverse USD Performance Tuning / Asset Validator / Scene Optimizer | Stage validation, profiling, optimization | `usdchecker` local pass; full Omniverse validator pending |
 | NVIDIA cuOpt | Emergency response/inspection/dispatch route optimization | Planned after operational data exists |
 | NVIDIA Physical AI Neural Reconstruction / NuRec | Replace preview massing with reconstructed assets from camera/LiDAR/radar recordings | Planned; requires sensor captures |
@@ -115,8 +117,8 @@ On `train1` (`gpu1`, 8 × RTX 3090), GPU/driver, Docker, NVIDIA Container Toolki
 2. Re-run `npm run nvidia:preflight` on that NVIDIA host until `omniverse_streaming_ready` and `content_agents_ready` become true for the persistent service.
 3. Use `handoff_manifest.json` and `NVIDIA_GPU_HOST_RUNBOOK.md` to keep the exact package checksums, `nvidia-smi`, `usdchecker`, ovrtx first-frame report/image, and validator reports together.
 4. Replace the browser-side 3D viewport with an Omniverse/ovstream viewer path. The generated `ovstream_viewer_contract.json` requires an HTML video/WebRTC surface and explicitly forbids substituting browser-side WebGL as the final USD renderer.
-5. Run Content Agents material and physics assignment.
-6. Run SimReady/Asset Validator gates and persist their reports.
+5. Provide NVIDIA_API_KEY or healthy Content Agents Material/Physics/OVRTX endpoints, then run Content Agents material and physics assignment.
+6. Provide `simready-validate` or SimReady Foundation checkout, then run SimReady/Asset Validator gates and persist their reports.
 7. Run USD Performance Tuning baseline/after profiling when scene complexity grows.
 8. Add cuOpt only when there is real routing/dispatch optimization data.
 9. Add NuRec only when camera/LiDAR/radar captures exist.

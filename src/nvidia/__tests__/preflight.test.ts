@@ -44,6 +44,7 @@ describe("NVIDIA runtime preflight", () => {
     expect(report.gates.find((gate) => gate.id === "NVIDIA.GPU.001")?.status).toBe("blocked");
     expect(report.gates.find((gate) => gate.id === "OMNIVERSE.OVSTREAM.001")?.status).toBe("blocked");
     expect(report.gates.find((gate) => gate.id === "CONTENT_AGENTS.RUNTIME.001")?.status).toBe("blocked");
+    expect(report.gates.find((gate) => gate.id === "SIMREADY.VALIDATOR.001")?.status).toBe("blocked");
     expect(runtimeProbeFromPreflight(report).usdChecker).toBe("available");
   });
 
@@ -57,6 +58,7 @@ describe("NVIDIA runtime preflight", () => {
           docker: result(true, '{"nvidia":{"path":"nvidia-container-runtime"}}'),
           python3: result(true, "pxr-usd-ok"),
           usdchecker: result(true, "usdchecker help"),
+          "simready-validate": result(true, "simready help"),
           ovrtx: result(true, "ovrtx help")
         },
         { NVIDIA_API_KEY: "secret", OVSTREAM_SIGNALING_URL: "wss://stream.example.invalid" }
@@ -67,8 +69,32 @@ describe("NVIDIA runtime preflight", () => {
     expect(report.summary.omniverse_rtx_ready).toBe(true);
     expect(report.summary.omniverse_streaming_ready).toBe(true);
     expect(report.summary.content_agents_ready).toBe(true);
+    expect(report.summary.simready_automation_ready).toBe(true);
     expect(report.redacted_environment.NVIDIA_API_KEY).toBe("present");
     expect(report.redacted_environment.OVSTREAM_SIGNALING_URL).toBe("present");
     expect(JSON.stringify(report)).not.toContain("secret");
+  });
+
+  it("recognizes provided Content Agents endpoint variable names used by NVIDIA clients", () => {
+    const report = runNvidiaRuntimePreflight(
+      twin,
+      manifest,
+      runner(
+        {
+          python3: result(true, "pxr-usd-ok"),
+          usdchecker: result(true, "usdchecker help"),
+          "simready-validate": result(true, "simready help")
+        },
+        {
+          CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL: "http://material.example.invalid",
+          CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL: "http://physics.example.invalid",
+          OVRTX_RENDER_ENDPOINT: "http://ovrtx.example.invalid"
+        }
+      )
+    );
+
+    expect(report.gates.find((gate) => gate.id === "CONTENT_AGENTS.ENDPOINTS.001")?.status).toBe("passed");
+    expect(report.gates.find((gate) => gate.id === "CONTENT_AGENTS.RUNTIME.001")?.status).toBe("passed");
+    expect(JSON.stringify(report)).not.toContain("material.example.invalid");
   });
 });

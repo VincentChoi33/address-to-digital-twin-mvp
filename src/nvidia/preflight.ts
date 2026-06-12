@@ -81,6 +81,7 @@ export function runNvidiaRuntimePreflight(
       "-c",
       "import ovstream; ovstream.initialize(); print('ovstream-python-ok', ovstream.get_version()); ovstream.shutdown()"
     ]),
+    simready_validate: runner.run("simready-validate", ["--help"]),
     usdchecker: runner.run("usdchecker", ["--help"]),
     ovrtx: runner.run("ovrtx", ["--help"]),
     kit: runner.run("kit", ["--help"]),
@@ -92,10 +93,19 @@ export function runNvidiaRuntimePreflight(
     "NGC_API_KEY",
     "NVCF_API_KEY",
     "CONTENT_AGENTS_TOKEN",
+    "CONTENT_AGENTS_MATERIAL_AGENT_TOKEN",
+    "CONTENT_AGENTS_PHYSICS_AGENT_TOKEN",
     "CONTENT_AGENTS_MATERIAL_BASE_URL",
     "CONTENT_AGENTS_PHYSICS_BASE_URL",
     "CONTENT_AGENTS_TEXTURE_BASE_URL",
     "CONTENT_AGENTS_OVRTX_BASE_URL",
+    "CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL",
+    "CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL",
+    "CONTENT_AGENTS_TEXTURE_AGENT_BASE_URL",
+    "OVRTX_RENDER_ENDPOINT",
+    "RENDER_ENDPOINT",
+    "SIMREADY_FOUNDATION_ROOT",
+    "PHYSICAL_AI_SKILL_HUB_UPSTREAM_ROOT",
     "OVSTREAM_SIGNALING_URL",
     "OMNIVERSE_STREAM_URL",
     "OVRTX_WEBRTC_URL"
@@ -114,12 +124,17 @@ export function runNvidiaRuntimePreflight(
     envState.OMNIVERSE_STREAM_URL === "present" ||
     envState.OVRTX_WEBRTC_URL === "present";
   const hasContentAgentAuth = envState.NVIDIA_API_KEY === "present" || envState.NGC_API_KEY === "present" || envState.NVCF_API_KEY === "present";
+  const hasMaterialEndpoint = envState.CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL === "present" || envState.CONTENT_AGENTS_MATERIAL_BASE_URL === "present";
+  const hasPhysicsEndpoint = envState.CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL === "present" || envState.CONTENT_AGENTS_PHYSICS_BASE_URL === "present";
+  const hasOvrtxEndpoint = envState.CONTENT_AGENTS_OVRTX_BASE_URL === "present" || envState.OVRTX_RENDER_ENDPOINT === "present" || envState.RENDER_ENDPOINT === "present";
   const hasProvidedContentAgentEndpoints =
-    envState.CONTENT_AGENTS_MATERIAL_BASE_URL === "present" &&
-    envState.CONTENT_AGENTS_PHYSICS_BASE_URL === "present" &&
-    envState.CONTENT_AGENTS_OVRTX_BASE_URL === "present";
+    hasMaterialEndpoint &&
+    hasPhysicsEndpoint &&
+    hasOvrtxEndpoint;
   const contentAgentsReady =
     hasProvidedContentAgentEndpoints || (hasNvidiaGpu && dockerInstalled && dockerDaemonReady && dockerHasNvidiaRuntime && hasContentAgentAuth);
+  const simreadyFoundationRoot = findSimReadyFoundationRoot(runner);
+  const hasSimReadyValidator = commands.simready_validate.ok || Boolean(simreadyFoundationRoot);
 
   const gates: RuntimeGate[] = [
     {
@@ -213,6 +228,16 @@ export function runNvidiaRuntimePreflight(
       remediation: hasContentAgentAuth || hasProvidedContentAgentEndpoints ? undefined : "Provide NVIDIA_API_KEY for local deployment or set provided Content Agents endpoint URLs/tokens."
     },
     {
+      id: "CONTENT_AGENTS.ENDPOINTS.001",
+      product: "Omniverse Content Agents service endpoints",
+      status: hasProvidedContentAgentEndpoints ? "passed" : "blocked",
+      required_for: ["reuse of already-running Content Agents services"],
+      evidence: hasProvidedContentAgentEndpoints
+        ? "Material, Physics, and OVRTX/render endpoints are present (redacted)."
+        : `material=${hasMaterialEndpoint ? "present" : "missing"}, physics=${hasPhysicsEndpoint ? "present" : "missing"}, ovrtx/render=${hasOvrtxEndpoint ? "present" : "missing"}`,
+      remediation: hasProvidedContentAgentEndpoints ? undefined : "Set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL, CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL, and CONTENT_AGENTS_OVRTX_BASE_URL/OVRTX_RENDER_ENDPOINT, or deploy local Content Agents with NVIDIA_API_KEY."
+    },
+    {
       id: "CONTENT_AGENTS.RUNTIME.001",
       product: "Omniverse Content Agents",
       status: contentAgentsReady ? "passed" : "blocked",
@@ -221,13 +246,35 @@ export function runNvidiaRuntimePreflight(
         ? "Content Agents prerequisites are present through provided endpoints or local GPU/Docker/auth."
         : "Content Agents prerequisites are incomplete.",
       remediation: contentAgentsReady ? undefined : "Satisfy NVIDIA GPU + Docker daemon + NVIDIA runtime + auth, or provide healthy service endpoints."
+    },
+    {
+      id: "SIMREADY.FOUNDATION.001",
+      product: "NVIDIA SimReady Foundation",
+      status: simreadyFoundationRoot ? "passed" : "blocked",
+      required_for: ["formal SimReady profile conformance"],
+      evidence: simreadyFoundationRoot
+        ? `SimReady Foundation root exists at ${simreadyFoundationRoot}.`
+        : "No SIMREADY_FOUNDATION_ROOT or default SimReady Foundation checkout was found.",
+      remediation: simreadyFoundationRoot ? undefined : "Provide simready-foundation checked out to main via SIMREADY_FOUNDATION_ROOT or $HOME/.physical-ai-skill-hub/upstreams/simready-foundation."
+    },
+    {
+      id: "SIMREADY.VALIDATOR.001",
+      product: "simready-validate",
+      status: hasSimReadyValidator ? "passed" : "blocked",
+      required_for: ["formal SimReady profile validation"],
+      evidence: commands.simready_validate.ok
+        ? "simready-validate is available on PATH."
+        : simreadyFoundationRoot
+          ? "simready-validate CLI is missing, but a Foundation checkout exists for runner-managed installation."
+          : "simready-validate is missing and no Foundation checkout is available for runner-managed installation.",
+      remediation: hasSimReadyValidator ? undefined : "Install simready-validate or provide the NVIDIA SimReady Foundation checkout."
     }
   ];
 
   const openusdReady = gates.find((gate) => gate.id === "OPENUSD.AUTHORING.001")?.status === "passed" && hasUsdRuntime;
   const omniverseReady = hasNvidiaGpu && hasViewerRuntime;
   const omniverseStreamingReady = omniverseReady && hasOvstreamRuntime && hasOvstreamEndpoint;
-  const simreadyAutomationReady = contentAgentsReady && hasUsdRuntime;
+  const simreadyAutomationReady = contentAgentsReady && hasUsdRuntime && hasSimReadyValidator;
   const status = omniverseReady && simreadyAutomationReady ? "nvidia_runtime_ready" : openusdReady ? "openusd_ready" : "blocked";
 
   return {
@@ -244,7 +291,7 @@ export function runNvidiaRuntimePreflight(
     commands: Object.fromEntries(Object.entries(commands).map(([key, value]) => [key, compactCommand(value)])),
     gates,
     redacted_environment: envState,
-    next_actions: buildNextActions({ hasNvidiaGpu, hasViewerRuntime, hasUsdRuntime, hasOvstreamRuntime, hasOvstreamEndpoint, contentAgentsReady, hasUsdChecker })
+    next_actions: buildNextActions({ hasNvidiaGpu, hasViewerRuntime, hasUsdRuntime, hasOvstreamRuntime, hasOvstreamEndpoint, contentAgentsReady, hasUsdChecker, hasSimReadyValidator })
   };
 }
 
@@ -296,6 +343,17 @@ function knownOmniversePathExists(runner: RuntimeCommandRunner): boolean {
   ].some((path) => runner.exists(path));
 }
 
+function findSimReadyFoundationRoot(runner: RuntimeCommandRunner): string | undefined {
+  const explicit = runner.env("SIMREADY_FOUNDATION_ROOT");
+  const upstreamRoot = runner.env("PHYSICAL_AI_SKILL_HUB_UPSTREAM_ROOT");
+  const candidates = [
+    explicit,
+    upstreamRoot ? `${upstreamRoot}/simready-foundation` : undefined,
+    `${process.env.HOME ?? ""}/.physical-ai-skill-hub/upstreams/simready-foundation`
+  ].filter((path): path is string => Boolean(path));
+  return candidates.find((path) => runner.exists(path));
+}
+
 function compactCommand(result: RuntimeCommandResult): { ok: boolean; code: number | null; stdout: string; stderr: string } {
   return {
     ok: result.ok,
@@ -326,6 +384,7 @@ function buildNextActions(input: {
   hasOvstreamEndpoint: boolean;
   contentAgentsReady: boolean;
   hasUsdChecker: boolean;
+  hasSimReadyValidator: boolean;
 }): string[] {
   const actions: string[] = [];
   if (!input.hasUsdRuntime) actions.push("Install OpenUSD/usdchecker or run validation inside an Omniverse Kit environment.");
@@ -334,6 +393,7 @@ function buildNextActions(input: {
   if (!input.hasOvstreamRuntime) actions.push("Install ovstream and validate its Python lifecycle on the NVIDIA GPU host.");
   if (!input.hasOvstreamEndpoint) actions.push("Expose an ovstream/WebRTC endpoint from the NVIDIA GPU host for the browser-delivered NVIDIA-only viewer.");
   if (!input.contentAgentsReady) actions.push("Configure Content Agents prerequisites: NVIDIA API/NGC/NVCF auth plus GPU Docker runtime, or provided service endpoints.");
+  if (!input.hasSimReadyValidator) actions.push("Install simready-validate or provide the NVIDIA SimReady Foundation checkout on branch main.");
   if (input.hasUsdChecker) actions.push("Run usdchecker on every exported .usda in CI and keep validator reports with the package.");
   actions.push("After runtime gates pass, run SimReady/Asset Validator and USD Performance Tuning baseline profiling.");
   return actions;

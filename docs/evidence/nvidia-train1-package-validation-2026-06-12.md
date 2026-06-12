@@ -205,6 +205,16 @@ Host: train1 / gpu1
       "evidence": "runtime preflight includes OMNIVERSE.OVSTREAM.001."
     },
     {
+      "id": "PREFLIGHT.CONTENT_AGENTS_ENDPOINTS_GATE.001",
+      "status": "passed",
+      "evidence": "runtime preflight includes provided Content Agents endpoint gate."
+    },
+    {
+      "id": "PREFLIGHT.SIMREADY_VALIDATOR_GATE.001",
+      "status": "passed",
+      "evidence": "runtime preflight includes SimReady validator/Foundation gate."
+    },
+    {
       "id": "PREFLIGHT.STREAMING_SUMMARY.001",
       "status": "passed",
       "evidence": "omniverse_streaming_ready=false"

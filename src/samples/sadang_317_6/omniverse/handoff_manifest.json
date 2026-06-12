@@ -107,15 +107,15 @@
       "path": "nvidia_runtime_preflight.json",
       "role": "machine-readable runtime gate report",
       "required": true,
-      "size_bytes": 8912,
-      "sha256": "d849214d47f3fd5ea646f32c64657619338607772717028a388a6ed4447268e6"
+      "size_bytes": 10988,
+      "sha256": "b108cd51783432880253e5bb0a140fa6cb8e037733956646d00e7fd334c16291"
     },
     {
       "path": "nvidia_runtime_preflight.md",
       "role": "human-readable runtime gate report",
       "required": true,
-      "size_bytes": 3280,
-      "sha256": "1eb6b618e03d5eda0de5a624fcad4fd2bc64096dd799a05090f25f215374440f"
+      "size_bytes": 4246,
+      "sha256": "3fc6a180d2cf494eb4ed8764e2f8b32d50580f761766a3839e97ae23a50083c1"
     },
     {
       "path": "simready_minimum_report.json",

@@ -60,6 +60,8 @@ jobs:
           grep -q 'document.body.dataset.firstVideoFrame' src/samples/sadang_317_6/omniverse/ovstream_browser_client/scripts/probe-first-frame.mjs
           grep -q 'openusd_authoring_ready' src/samples/sadang_317_6/omniverse/nvidia_runtime_preflight.json
           grep -q 'OMNIVERSE.OVSTREAM.001' src/samples/sadang_317_6/omniverse/nvidia_runtime_preflight.json
+          grep -q 'CONTENT_AGENTS.ENDPOINTS.001' src/samples/sadang_317_6/omniverse/nvidia_runtime_preflight.json
+          grep -q 'SIMREADY.VALIDATOR.001' src/samples/sadang_317_6/omniverse/nvidia_runtime_preflight.json
           grep -q 'ready_for_gpu_host' src/samples/sadang_317_6/omniverse/handoff_manifest.json
           grep -q 'video_stream_only' src/samples/sadang_317_6/omniverse/ovstream_viewer_contract.json
           grep -q 'Three.js' src/samples/sadang_317_6/omniverse/ovstream_viewer_contract.json

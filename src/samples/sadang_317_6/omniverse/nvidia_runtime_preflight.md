@@ -24,7 +24,10 @@ Status: **openusd_ready**
 | OMNIVERSE.VIEWER.001 | NVIDIA Omniverse / ovrtx / Kit viewer | blocked | No ovrtx command, ovrtx Python package, kit, usdview, or known Omniverse app path was found. | Install/use an Omniverse Kit or ovrtx runtime on an NVIDIA GPU machine. |
 | OMNIVERSE.OVSTREAM.001 | NVIDIA Omniverse Streaming / ovstream WebRTC | blocked | ovstream Python lifecycle check failed and no stream runtime was detected. | Install ovstream on the NVIDIA GPU host and expose OVSTREAM_SIGNALING_URL, OMNIVERSE_STREAM_URL, or OVRTX_WEBRTC_URL after first-frame readiness. |
 | CONTENT_AGENTS.AUTH.001 | NVIDIA API / NGC / NVCF credentials | blocked | No NVIDIA_API_KEY, NGC_API_KEY, NVCF_API_KEY, or complete provided Content Agents endpoint set was found. | Provide NVIDIA_API_KEY for local deployment or set provided Content Agents endpoint URLs/tokens. |
+| CONTENT_AGENTS.ENDPOINTS.001 | Omniverse Content Agents service endpoints | blocked | material=missing, physics=missing, ovrtx/render=missing | Set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL, CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL, and CONTENT_AGENTS_OVRTX_BASE_URL/OVRTX_RENDER_ENDPOINT, or deploy local Content Agents with NVIDIA_API_KEY. |
 | CONTENT_AGENTS.RUNTIME.001 | Omniverse Content Agents | blocked | Content Agents prerequisites are incomplete. | Satisfy NVIDIA GPU + Docker daemon + NVIDIA runtime + auth, or provide healthy service endpoints. |
+| SIMREADY.FOUNDATION.001 | NVIDIA SimReady Foundation | blocked | No SIMREADY_FOUNDATION_ROOT or default SimReady Foundation checkout was found. | Provide simready-foundation checked out to main via SIMREADY_FOUNDATION_ROOT or $HOME/.physical-ai-skill-hub/upstreams/simready-foundation. |
+| SIMREADY.VALIDATOR.001 | simready-validate | blocked | simready-validate is missing and no Foundation checkout is available for runner-managed installation. | Install simready-validate or provide the NVIDIA SimReady Foundation checkout. |
 
 ## Next actions
 
@@ -33,5 +36,6 @@ Status: **openusd_ready**
 - Install ovstream and validate its Python lifecycle on the NVIDIA GPU host.
 - Expose an ovstream/WebRTC endpoint from the NVIDIA GPU host for the browser-delivered NVIDIA-only viewer.
 - Configure Content Agents prerequisites: NVIDIA API/NGC/NVCF auth plus GPU Docker runtime, or provided service endpoints.
+- Install simready-validate or provide the NVIDIA SimReady Foundation checkout on branch main.
 - Run usdchecker on every exported .usda in CI and keep validator reports with the package.
 - After runtime gates pass, run SimReady/Asset Validator and USD Performance Tuning baseline profiling.

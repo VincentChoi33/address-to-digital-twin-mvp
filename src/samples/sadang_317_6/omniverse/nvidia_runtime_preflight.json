@@ -46,6 +46,12 @@
       "stdout": "",
       "stderr": "Traceback (most recent call last): File \"<string>\", line 1, in <module> import ovstream; ovstream.initialize(); print('ovstream-python-ok', ovstream.get_version()); ovstream.shutdown() ^^^^^^^^^^^^^^^ ModuleNotFoundError: No module named 'ovstream'"
     },
+    "simready_validate": {
+      "ok": false,
+      "code": null,
+      "stdout": "",
+      "stderr": ""
+    },
     "usdchecker": {
       "ok": true,
       "code": 0,
@@ -175,6 +181,16 @@
       "remediation": "Provide NVIDIA_API_KEY for local deployment or set provided Content Agents endpoint URLs/tokens."
     },
     {
+      "id": "CONTENT_AGENTS.ENDPOINTS.001",
+      "product": "Omniverse Content Agents service endpoints",
+      "status": "blocked",
+      "required_for": [
+        "reuse of already-running Content Agents services"
+      ],
+      "evidence": "material=missing, physics=missing, ovrtx/render=missing",
+      "remediation": "Set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL, CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL, and CONTENT_AGENTS_OVRTX_BASE_URL/OVRTX_RENDER_ENDPOINT, or deploy local Content Agents with NVIDIA_API_KEY."
+    },
+    {
       "id": "CONTENT_AGENTS.RUNTIME.001",
       "product": "Omniverse Content Agents",
       "status": "blocked",
@@ -183,6 +199,26 @@
       ],
       "evidence": "Content Agents prerequisites are incomplete.",
       "remediation": "Satisfy NVIDIA GPU + Docker daemon + NVIDIA runtime + auth, or provide healthy service endpoints."
+    },
+    {
+      "id": "SIMREADY.FOUNDATION.001",
+      "product": "NVIDIA SimReady Foundation",
+      "status": "blocked",
+      "required_for": [
+        "formal SimReady profile conformance"
+      ],
+      "evidence": "No SIMREADY_FOUNDATION_ROOT or default SimReady Foundation checkout was found.",
+      "remediation": "Provide simready-foundation checked out to main via SIMREADY_FOUNDATION_ROOT or $HOME/.physical-ai-skill-hub/upstreams/simready-foundation."
+    },
+    {
+      "id": "SIMREADY.VALIDATOR.001",
+      "product": "simready-validate",
+      "status": "blocked",
+      "required_for": [
+        "formal SimReady profile validation"
+      ],
+      "evidence": "simready-validate is missing and no Foundation checkout is available for runner-managed installation.",
+      "remediation": "Install simready-validate or provide the NVIDIA SimReady Foundation checkout."
     }
   ],
   "redacted_environment": {
@@ -190,10 +226,19 @@
     "NGC_API_KEY": "missing",
     "NVCF_API_KEY": "missing",
     "CONTENT_AGENTS_TOKEN": "missing",
+    "CONTENT_AGENTS_MATERIAL_AGENT_TOKEN": "missing",
+    "CONTENT_AGENTS_PHYSICS_AGENT_TOKEN": "missing",
     "CONTENT_AGENTS_MATERIAL_BASE_URL": "missing",
     "CONTENT_AGENTS_PHYSICS_BASE_URL": "missing",
     "CONTENT_AGENTS_TEXTURE_BASE_URL": "missing",
     "CONTENT_AGENTS_OVRTX_BASE_URL": "missing",
+    "CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL": "missing",
+    "CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL": "missing",
+    "CONTENT_AGENTS_TEXTURE_AGENT_BASE_URL": "missing",
+    "OVRTX_RENDER_ENDPOINT": "missing",
+    "RENDER_ENDPOINT": "missing",
+    "SIMREADY_FOUNDATION_ROOT": "missing",
+    "PHYSICAL_AI_SKILL_HUB_UPSTREAM_ROOT": "missing",
     "OVSTREAM_SIGNALING_URL": "missing",
     "OMNIVERSE_STREAM_URL": "missing",
     "OVRTX_WEBRTC_URL": "missing"
@@ -204,6 +249,7 @@
     "Install ovstream and validate its Python lifecycle on the NVIDIA GPU host.",
     "Expose an ovstream/WebRTC endpoint from the NVIDIA GPU host for the browser-delivered NVIDIA-only viewer.",
     "Configure Content Agents prerequisites: NVIDIA API/NGC/NVCF auth plus GPU Docker runtime, or provided service endpoints.",
+    "Install simready-validate or provide the NVIDIA SimReady Foundation checkout on branch main.",
     "Run usdchecker on every exported .usda in CI and keep validator reports with the package.",
     "After runtime gates pass, run SimReady/Asset Validator and USD Performance Tuning baseline profiling."
   ]
