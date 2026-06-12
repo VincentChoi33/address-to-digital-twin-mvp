@@ -16,8 +16,8 @@
       "path": "sadang_317_6.usda",
       "role": "OpenUSD stage to open in Omniverse/ovrtx",
       "required": true,
-      "size_bytes": 93751,
-      "sha256": "440c02c87437b9b5b53100367a2208eeca992e15efd721f1147e7cb1b8d72909"
+      "size_bytes": 100114,
+      "sha256": "873b8cc46372b1e3e835bfd0b24f9a18dc16952c7a9b77d9acbd3dbf3d2f19ed"
     },
     {
       "path": "sadang_317_6.ovrtx_viewer.usda",
@@ -100,29 +100,43 @@
       "path": "nvidia_stack_manifest.json",
       "role": "NVIDIA product mapping and current local gate status",
       "required": true,
-      "size_bytes": 4018,
-      "sha256": "60dc62f347b33232b6646a81804c85d94ca52908eb4dfe729e355ab989e8f55f"
+      "size_bytes": 4466,
+      "sha256": "005aa6b3b1ce7431b3f7fddfc3998e49981a5b0c8730d5d25cc4b60da15de6ad"
     },
     {
       "path": "nvidia_runtime_preflight.json",
       "role": "machine-readable runtime gate report",
       "required": true,
-      "size_bytes": 10988,
-      "sha256": "b108cd51783432880253e5bb0a140fa6cb8e037733956646d00e7fd334c16291"
+      "size_bytes": 10646,
+      "sha256": "fb4dfb6a7ee751991f71b9be2dfaef2e221d39cdb000840c275a71be31a5d0ca"
     },
     {
       "path": "nvidia_runtime_preflight.md",
       "role": "human-readable runtime gate report",
       "required": true,
-      "size_bytes": 4246,
-      "sha256": "3fc6a180d2cf494eb4ed8764e2f8b32d50580f761766a3839e97ae23a50083c1"
+      "size_bytes": 3961,
+      "sha256": "9f89bed1462820e4b7cb57642ea507529d6117ffa534b60343eba5ac763f4fc5"
     },
     {
       "path": "simready_minimum_report.json",
-      "role": "minimum SimReady candidate report and blocked external gates",
+      "role": "authored SimReady candidate report plus external Content Agents gates",
       "required": true,
-      "size_bytes": 2477,
-      "sha256": "221b7ac97623ad9c2ff6e4d0e5d844d4f2e740a56a3b22ed8c0ee0b714650dd7"
+      "size_bytes": 2497,
+      "sha256": "69666ec5e7b2a8ab2837c6a9b01154d24fb0828e5db5968c9fa5d558aa7e3b48"
+    },
+    {
+      "path": "simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda",
+      "role": "self-contained SimReady validator asset-source copy",
+      "required": true,
+      "size_bytes": 100114,
+      "sha256": "873b8cc46372b1e3e835bfd0b24f9a18dc16952c7a9b77d9acbd3dbf3d2f19ed"
+    },
+    {
+      "path": "simready_asset/sadang_317_6/simready_usd/sadang_317_6.json",
+      "role": "SimReady sidecar metadata for validator NP.006",
+      "required": true,
+      "size_bytes": 1154,
+      "sha256": "ebbb61391d6927e0bda6a19691f26bcb6491308733868c899e1bb2c8aa8de2a6"
     },
     {
       "path": "usdchecker_report.txt",
@@ -135,15 +149,15 @@
       "path": "README.md",
       "role": "package overview",
       "required": true,
-      "size_bytes": 3620,
-      "sha256": "73d03cf4f79966410c7a77c1dce451f639233d317c5e6c2fb7c0b66df066078b"
+      "size_bytes": 3636,
+      "sha256": "bdf2f85bb4d7bc709faf933acfefbfec488f390e642809ce8d8a5d82cc9b9b8b"
     },
     {
       "path": "NVIDIA_GPU_HOST_RUNBOOK.md",
       "role": "GPU host validation runbook",
       "required": true,
-      "size_bytes": 3587,
-      "sha256": "0bd486ed3803f1f6267ded648eb8a28301a63f08be42c550edadc841c6d2efe7"
+      "size_bytes": 3923,
+      "sha256": "fea29a40f11e3943ea1851a0357b7713be3b437c53464cba5f0829fca205e766"
     },
     {
       "path": "ovstream_viewer_contract.json",
@@ -192,12 +206,12 @@
     },
     {
       "id": "CONTENT_AGENTS.RUNTIME.001",
-      "required_status": "passed before full SimReady claim",
+      "required_status": "passed before Content-Agents-assisted SimReady claim",
       "evidence_to_attach": "Content Agents material/physics assignment logs or endpoint health + request IDs."
     },
     {
       "id": "SIMREADY.VALIDATOR.001",
-      "required_status": "passed before full SimReady claim",
+      "required_status": "passed before formal SimReady profile claim",
       "evidence_to_attach": "Omniverse Asset Validator / SimReady report copied back into this package."
     }
   ],
@@ -216,7 +230,7 @@
   "nvidia_only_constraints": [
     "Do not use the browser Three.js/WebGL viewer as final USD-render acceptance evidence.",
     "Browser UI for the NVIDIA-only viewer must display ovstream/WebRTC video, not client-rendered USD geometry.",
-    "Do not claim full SimReady conformance from this Mac-authored package; only the authored baseline and usdchecker pass locally.",
+    "Do not claim Content-Agents-assisted SimReady conformance until Content Agents material/physics assignment has run; an authored self-contained asset-source copy may still pass profile validation independently.",
     "The flood-water layer is a visual/result placeholder and must be replaced by an NVIDIA runtime simulation/stream if operational hydrology is required."
   ]
 }

@@ -85,7 +85,9 @@ function handoffFileSpecs(projectId: string): FileSpec[] {
     { path: "nvidia_stack_manifest.json", role: "NVIDIA product mapping and current local gate status", required: true },
     { path: "nvidia_runtime_preflight.json", role: "machine-readable runtime gate report", required: true },
     { path: "nvidia_runtime_preflight.md", role: "human-readable runtime gate report", required: true },
-    { path: "simready_minimum_report.json", role: "minimum SimReady candidate report and blocked external gates", required: true },
+    { path: "simready_minimum_report.json", role: "authored SimReady candidate report plus external Content Agents gates", required: true },
+    { path: `simready_asset/${projectId}/simready_usd/${projectId}.usda`, role: "self-contained SimReady validator asset-source copy", required: true },
+    { path: `simready_asset/${projectId}/simready_usd/${projectId}.json`, role: "SimReady sidecar metadata for validator NP.006", required: true },
     { path: "usdchecker_report.txt", role: "local OpenUSD validator evidence", required: true },
     { path: "README.md", role: "package overview", required: true },
     { path: "NVIDIA_GPU_HOST_RUNBOOK.md", role: "GPU host validation runbook", required: true },
@@ -136,12 +138,12 @@ export function buildHandoffManifest(input: {
       },
       {
         id: "CONTENT_AGENTS.RUNTIME.001",
-        required_status: "passed before full SimReady claim",
+        required_status: "passed before Content-Agents-assisted SimReady claim",
         evidence_to_attach: "Content Agents material/physics assignment logs or endpoint health + request IDs."
       },
       {
         id: "SIMREADY.VALIDATOR.001",
-        required_status: "passed before full SimReady claim",
+        required_status: "passed before formal SimReady profile claim",
         evidence_to_attach: "Omniverse Asset Validator / SimReady report copied back into this package."
       }
     ],
@@ -160,7 +162,7 @@ export function buildHandoffManifest(input: {
     nvidia_only_constraints: [
       "Do not use the browser Three.js/WebGL viewer as final USD-render acceptance evidence.",
       "Browser UI for the NVIDIA-only viewer must display ovstream/WebRTC video, not client-rendered USD geometry.",
-      "Do not claim full SimReady conformance from this Mac-authored package; only the authored baseline and usdchecker pass locally.",
+      "Do not claim Content-Agents-assisted SimReady conformance until Content Agents material/physics assignment has run; an authored self-contained asset-source copy may still pass profile validation independently.",
       "The flood-water layer is a visual/result placeholder and must be replaced by an NVIDIA runtime simulation/stream if operational hydrology is required."
     ]
   };
@@ -185,7 +187,8 @@ This handoff is for the NVIDIA-only runtime path. The local package can author a
 - ovstream readiness smoke: \`nvidia_ovstream_smoke_server.py\`
 - ovstream browser client: \`ovstream_browser_client/\`
 - Local authoring evidence: \`usdchecker_report.txt\`
-- SimReady baseline: \`simready_minimum_report.json\` includes USD units/axis/material binding plus conservative static PhysicsCollisionAPI semantics.
+- SimReady baseline: \`simready_minimum_report.json\` includes USD units/axis/material binding plus conservative static PhysicsCollisionAPI/PhysicsMassAPI semantics.
+- SimReady validator asset source: \`simready_asset/${input.twin.project_id}/simready_usd/${input.twin.project_id}.usda\` plus sidecar metadata. Use this path for SimReady Foundation validation folder/metadata rules.
 - Browser viewer replacement: \`ovstream_viewer_contract.json\` + \`OVSTREAM_VIEWER_RUNBOOK.md\` define the NVIDIA-only WebRTC video-stream path.
 
 ## 1. Transfer
@@ -231,10 +234,10 @@ Acceptance threshold: \`nvidia_runtime_preflight.json\` should move from \`${inp
 
 ## 4. SimReady completion gates
 
-This package is only a conservative SimReady candidate. Before saying “full SimReady”:
+This package includes an authored SimReady candidate and a self-contained validator asset source. Before saying “Content-Agents-assisted SimReady”:
 
 1. Run Omniverse Content Agents for material and physics assignment.
-2. Run Omniverse Asset Validator / SimReady validation.
+2. Run Omniverse Asset Validator / SimReady validation against \`simready_asset/${input.twin.project_id}/simready_usd/${input.twin.project_id}.usda\`.
 3. Copy validator reports into this package and update \`handoff_manifest.json\` checksums.
 4. Run USD Performance Tuning if the scene is scaled beyond this MVP sample.
 

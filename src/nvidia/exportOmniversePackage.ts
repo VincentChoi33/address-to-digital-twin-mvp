@@ -42,6 +42,7 @@ async function main(): Promise<void> {
   await mkdir(outDir, { recursive: true });
   await writeFile(usdPath, exported.usda, "utf8");
   await writeFile(compositePath, composite.usda, "utf8");
+  await writeSimReadyAssetSource(outDir, twin, exported.usda, exported.simreadyMetadata);
   await copyFile(join(process.cwd(), "scripts/nvidia_ovrtx_first_frame.py"), join(outDir, "nvidia_ovrtx_first_frame.py"));
   await copyFile(join(process.cwd(), "scripts/nvidia_ovstream_smoke_server.py"), join(outDir, "nvidia_ovstream_smoke_server.py"));
   await copyOvstreamBrowserClient(outDir);
@@ -60,6 +61,13 @@ async function main(): Promise<void> {
     report: "usdchecker_report.txt"
   };
   Object.assign(stackManifest, {
+    simready_asset_source: {
+      profile_target: "Prop-Robotics-Neutral 1.0.0",
+      asset_stage: `simready_asset/${twin.project_id}/simready_usd/${twin.project_id}.usda`,
+      sidecar_metadata: `simready_asset/${twin.project_id}/simready_usd/${twin.project_id}.json`,
+      purpose:
+        "Self-contained asset-source copy for NVIDIA SimReady Foundation validator folder/metadata rules; the primary Omniverse handoff stage remains at the package root."
+    },
     ovrtx_viewer_session: {
       composite_stage: composite.fileName,
       render_product_path: composite.renderProductPath,
@@ -103,6 +111,14 @@ async function copyOvstreamBrowserClient(outDir: string): Promise<void> {
       return !source.includes("/node_modules") && !source.endsWith("/dist") && !source.includes("/dist/");
     }
   });
+}
+
+async function writeSimReadyAssetSource(outDir: string, twin: TwinProject, usda: string, metadata: object): Promise<void> {
+  const simreadyDir = join(outDir, "simready_asset", twin.project_id, "simready_usd");
+  await rm(join(outDir, "simready_asset"), { recursive: true, force: true });
+  await mkdir(simreadyDir, { recursive: true });
+  await writeFile(join(simreadyDir, `${twin.project_id}.usda`), usda, "utf8");
+  await writeFile(join(simreadyDir, `${twin.project_id}.json`), `${JSON.stringify(metadata, null, 2)}\n`, "utf8");
 }
 
 main().catch((error) => {

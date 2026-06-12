@@ -12,7 +12,8 @@ This handoff is for the NVIDIA-only runtime path. The local package can author a
 - ovstream readiness smoke: `nvidia_ovstream_smoke_server.py`
 - ovstream browser client: `ovstream_browser_client/`
 - Local authoring evidence: `usdchecker_report.txt`
-- SimReady baseline: `simready_minimum_report.json` includes USD units/axis/material binding plus conservative static PhysicsCollisionAPI semantics.
+- SimReady baseline: `simready_minimum_report.json` includes USD units/axis/material binding plus conservative static PhysicsCollisionAPI/PhysicsMassAPI semantics.
+- SimReady validator asset source: `simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda` plus sidecar metadata. Use this path for SimReady Foundation validation folder/metadata rules.
 - Browser viewer replacement: `ovstream_viewer_contract.json` + `OVSTREAM_VIEWER_RUNBOOK.md` define the NVIDIA-only WebRTC video-stream path.
 
 ## 1. Transfer
@@ -58,10 +59,10 @@ Acceptance threshold: `nvidia_runtime_preflight.json` should move from `openusd_
 
 ## 4. SimReady completion gates
 
-This package is only a conservative SimReady candidate. Before saying “full SimReady”:
+This package includes an authored SimReady candidate and a self-contained validator asset source. Before saying “Content-Agents-assisted SimReady”:
 
 1. Run Omniverse Content Agents for material and physics assignment.
-2. Run Omniverse Asset Validator / SimReady validation.
+2. Run Omniverse Asset Validator / SimReady validation against `simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda`.
 3. Copy validator reports into this package and update `handoff_manifest.json` checksums.
 4. Run USD Performance Tuning if the scene is scaled beyond this MVP sample.
 

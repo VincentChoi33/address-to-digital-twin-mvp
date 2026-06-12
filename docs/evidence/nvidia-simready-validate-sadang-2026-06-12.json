@@ -1,0 +1,67 @@
+{
+  "status": "passed",
+  "generated_at": "2026-06-12T22:20:07+09:00",
+  "project_id": "sadang_317_6",
+  "validator_tool": "simready-validate",
+  "simready_validate_version": "2026.4.9",
+  "foundation_root": "/Users/handy_choi/.physical-ai-skill-hub/upstreams/simready-foundation",
+  "foundation_commit": "a1e9dd6",
+  "asset_path": "src/samples/sadang_317_6/omniverse/simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda",
+  "profile_target": {
+    "name": "Prop-Robotics-Neutral",
+    "version": "1.0.0"
+  },
+  "feature_results": [
+    {
+      "feature_id": "FET000_CORE",
+      "version": "0.1.0",
+      "passed": true,
+      "dependencies": "[]"
+    },
+    {
+      "feature_id": "FET001_BASE_NEUTRAL",
+      "version": "0.1.0",
+      "passed": true,
+      "dependencies": "[]"
+    },
+    {
+      "feature_id": "FET003_BASE_NEUTRAL",
+      "version": "0.1.0",
+      "passed": true,
+      "dependencies": "[]"
+    },
+    {
+      "feature_id": "FET004_BASE_NEUTRAL",
+      "version": "0.1.0",
+      "passed": true,
+      "dependencies": "[{'FET003_BASE_NEUTRAL': {'version': '0.1.0'}}]"
+    },
+    {
+      "feature_id": "FET005_BASE_NEUTRAL",
+      "version": "0.1.0",
+      "passed": true,
+      "dependencies": "[]"
+    },
+    {
+      "feature_id": "FET006_BASE_MDL",
+      "version": "0.1.0",
+      "passed": true,
+      "dependencies": "[]"
+    }
+  ],
+  "failing_requirements": [],
+  "command": [
+    "/tmp/simready-runner-venv-312-1781269817/bin/simready-validate",
+    "src/samples/sadang_317_6/omniverse/simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda",
+    "--profile",
+    "Prop-Robotics-Neutral",
+    "--version",
+    "1.0.0",
+    "--rules-path",
+    "~/.physical-ai-skill-hub/upstreams/simready-foundation/nv_core/sr_specs/docs/capabilities",
+    "--features-path",
+    "~/.physical-ai-skill-hub/upstreams/simready-foundation/nv_core/sr_specs/docs/features",
+    "--profiles-path",
+    "~/.physical-ai-skill-hub/upstreams/simready-foundation/nv_core/sr_specs/docs/profiles/profiles.toml"
+  ]
+}

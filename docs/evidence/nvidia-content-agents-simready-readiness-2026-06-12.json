@@ -1,62 +1,56 @@
 {
-  "status": "blocked_content_agents_and_simready_credentials_runtime",
-  "generated_at": "2026-06-12T21:55:00+09:00",
+  "status": "simready_profile_passed_content_agents_blocked",
+  "generated_at": "2026-06-12T22:20:07+09:00",
   "project_id": "sadang_317_6",
-  "scope": "Audit the remaining NVIDIA-only gates after ovrtx, ovstream, and browser WebRTC first-frame evidence passed.",
+  "scope": "Audit remaining NVIDIA-only gates after ovrtx, ovstream, browser WebRTC first-frame evidence, and local SimReady profile validation.",
+  "prior_claude_research_locations": [
+    {
+      "host": "max",
+      "location": "personal/career workspace (exact path omitted from committed public artifact)",
+      "note": "Found prior Claude/Codex work-history census with digital-twin/Physical-AI context; not copied because it contains personal/career material."
+    },
+    {
+      "host": "max",
+      "location": "NVIDIA Physical AI application notes (exact path omitted from committed public artifact)",
+      "note": "Found actionable NVIDIA stack notes: Omniverse/OpenUSD, Cosmos, Isaac Sim, GR00T, Jetson/JetPack/Isaac ROS."
+    }
+  ],
   "completed_gates": [
     "OpenUSD package authored and local usdchecker passed",
     "train1 ovrtx first-frame evidence passed",
-    "train1 ovrtx→ovstream server readiness passed",
+    "train1 ovrtx\u2192ovstream server readiness passed",
     "train1 @nvidia/ov-web-rtc Direct browser first-frame evidence passed",
-    "train1 package validation passed with SimReady/Content Agents preflight gates present"
+    "train1 package validation passed with SimReady/Content Agents preflight gates present",
+    "Local SimReady Foundation checkout found at /Users/handy_choi/.physical-ai-skill-hub/upstreams/simready-foundation @ a1e9dd6",
+    "simready-validate 2026.4.9 installed in Python 3.12 runner venv and executed",
+    "Self-contained SimReady asset source passed Prop-Robotics-Neutral@1.0.0 profile validation across FET000/FET001/FET003/FET004/FET005/FET006"
   ],
   "remaining_blockers": [
-    "No NVIDIA_API_KEY/NGC_API_KEY/NVCF_API_KEY or provided Content Agents service endpoints are present locally or on train1.",
-    "Content Agents material/physics wrapper blocks at missing CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL or MATERIAL_AGENT_BASE_URL.",
-    "simready-validate is not on PATH and no SimReady Foundation checkout is configured locally or on train1."
+    "No NVIDIA_API_KEY/NGC_API_KEY/NVCF_API_KEY or complete provided Content Agents Material/Physics/OVRTX endpoint set is present locally.",
+    "Content Agents material/physics wrapper cannot run until CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL, CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL, and OVRTX_RENDER_ENDPOINT/CONTENT_AGENTS_OVRTX_BASE_URL are provided, or a GPU-host NVIDIA_API_KEY deployment is configured.",
+    "Local Mac still has no NVIDIA GPU/Omniverse runtime; RTX/ovstream evidence remains from train1 and must be reproduced on the target persistent GPU host."
   ],
   "local_redacted_environment": {
     "NVIDIA_API_KEY": "missing",
     "NGC_API_KEY": "missing",
     "NVCF_API_KEY": "missing",
     "CONTENT_AGENTS_TOKEN": "missing",
+    "CONTENT_AGENTS_MATERIAL_AGENT_TOKEN": "missing",
+    "CONTENT_AGENTS_PHYSICS_AGENT_TOKEN": "missing",
+    "CONTENT_AGENTS_MATERIAL_BASE_URL": "missing",
+    "CONTENT_AGENTS_PHYSICS_BASE_URL": "missing",
+    "CONTENT_AGENTS_TEXTURE_BASE_URL": "missing",
+    "CONTENT_AGENTS_OVRTX_BASE_URL": "missing",
     "CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL": "missing",
     "CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL": "missing",
-    "CONTENT_AGENTS_OVRTX_BASE_URL": "missing",
+    "CONTENT_AGENTS_TEXTURE_AGENT_BASE_URL": "missing",
     "OVRTX_RENDER_ENDPOINT": "missing",
     "RENDER_ENDPOINT": "missing",
     "SIMREADY_FOUNDATION_ROOT": "missing",
-    "PHYSICAL_AI_SKILL_HUB_UPSTREAM_ROOT": "missing"
-  },
-  "train1_probe": {
-    "python_modules": {
-      "ovrtx": true,
-      "ovstream": true,
-      "pxr": true,
-      "simready": false
-    },
-    "redacted_environment": {
-      "CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL": "missing",
-      "CONTENT_AGENTS_OVRTX_BASE_URL": "missing",
-      "CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL": "missing",
-      "CONTENT_AGENTS_TOKEN": "missing",
-      "NGC_API_KEY": "missing",
-      "NVCF_API_KEY": "missing",
-      "NVIDIA_API_KEY": "missing",
-      "OVRTX_RENDER_ENDPOINT": "missing",
-      "PHYSICAL_AI_SKILL_HUB_UPSTREAM_ROOT": "missing",
-      "RENDER_ENDPOINT": "missing",
-      "SIMREADY_FOUNDATION_ROOT": "missing"
-    },
-    "roots": {
-      "CONTENT_AGENTS_DEFAULT": false,
-      "PHYSICAL_AI_SIMREADY_DEFAULT": false,
-      "SIMREADY_FOUNDATION_ROOT": false
-    },
-    "tools": {
-      "nvidia-smi": true,
-      "simready-validate": false
-    }
+    "PHYSICAL_AI_SKILL_HUB_UPSTREAM_ROOT": "missing",
+    "OVSTREAM_SIGNALING_URL": "missing",
+    "OMNIVERSE_STREAM_URL": "missing",
+    "OVRTX_WEBRTC_URL": "missing"
   },
   "repo_preflight_summary": {
     "openusd_authoring_ready": true,
@@ -99,173 +93,123 @@
     {
       "id": "SIMREADY.FOUNDATION.001",
       "product": "NVIDIA SimReady Foundation",
-      "status": "blocked",
+      "status": "passed",
       "required_for": [
         "formal SimReady profile conformance"
       ],
-      "evidence": "No SIMREADY_FOUNDATION_ROOT or default SimReady Foundation checkout was found.",
-      "remediation": "Provide simready-foundation checked out to main via SIMREADY_FOUNDATION_ROOT or $HOME/.physical-ai-skill-hub/upstreams/simready-foundation."
+      "evidence": "SimReady Foundation root exists at /Users/handy_choi/.physical-ai-skill-hub/upstreams/simready-foundation."
     },
     {
       "id": "SIMREADY.VALIDATOR.001",
       "product": "simready-validate",
-      "status": "blocked",
+      "status": "passed",
       "required_for": [
         "formal SimReady profile validation"
       ],
-      "evidence": "simready-validate is missing and no Foundation checkout is available for runner-managed installation.",
-      "remediation": "Install simready-validate or provide the NVIDIA SimReady Foundation checkout."
+      "evidence": "simready-validate CLI is missing, but a Foundation checkout exists for runner-managed installation."
     }
   ],
   "nvidia_reference_dependency_checks": {
-    "simready_validate": {
-      "checks": [
-        {
-          "message": "Python executable: /opt/homebrew/opt/python@3.14/bin/python3.14",
-          "name": "python_available",
-          "passed": true,
-          "severity": "error"
-        },
-        {
-          "message": "simready-validate executable: not found; no Foundation requirements.txt found. Provide simready-foundation checked out to main, or set SIMREADY_FOUNDATION_ROOT.",
-          "name": "simready-validate_available_or_installable",
-          "passed": false,
-          "severity": "error"
-        }
-      ],
-      "errors": [
-        "simready-validate executable: not found; no Foundation requirements.txt found. Provide simready-foundation checked out to main, or set SIMREADY_FOUNDATION_ROOT."
-      ],
-      "passed": false,
-      "skill": "simready-validate"
-    },
-    "content_agents_router": {
-      "checks": [
-        {
-          "message": "/Users/handy_choi/.codex/.tmp/plugins/plugins/nvidia/skills/omniverse-cad-to-simready/references/content-agents/references/material-agent-client/scripts/run.py exists",
-          "name": "material-agent-client.run_py",
-          "passed": true,
-          "severity": "error"
-        },
-        {
-          "message": "/Users/handy_choi/.codex/.tmp/plugins/plugins/nvidia/skills/omniverse-cad-to-simready/references/content-agents/references/physics-agent-client/scripts/run.py exists",
-          "name": "physics-agent-client.run_py",
-          "passed": true,
-          "severity": "error"
-        },
-        {
-          "message": "/Users/handy_choi/.codex/.tmp/plugins/plugins/nvidia/skills/omniverse-cad-to-simready/references/content-agents/references/texture-agent-client/scripts/run.py exists",
-          "name": "texture-agent-client.run_py",
-          "passed": true,
-          "severity": "error"
-        }
-      ],
-      "errors": [],
-      "next_step": "content-agents/scripts/run.py",
+    "simready_foundation": {
       "passed": true,
-      "skill": "content-agents",
-      "status": "PASS"
+      "root": "/Users/handy_choi/.physical-ai-skill-hub/upstreams/simready-foundation",
+      "commit": "a1e9dd6"
+    },
+    "content_agents_upstream": {
+      "passed": true,
+      "root": "/Users/handy_choi/.physical-ai-skill-hub/upstreams/content-agents",
+      "commit": "5be4f88",
+      "note": "Upstream wrappers are present, but service auth/endpoints are not."
+    },
+    "simready_validate_runner": {
+      "passed": true,
+      "python": "/opt/homebrew/bin/python3.12",
+      "venv": "/tmp/simready-runner-venv-312-1781269817",
+      "simready_validate_version": "2026.4.9",
+      "usd_core_version": "26.5"
     }
   },
   "nvidia_reference_runtime_attempts": {
-    "content_agents_material_physics": {
-      "errors": [
-        "Set --base-url or one of CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL, MATERIAL_AGENT_BASE_URL"
-      ],
-      "input_usd_path": "/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/sadang_317_6.usda",
-      "materialized_usd_path": null,
-      "next_step": "simready-conform-profile",
-      "output_dir": "/private/tmp/nvidia-simready-audit/content-agents-run",
-      "output_usd_path": "/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/sadang_317_6.usda",
-      "passed": false,
-      "physics_usd_path": null,
-      "reports": {
-        "material": "/private/tmp/nvidia-simready-audit/content-agents-run/material/material-agent-client.json"
-      },
-      "selected_calls": [
-        "material",
-        "physics"
-      ],
-      "skill": "content-agents",
-      "status": "FAIL",
-      "steps": [
-        {
-          "call": "material",
-          "command": [
-            "/opt/homebrew/opt/python@3.14/bin/python3.14",
-            "/Users/handy_choi/.codex/.tmp/plugins/plugins/nvidia/skills/omniverse-cad-to-simready/references/content-agents/references/material-agent-client/scripts/run.py",
-            "/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/sadang_317_6.usda",
-            "/private/tmp/nvidia-simready-audit/content-agents-run/material",
-            "--report",
-            "/private/tmp/nvidia-simready-audit/content-agents-run/material/material-agent-client.json",
-            "--markdown-report",
-            "/private/tmp/nvidia-simready-audit/content-agents-run/material/material-agent-client.md",
-            "--timeout",
-            "5",
-            "--request-timeout",
-            "5",
-            "--poll-interval",
-            "2.0"
-          ],
-          "errors": [
-            "Set --base-url or one of CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL, MATERIAL_AGENT_BASE_URL"
-          ],
-          "input_usd_path": "/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/sadang_317_6.usda",
-          "markdown_report_path": "/private/tmp/nvidia-simready-audit/content-agents-run/material/material-agent-client.md",
-          "next_step": "physics-agent-client",
-          "output_usd_path": "/private/tmp/nvidia-simready-audit/content-agents-run/material/sadang_317_6_material.usd",
-          "passed": false,
-          "reference": "material-agent-client",
-          "report_path": "/private/tmp/nvidia-simready-audit/content-agents-run/material/material-agent-client.json",
-          "status": "BLOCKED",
-          "stderr_path": "/private/tmp/nvidia-simready-audit/content-agents-run/material/material-agent-client.stderr.log",
-          "stdout_path": "/private/tmp/nvidia-simready-audit/content-agents-run/material/material-agent-client.stdout.log",
-          "warnings": []
-        }
-      ],
-      "textured_usdz_path": null,
-      "warnings": []
-    },
     "simready_validate_profile": {
-      "asset_path": "/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/sadang_317_6.usda",
-      "available_profiles": [],
-      "command": [
-        "simready-validate",
-        "src/samples/sadang_317_6/omniverse/sadang_317_6.usda",
-        "--profile",
-        "Prop-Robotics-Neutral",
-        "--profile-version",
-        "1.0.0"
-      ],
-      "errors": [
-        "simready-validate CLI was not found on PATH, and no SimReady Foundation checkout was found at $SIMREADY_FOUNDATION_ROOT, $PHYSICAL_AI_SKILL_HUB_UPSTREAM_ROOT/simready-foundation, or $HOME/.physical-ai-skill-hub/upstreams/simready-foundation checked out to main"
-      ],
-      "feature_results": [],
-      "issue_counts": {
-        "ERROR": 0,
-        "FAILURE": 0,
-        "INFO": 0,
-        "WARNING": 0
-      },
-      "issues": [],
-      "next_step": "fix-simready-profile-validation",
-      "passed": false,
-      "profile_name": "Prop-Robotics-Neutral",
-      "profile_results": [],
+      "passed": true,
+      "status": "PASS",
+      "validator_tool": "simready-validate",
+      "asset_path": "src/samples/sadang_317_6/omniverse/simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda",
       "profile_target": {
         "name": "Prop-Robotics-Neutral",
         "version": "1.0.0"
       },
-      "requirement_counts": {},
+      "feature_results": [
+        {
+          "feature_id": "FET000_CORE",
+          "version": "0.1.0",
+          "passed": true,
+          "dependencies": "[]"
+        },
+        {
+          "feature_id": "FET001_BASE_NEUTRAL",
+          "version": "0.1.0",
+          "passed": true,
+          "dependencies": "[]"
+        },
+        {
+          "feature_id": "FET003_BASE_NEUTRAL",
+          "version": "0.1.0",
+          "passed": true,
+          "dependencies": "[]"
+        },
+        {
+          "feature_id": "FET004_BASE_NEUTRAL",
+          "version": "0.1.0",
+          "passed": true,
+          "dependencies": "[{'FET003_BASE_NEUTRAL': {'version': '0.1.0'}}]"
+        },
+        {
+          "feature_id": "FET005_BASE_NEUTRAL",
+          "version": "0.1.0",
+          "passed": true,
+          "dependencies": "[]"
+        },
+        {
+          "feature_id": "FET006_BASE_MDL",
+          "version": "0.1.0",
+          "passed": true,
+          "dependencies": "[]"
+        }
+      ],
+      "failing_requirements": [],
+      "raw_report_schema": "simready-validate --output asset-path keyed JSON",
+      "command": [
+        "/tmp/simready-runner-venv-312-1781269817/bin/simready-validate",
+        "src/samples/sadang_317_6/omniverse/simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda",
+        "--profile",
+        "Prop-Robotics-Neutral",
+        "--version",
+        "1.0.0",
+        "--rules-path",
+        "~/.physical-ai-skill-hub/upstreams/simready-foundation/nv_core/sr_specs/docs/capabilities",
+        "--features-path",
+        "~/.physical-ai-skill-hub/upstreams/simready-foundation/nv_core/sr_specs/docs/features",
+        "--profiles-path",
+        "~/.physical-ai-skill-hub/upstreams/simready-foundation/nv_core/sr_specs/docs/profiles/profiles.toml"
+      ]
+    },
+    "content_agents_material_physics": {
+      "passed": false,
       "status": "BLOCKED",
-      "validator_skill": "simready-validate",
-      "validator_tool": "simready-validate",
-      "warnings": []
+      "errors": [
+        "Set --base-url or one of CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL, MATERIAL_AGENT_BASE_URL"
+      ],
+      "selected_calls": [
+        "material",
+        "physics"
+      ],
+      "note": "Wrapper scripts are available, but no Content Agents service endpoints or NVIDIA/NGC/NVCF auth are configured."
     }
   },
   "next_required_inputs": [
     "Provide NVIDIA_API_KEY from build.nvidia.com for local Content Agents deployment on a GPU host, or provide healthy CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL, CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL, and OVRTX_RENDER_ENDPOINT/CONTENT_AGENTS_OVRTX_BASE_URL.",
-    "Provide simready-validate on PATH or a SimReady Foundation checkout on branch main via SIMREADY_FOUNDATION_ROOT.",
-    "After those are present, rerun npm run nvidia:preflight, Content Agents material+physics assignment, simready-conform-profile, and simready-validate."
+    "Run Content Agents material+physics assignment and persist the generated materialized/physics USD plus reports.",
+    "Re-run npm run nvidia:package and simready-validate after Content Agents output if you want a full Content-Agents-assisted SimReady claim rather than the current authored-profile pass."
   ]
 }

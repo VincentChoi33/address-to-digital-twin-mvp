@@ -12,7 +12,7 @@ This folder is the NVIDIA-targeted export of the address digital twin. It is aut
 - `ovstream_browser_client/scripts/probe-first-frame.mjs` — Playwright probe that clicks Connect, waits for nonzero HTML video dimensions, and saves JSON/screenshot evidence.
 - `nvidia_stack_manifest.json` — product mapping and runtime gate status.
 - `nvidia_runtime_preflight.json` / `.md` — local NVIDIA/Omniverse/SimReady runtime gate probe.
-- `simready_minimum_report.json` — minimum SimReady-candidate checks and blocked external gates.
+- `simready_minimum_report.json` — authored SimReady-candidate checks and blocked external Content Agents gates.
 - `usdchecker_report.txt` — local USD checker output when `usdchecker` is available.
 - `handoff_manifest.json` — SHA-256 file inventory for moving the package to an NVIDIA GPU host.
 - `NVIDIA_GPU_HOST_RUNBOOK.md` — concrete GPU-host validation/runbook steps.

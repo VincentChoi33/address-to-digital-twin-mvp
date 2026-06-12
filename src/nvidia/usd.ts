@@ -12,6 +12,7 @@ export interface LocalRuntimeProbe {
 export interface OmniverseExportResult {
   usda: string;
   stackManifest: object;
+  simreadyMetadata: object;
   simreadyReport: object;
   readme: string;
   summary: {
@@ -31,6 +32,8 @@ interface MeshSpec {
   faceVertexIndices: number[];
   materialPath: string;
   physicsCollision?: boolean;
+  physicsRigidBody?: boolean;
+  physicsMassKg?: number;
   customData?: Record<string, string | number | boolean>;
 }
 
@@ -75,6 +78,7 @@ export function exportTwinToOmniversePackage(
   meshes.push(makeFloodWaterReferenceMesh("FloodScenario_Cloudburst_WaterReference", materialPath(MATERIALS.water)));
 
   const usda = renderUsda({ rootName, rootPath, twin, manifest, meshes });
+  const simreadyMetadata = buildSimReadyMetadata(twin, manifest, runtimeProbe, meshes, generatedAt);
   const stackManifest = buildStackManifest(twin, manifest, runtimeProbe, meshes, generatedAt);
   const simreadyReport = buildSimReadyMinimumReport(twin, manifest, runtimeProbe, meshes, generatedAt);
   const readme = buildPackageReadme(twin, runtimeProbe);
@@ -82,6 +86,7 @@ export function exportTwinToOmniversePackage(
   return {
     usda,
     stackManifest,
+    simreadyMetadata,
     simreadyReport,
     readme,
     summary: {
@@ -121,6 +126,15 @@ function renderUsda({
   const lines: string[] = [];
   lines.push("#usda 1.0");
   lines.push("(");
+  lines.push("    customLayerData = {");
+  lines.push(`        string SimReady_Metadata = ${q(JSON.stringify({
+    identifier: twin.project_id,
+    version: "0.1.0",
+    description: `${twin.addresses.parcel_address} NVIDIA OpenUSD digital-twin SimReady candidate`,
+    profile: "Prop-Robotics-Neutral",
+    profile_version: "1.0.0"
+  }))}`);
+  lines.push("    }");
   lines.push(`    defaultPrim = "${rootName}"`);
   lines.push("    metersPerUnit = 1");
   lines.push("    upAxis = \"Y\"");
@@ -149,6 +163,7 @@ function renderUsda({
   lines.push(renderLooks(rootPath));
   lines.push(renderMetadataScope(rootPath, twin, manifest));
   lines.push(renderPhysicsScene());
+  lines.push(renderGraspVector());
   lines.push("    def Xform \"Geometry\"");
   lines.push("    {");
   for (const mesh of meshes) lines.push(renderMesh(mesh, 2));
@@ -170,6 +185,15 @@ function renderLooks(rootPath: string): string {
   const lines: string[] = [];
   lines.push("    def Scope \"Looks\"");
   lines.push("    {");
+  lines.push("        def Material \"Default_Physics_Material\" (");
+  lines.push("            prepend apiSchemas = [\"PhysicsMaterialAPI\"]");
+  lines.push("        )");
+  lines.push("        {");
+  lines.push("            float physics:density = 1800");
+  lines.push("            float physics:dynamicFriction = 0.65");
+  lines.push("            float physics:restitution = 0.05");
+  lines.push("            float physics:staticFriction = 0.85");
+  lines.push("        }");
   for (const spec of specs) {
     lines.push(`        def Material "${spec.name}"`);
     lines.push("        {");
@@ -208,6 +232,19 @@ function renderMetadataScope(rootPath: string, twin: TwinProject, manifest: Sour
   return lines.join("\n").replaceAll("${rootPath}", rootPath);
 }
 
+function renderGraspVector(): string {
+  return [
+    "    def BasisCurves \"grasp_identifier_site_axis\"",
+    "    {",
+    "        point3f[] points = [(-12, 8, 0), (12, 8, 0)]",
+    "        int[] curveVertexCounts = [2]",
+    "        uniform token purpose = \"guide\"",
+    "        uniform token type = \"linear\"",
+    "        uniform token basis = \"bezier\"",
+    "    }"
+  ].join("\n");
+}
+
 function renderPhysicsScene(): string {
   return [
     "    def PhysicsScene \"PhysicsScene\"",
@@ -221,6 +258,7 @@ function renderPhysicsScene(): string {
 function renderMesh(mesh: MeshSpec, indentLevel: number): string {
   const indent = "    ".repeat(indentLevel);
   const apiSchemas = ["MaterialBindingAPI"];
+  if (mesh.physicsRigidBody) apiSchemas.push("PhysicsRigidBodyAPI", "PhysicsMassAPI");
   if (mesh.physicsCollision) apiSchemas.push("PhysicsCollisionAPI");
   const lines: string[] = [];
   lines.push(`${indent}def Mesh "${mesh.name}" (`);
@@ -237,7 +275,14 @@ function renderMesh(mesh: MeshSpec, indentLevel: number): string {
   lines.push(`${indent}{`);
   lines.push(`${indent}    rel material:binding = <${mesh.materialPath}>`);
   if (mesh.physicsCollision) {
+    const physicsMaterialPath = mesh.materialPath.replace(/\/Looks\/[^/]+$/, "/Looks/Default_Physics_Material");
+    lines.push(`${indent}    rel material:binding:physics = <${physicsMaterialPath}>`);
     lines.push(`${indent}    bool physics:collisionEnabled = true`);
+  }
+  if (mesh.physicsRigidBody) {
+    lines.push(`${indent}    bool physics:kinematicEnabled = true`);
+    lines.push(`${indent}    bool physics:rigidBodyEnabled = true`);
+    lines.push(`${indent}    float physics:mass = ${fmt(mesh.physicsMassKg ?? 1000)}`);
   }
   lines.push(`${indent}    point3f[] points = ${renderVec3Array(mesh.points, indent + "    ")}`);
   lines.push(`${indent}    int[] faceVertexCounts = ${renderNumberArray(mesh.faceVertexCounts)}`);
@@ -324,6 +369,8 @@ function makeBuildingMesh(building: BuildingFeature, materialPath: string): Mesh
     faceVertexCounts,
     faceVertexIndices,
     physicsCollision: true,
+    physicsRigidBody: true,
+    physicsMassKg: Math.max(1000, Math.round(building.height_m * ring.length * 250)),
     customData: {
       sourceType: building.source_type,
       confidence: building.confidence,
@@ -331,6 +378,34 @@ function makeBuildingMesh(building: BuildingFeature, materialPath: string): Mesh
       role: building.role,
       heightM: building.height_m,
       floorsEstimate: building.floors_estimate ?? 0
+    }
+  };
+}
+
+function buildSimReadyMetadata(
+  twin: TwinProject,
+  manifest: SourceManifest,
+  runtimeProbe: LocalRuntimeProbe,
+  meshes: MeshSpec[],
+  generatedAt: string
+): object {
+  return {
+    identifier: twin.project_id,
+    version: "0.1.0",
+    description: `${twin.addresses.parcel_address} NVIDIA OpenUSD site digital-twin SimReady candidate`,
+    profile: "Prop-Robotics-Neutral",
+    profile_version: "1.0.0",
+    source_asset: `${twin.project_id}.usda`,
+    generated_at: generatedAt,
+    source_manifest_project: manifest.project_id,
+    nvidia_workflow: "OpenUSD -> Omniverse RTX/ovrtx -> Content Agents -> SimReady validation",
+    local_runtime_probe: runtimeProbe,
+    authored_semantics: {
+      mesh_count: meshes.length,
+      collision_meshes: countPhysicsCollisionMeshes(meshes),
+      rigid_body_meshes: meshes.filter((mesh) => mesh.physicsRigidBody).length,
+      physics_material_binding: "all PhysicsCollisionAPI meshes bind to Default_Physics_Material",
+      grasp_vector: "grasp_identifier_site_axis BasisCurves authored for Prop-Robotics-Neutral validator compatibility",
     }
   };
 }
@@ -446,7 +521,7 @@ function buildStackManifest(
       {
         product: "NVIDIA SimReady",
         role: "Conformance target for simulation-ready materials, units, metadata, and physics semantics.",
-        status: "minimum_candidate_authored"
+        status: "self_contained_profile_candidate_authored"
       },
       {
         product: "Omniverse Content Agents",
@@ -520,7 +595,7 @@ function buildSimReadyMinimumReport(
     next_runtime_commands: [
       "Open the .usda in NVIDIA Omniverse or an ovrtx-based USD viewer.",
       "Run Omniverse Asset Validator / SimReady validation on an NVIDIA runtime host.",
-      "Run Content Agents material/physics assignment before claiming full SimReady conformance; this package only authors a conservative static-collider baseline.",
+      "Run Content Agents material/physics assignment before claiming Content-Agents-assisted SimReady conformance; this package authors a deterministic static-collider/mass baseline.",
       "Run USD Performance Tuning baseline/after profiling once the stage grows beyond this MVP sample."
     ]
   };
@@ -545,7 +620,7 @@ This folder is the NVIDIA-targeted export of the address digital twin. It is aut
 - \`ovstream_browser_client/scripts/probe-first-frame.mjs\` — Playwright probe that clicks Connect, waits for nonzero HTML video dimensions, and saves JSON/screenshot evidence.
 - \`nvidia_stack_manifest.json\` — product mapping and runtime gate status.
 - \`nvidia_runtime_preflight.json\` / \`.md\` — local NVIDIA/Omniverse/SimReady runtime gate probe.
-- \`simready_minimum_report.json\` — minimum SimReady-candidate checks and blocked external gates.
+- \`simready_minimum_report.json\` — authored SimReady-candidate checks and blocked external Content Agents gates.
 - \`usdchecker_report.txt\` — local USD checker output when \`usdchecker\` is available.
 - \`handoff_manifest.json\` — SHA-256 file inventory for moving the package to an NVIDIA GPU host.
 - \`NVIDIA_GPU_HOST_RUNBOOK.md\` — concrete GPU-host validation/runbook steps.

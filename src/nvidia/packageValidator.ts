@@ -23,11 +23,15 @@ export async function validateNvidiaPackage(packageDir: string): Promise<NvidiaP
   const checks: PackageValidationCheck[] = [];
   const handoff = await readJson<NvidiaHandoffManifest>(join(packageDir, "handoff_manifest.json"));
   const compositeStage = handoff.openusd_stage.replace(/\.usda$/i, ".ovrtx_viewer.usda");
-  const [preflight, viewerContract, usda, compositeUsda, firstFrameScript, ovstreamScript, browserPackage, browserMain, browserHtml, browserProbe, usdcheckerReport] = await Promise.all([
+  const simreadyAssetStage = `simready_asset/${handoff.project_id}/simready_usd/${handoff.project_id}.usda`;
+  const simreadyMetadataPath = `simready_asset/${handoff.project_id}/simready_usd/${handoff.project_id}.json`;
+  const [preflight, viewerContract, usda, compositeUsda, simreadyUsda, simreadyMetadata, firstFrameScript, ovstreamScript, browserPackage, browserMain, browserHtml, browserProbe, usdcheckerReport] = await Promise.all([
     readJson<NvidiaRuntimePreflightReport>(join(packageDir, "nvidia_runtime_preflight.json")),
     readJson<NvidiaOvstreamViewerContract>(join(packageDir, "ovstream_viewer_contract.json")),
     readFile(join(packageDir, handoff.openusd_stage), "utf8"),
     readFile(join(packageDir, compositeStage), "utf8"),
+    readFile(join(packageDir, simreadyAssetStage), "utf8"),
+    readJson<Record<string, unknown>>(join(packageDir, simreadyMetadataPath)),
     readFile(join(packageDir, "nvidia_ovrtx_first_frame.py"), "utf8"),
     readFile(join(packageDir, "nvidia_ovstream_smoke_server.py"), "utf8"),
     readFile(join(packageDir, "ovstream_browser_client/package.json"), "utf8"),
@@ -41,8 +45,13 @@ export async function validateNvidiaPackage(packageDir: string): Promise<NvidiaP
   checks.push(...(await validateHandoffFiles(packageDir, handoff)));
   checks.push(passIf("USD.UNITS.001", usda.includes("metersPerUnit = 1"), "USD stage contains metersPerUnit = 1."));
   checks.push(passIf("USD.MATERIAL_BINDING.001", usda.includes("MaterialBindingAPI"), "USD stage contains MaterialBindingAPI."));
+  checks.push(passIf("USD.PHYSICS_MATERIAL_BINDING.001", usda.includes("material:binding:physics") && usda.includes("PhysicsMaterialAPI"), "USD stage binds collision meshes to a PhysicsMaterialAPI material."));
   checks.push(passIf("USD.PHYSICS_SCENE.001", usda.includes('def PhysicsScene "PhysicsScene"'), "USD stage contains PhysicsScene."));
   checks.push(passIf("USD.PHYSICS_COLLISION.001", countMatches(usda, "PhysicsCollisionAPI") >= 1 && countMatches(usda, "physics:collisionEnabled") >= 1, `collision APIs=${countMatches(usda, "PhysicsCollisionAPI")}, enabled=${countMatches(usda, "physics:collisionEnabled")}`));
+  checks.push(passIf("USD.PHYSICS_RIGID_BODY.001", countMatches(usda, "PhysicsRigidBodyAPI") >= 2 && usda.includes("physics:kinematicEnabled"), `rigid body APIs=${countMatches(usda, "PhysicsRigidBodyAPI")}`));
+  checks.push(passIf("USD.PHYSICS_MASS.001", countMatches(usda, "PhysicsMassAPI") >= 2 && countMatches(usda, "physics:mass") >= 2, `mass APIs=${countMatches(usda, "PhysicsMassAPI")}, mass attrs=${countMatches(usda, "physics:mass")}`));
+  checks.push(passIf("USD.GRASP_VECTOR.001", usda.includes('def BasisCurves "grasp_identifier') && usda.includes("point3f[] points") && usda.includes('purpose = "guide"'), "USD stage contains a SimReady grasp vector BasisCurves guide prim."));
+  checks.push(passIf("SIMREADY.ASSET_SOURCE.001", simreadyUsda.includes("SimReady_Metadata") && simreadyUsda.includes('def Xform') && String(simreadyMetadata.identifier) === handoff.project_id, "self-contained SimReady asset-source copy and sidecar metadata are present."));
   checks.push(passIf("OVRTX.COMPOSITE_SUBLAYER.001", compositeUsda.includes(`@${handoff.openusd_stage}@`), "ovrtx wrapper sublayers the source OpenUSD stage by basename."));
   checks.push(passIf("OVRTX.RENDER_PIPELINE.001", ["def Camera \"OVCamera\"", "def RenderProduct \"ViewportTexture0\"", "def RenderVar \"LdrColor\"", "def RenderSettings \"OVRenderSettings\""].every((token) => compositeUsda.includes(token)), "ovrtx wrapper authors Camera -> RenderProduct -> RenderVar -> RenderSettings."));
   checks.push(passIf("OVRTX.FIRST_FRAME_SCRIPT.001", firstFrameScript.includes("RendererConfig") && firstFrameScript.includes("LdrColor") && firstFrameScript.includes("OVRTX_SKIP_USD_CHECK"), "first-frame smoke script uses ovrtx RendererConfig and LdrColor."));

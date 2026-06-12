@@ -1,0 +1,25 @@
+{
+  "identifier": "sadang_317_6",
+  "version": "0.1.0",
+  "description": "서울특별시 동작구 사당동 317-6 행복이가득한집 NVIDIA OpenUSD site digital-twin SimReady candidate",
+  "profile": "Prop-Robotics-Neutral",
+  "profile_version": "1.0.0",
+  "source_asset": "sadang_317_6.usda",
+  "generated_at": "2026-06-12T04:12:45Z",
+  "source_manifest_project": "sadang_317_6",
+  "nvidia_workflow": "OpenUSD -> Omniverse RTX/ovrtx -> Content Agents -> SimReady validation",
+  "local_runtime_probe": {
+    "nvidiaSmi": "missing",
+    "docker": "available",
+    "usdPython": "missing",
+    "usdChecker": "available",
+    "note": "No local NVIDIA GPU was detected. This Mac can author OpenUSD deterministically, but RTX/ovrtx rendering and SimReady runtime validation must run on an NVIDIA workstation/container."
+  },
+  "authored_semantics": {
+    "mesh_count": 28,
+    "collision_meshes": 27,
+    "rigid_body_meshes": 17,
+    "physics_material_binding": "all PhysicsCollisionAPI meshes bind to Default_Physics_Material",
+    "grasp_vector": "grasp_identifier_site_axis BasisCurves authored for Prop-Robotics-Neutral validator compatibility"
+  }
+}

@@ -19,7 +19,7 @@
     {
       "product": "NVIDIA SimReady",
       "role": "Conformance target for simulation-ready materials, units, metadata, and physics semantics.",
-      "status": "minimum_candidate_authored"
+      "status": "self_contained_profile_candidate_authored"
     },
     {
       "product": "Omniverse Content Agents",
@@ -85,6 +85,12 @@
     "command": "usdchecker sadang_317_6.usda",
     "status": "passed",
     "report": "usdchecker_report.txt"
+  },
+  "simready_asset_source": {
+    "profile_target": "Prop-Robotics-Neutral 1.0.0",
+    "asset_stage": "simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda",
+    "sidecar_metadata": "simready_asset/sadang_317_6/simready_usd/sadang_317_6.json",
+    "purpose": "Self-contained asset-source copy for NVIDIA SimReady Foundation validator folder/metadata rules; the primary Omniverse handoff stage remains at the package root."
   },
   "ovrtx_viewer_session": {
     "composite_stage": "sadang_317_6.ovrtx_viewer.usda",

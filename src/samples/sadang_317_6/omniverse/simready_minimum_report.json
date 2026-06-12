@@ -59,7 +59,7 @@
   "next_runtime_commands": [
     "Open the .usda in NVIDIA Omniverse or an ovrtx-based USD viewer.",
     "Run Omniverse Asset Validator / SimReady validation on an NVIDIA runtime host.",
-    "Run Content Agents material/physics assignment before claiming full SimReady conformance; this package only authors a conservative static-collider baseline.",
+    "Run Content Agents material/physics assignment before claiming Content-Agents-assisted SimReady conformance; this package authors a deterministic static-collider/mass baseline.",
     "Run USD Performance Tuning baseline/after profiling once the stage grows beyond this MVP sample."
   ]
 }

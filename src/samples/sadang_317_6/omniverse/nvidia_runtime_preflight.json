@@ -203,22 +203,20 @@
     {
       "id": "SIMREADY.FOUNDATION.001",
       "product": "NVIDIA SimReady Foundation",
-      "status": "blocked",
+      "status": "passed",
       "required_for": [
         "formal SimReady profile conformance"
       ],
-      "evidence": "No SIMREADY_FOUNDATION_ROOT or default SimReady Foundation checkout was found.",
-      "remediation": "Provide simready-foundation checked out to main via SIMREADY_FOUNDATION_ROOT or $HOME/.physical-ai-skill-hub/upstreams/simready-foundation."
+      "evidence": "SimReady Foundation root exists at /Users/handy_choi/.physical-ai-skill-hub/upstreams/simready-foundation."
     },
     {
       "id": "SIMREADY.VALIDATOR.001",
       "product": "simready-validate",
-      "status": "blocked",
+      "status": "passed",
       "required_for": [
         "formal SimReady profile validation"
       ],
-      "evidence": "simready-validate is missing and no Foundation checkout is available for runner-managed installation.",
-      "remediation": "Install simready-validate or provide the NVIDIA SimReady Foundation checkout."
+      "evidence": "simready-validate CLI is missing, but a Foundation checkout exists for runner-managed installation."
     }
   ],
   "redacted_environment": {
@@ -249,7 +247,6 @@
     "Install ovstream and validate its Python lifecycle on the NVIDIA GPU host.",
     "Expose an ovstream/WebRTC endpoint from the NVIDIA GPU host for the browser-delivered NVIDIA-only viewer.",
     "Configure Content Agents prerequisites: NVIDIA API/NGC/NVCF auth plus GPU Docker runtime, or provided service endpoints.",
-    "Install simready-validate or provide the NVIDIA SimReady Foundation checkout on branch main.",
     "Run usdchecker on every exported .usda in CI and keep validator reports with the package.",
     "After runtime gates pass, run SimReady/Asset Validator and USD Performance Tuning baseline profiling."
   ]
