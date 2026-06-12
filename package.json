@@ -22,6 +22,7 @@
     "nvidia:simready:auto": "NVIDIA_SIMREADY_AUTO_INSTALL=1 NVIDIA_SIMREADY_AUTO_CLONE=1 python3 scripts/nvidia_simready_validate.py",
     "nvidia:warp-flood": "python3 scripts/nvidia_warp_flood_smoke.py --stage src/samples/sadang_317_6/omniverse/sadang_317_6.usda --output-json docs/evidence/nvidia-warp-flood-run-sadang-2026-06-13.json --output-pgm docs/evidence/nvidia-warp-flood-depth-sadang-2026-06-13.pgm",
     "nvidia:warp-flood:check": "python3 scripts/nvidia_warp_flood_smoke.py --allow-missing --stage src/samples/sadang_317_6/omniverse/sadang_317_6.usda --output-json docs/evidence/nvidia-warp-flood-run-sadang-2026-06-13.json --output-pgm docs/evidence/nvidia-warp-flood-depth-sadang-2026-06-13.pgm",
+    "nvidia:content-agents:deploy-audit": "python3 scripts/nvidia_content_agents_deploy_audit.py --allow-blocked",
     "nvidia:content-agents": "python3 scripts/nvidia_content_agents.py",
     "nvidia:content-agents:check": "python3 scripts/nvidia_content_agents.py --allow-blocked"
   },

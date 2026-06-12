@@ -95,6 +95,11 @@ jobs:
 
       - name: NVIDIA Content Agents blocked-gate audit
         run: |
+          npm run nvidia:content-agents:deploy-audit -- \
+            --skip-docker-gpu-smoke \
+            --output-json "$RUNNER_TEMP/nvidia-content-agents-deploy.json" \
+            --output-md "$RUNNER_TEMP/nvidia-content-agents-deploy.md"
+          grep -Eq '"status": "(blocked|ready)"' "$RUNNER_TEMP/nvidia-content-agents-deploy.json"
           npm run nvidia:content-agents:check -- \
             --output-json "$RUNNER_TEMP/nvidia-content-agents.json" \
             --output-md "$RUNNER_TEMP/nvidia-content-agents.md"
