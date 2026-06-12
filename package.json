@@ -30,7 +30,9 @@
     "nvidia:content-agents": "python3 scripts/nvidia_content_agents.py",
     "nvidia:content-agents:check": "python3 scripts/nvidia_content_agents.py --allow-blocked",
     "nvidia:acceptance": "python3 scripts/nvidia_acceptance.py",
-    "nvidia:acceptance:check": "python3 scripts/nvidia_acceptance.py --allow-blocked"
+    "nvidia:acceptance:check": "python3 scripts/nvidia_acceptance.py --allow-blocked",
+    "nvidia:finish": "python3 scripts/nvidia_finish.py --persist-intermediate",
+    "nvidia:finish:check": "python3 scripts/nvidia_finish.py --allow-blocked --skip-docker-gpu-smoke --wait-seconds 0"
   },
   "dependencies": {
     "three": "^0.160.0"

@@ -1,0 +1,84 @@
+{
+  "project_id": "sadang_317_6",
+  "generated_at": "2026-06-12T20:07:25.706247Z",
+  "status": "blocked",
+  "passed": false,
+  "secret_handling": "No secret values are printed; child commands receive environment only.",
+  "persist_intermediate": false,
+  "scratch_dir": ".tmp/nvidia-finish",
+  "steps": [
+    {
+      "name": "content-agents-deploy-plan",
+      "status": "passed",
+      "exit_code": 0,
+      "command": [
+        "python3",
+        "scripts/nvidia_content_agents_deploy.py",
+        "plan",
+        "--allow-blocked",
+        "--output-json",
+        "/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/deploy-plan.json",
+        "--output-md",
+        "/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/deploy-plan.md",
+        "--skip-docker-gpu-smoke"
+      ],
+      "stdout_tail": "{\n  \"status\": \"blocked\",\n  \"output_json\": \"/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/deploy-plan.json\",\n  \"output_md\": \"/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/deploy-plan.md\",\n  \"blockers\": [\n    \"NVIDIA GPU/driver is not visible via nvidia-smi.\",\n    \"Docker daemon is not reachable.\",\n    \"NVIDIA_API_KEY or NVIDIA_API_KEY_FILE is required before deploying NVIDIA-only Material/Physics Content Agents.\"\n  ]\n}\n",
+      "stderr_tail": ""
+    },
+    {
+      "name": "content-agents-deploy-status",
+      "status": "passed",
+      "exit_code": 0,
+      "command": [
+        "python3",
+        "scripts/nvidia_content_agents_deploy.py",
+        "status",
+        "--allow-blocked",
+        "--wait-seconds",
+        "0",
+        "--output-json",
+        "/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/deploy-status.json",
+        "--output-md",
+        "/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/deploy-status.md"
+      ],
+      "stdout_tail": "{\n  \"status\": \"blocked\",\n  \"output_json\": \"/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/deploy-status.json\",\n  \"output_md\": \"/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/deploy-status.md\",\n  \"blockers\": [\n    \"material endpoint is not healthy at http://127.0.0.1:8100/health.\",\n    \"physics endpoint is not healthy at http://127.0.0.1:8200/health.\"\n  ]\n}\n",
+      "stderr_tail": ""
+    },
+    {
+      "name": "content-agents-run",
+      "status": "skipped",
+      "reason": "Skipped until Material/Physics endpoints are healthy or explicitly provided."
+    },
+    {
+      "name": "simready-validate",
+      "status": "skipped",
+      "reason": "Skipped until Content Agents Material→Physics assignment passes."
+    },
+    {
+      "name": "nvidia-acceptance",
+      "status": "passed",
+      "exit_code": 0,
+      "command": [
+        "python3",
+        "scripts/nvidia_acceptance.py",
+        "--allow-blocked",
+        "--output-json",
+        "/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/acceptance.json",
+        "--output-md",
+        "/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/acceptance.md"
+      ],
+      "stdout_tail": "{\n  \"status\": \"blocked\",\n  \"output_json\": \"/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/acceptance.json\",\n  \"output_md\": \"/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/acceptance.md\",\n  \"blockers\": [\n    \"status=blocked, blockers=['NVIDIA_API_KEY or NVIDIA_API_KEY_FILE is required before deploying NVIDIA-only Material/Physics Content Agents.'], gpu_assignment={'policy': 'auto_multi_gpu_split', 'detected_gpu_count': 8, 'material_ovrtx_visible_devices': '0', 'physics_ovrtx_visible_devices': '1'}, endpoint_env=.tmp/nvidia-content-agents/endpoints.env\",\n    \"status=blocked, blockers=['Missing Material Agent endpoint: set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL or MATERIAL_AGENT_BASE_URL.', 'Missing Physics Agent endpoint: set CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL or PHYSICS_AGENT_BASE_URL.', 'Missing NVIDIA_API_KEY for deploying missing Content Agents services from NVIDIA build/upstream deployment skills.']\"\n  ]\n}\n",
+      "stderr_tail": ""
+    }
+  ],
+  "blockers": [
+    "Content Agents endpoints are not ready and NVIDIA_API_KEY/NVIDIA_API_KEY_FILE is not present for automatic deployment.",
+    "Content Agents endpoints are not ready; skipping Material→Physics assignment instead of calling dead generated endpoints.",
+    "status=blocked, blockers=['NVIDIA_API_KEY or NVIDIA_API_KEY_FILE is required before deploying NVIDIA-only Material/Physics Content Agents.'], gpu_assignment={'policy': 'auto_multi_gpu_split', 'detected_gpu_count': 8, 'material_ovrtx_visible_devices': '0', 'physics_ovrtx_visible_devices': '1'}, endpoint_env=.tmp/nvidia-content-agents/endpoints.env",
+    "status=blocked, blockers=['Missing Material Agent endpoint: set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL or MATERIAL_AGENT_BASE_URL.', 'Missing Physics Agent endpoint: set CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL or PHYSICS_AGENT_BASE_URL.', 'Missing NVIDIA_API_KEY for deploying missing Content Agents services from NVIDIA build/upstream deployment skills.']"
+  ],
+  "next_commands": [
+    "NVIDIA_API_KEY_FILE=/secure/path/nvidia_api_key npm run nvidia:finish",
+    "npm run nvidia:acceptance"
+  ]
+}

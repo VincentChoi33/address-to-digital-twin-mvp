@@ -132,3 +132,14 @@ jobs:
           grep -q 'NVIDIA.WARP_FLOOD.001' "$RUNNER_TEMP/nvidia-acceptance.json"
           grep -q 'SIMREADY.VALIDATOR.001' "$RUNNER_TEMP/nvidia-acceptance.json"
           grep -q 'CONTENT_AGENTS.RUNTIME.001' "$RUNNER_TEMP/nvidia-acceptance.json"
+
+      - name: NVIDIA one-shot finish gate
+        run: |
+          npm run nvidia:finish:check -- \
+            --output-json "$RUNNER_TEMP/nvidia-finish.json" \
+            --output-md "$RUNNER_TEMP/nvidia-finish.md" \
+            --scratch-dir "$RUNNER_TEMP/nvidia-finish"
+          grep -q '"status": "blocked"' "$RUNNER_TEMP/nvidia-finish.json"
+          grep -q 'content-agents-run' "$RUNNER_TEMP/nvidia-finish.json"
+          grep -q 'nvidia-acceptance' "$RUNNER_TEMP/nvidia-finish.json"
+          grep -q 'NVIDIA_API_KEY' "$RUNNER_TEMP/nvidia-finish.json"
