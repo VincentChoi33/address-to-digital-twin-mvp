@@ -69,6 +69,8 @@
     "mesh_count": 28,
     "building_meshes": 17,
     "road_meshes": 8,
+    "physics_collision_meshes": 27,
+    "physics_scene": "PhysicsScene with earth gravity",
     "meters_per_unit": 1,
     "up_axis": "Y"
   },

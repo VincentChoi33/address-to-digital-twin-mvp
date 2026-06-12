@@ -9,6 +9,8 @@ This folder is the NVIDIA-targeted export of the address digital twin. It is aut
 - `nvidia_runtime_preflight.json` / `.md` — local NVIDIA/Omniverse/SimReady runtime gate probe.
 - `simready_minimum_report.json` — minimum SimReady-candidate checks and blocked external gates.
 - `usdchecker_report.txt` — local USD checker output when `usdchecker` is available.
+- `handoff_manifest.json` — SHA-256 file inventory for moving the package to an NVIDIA GPU host.
+- `NVIDIA_GPU_HOST_RUNBOOK.md` — concrete GPU-host validation/runbook steps.
 
 ## Local runtime probe
 
@@ -21,7 +23,7 @@ No local NVIDIA GPU was detected. This Mac can author OpenUSD deterministically,
 
 ## Intended NVIDIA flow
 
-1. Open `sadang_317_6.usda` with NVIDIA Omniverse / ovrtx.
+1. Open `sadang_317_6.usda` with NVIDIA Omniverse / ovrtx. The stage already includes a USD PhysicsScene and conservative static collision APIs for terrain/buildings/roads/parcel geometry.
 2. Run Omniverse Asset Validator and SimReady validation.
 3. Run Omniverse Content Agents for material and physics assignment when a GPU/Docker/NVIDIA_API_KEY runtime is available.
 4. Use Omniverse USD Performance Tuning for large scene profiling and optimization.

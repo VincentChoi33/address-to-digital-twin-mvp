@@ -40,28 +40,32 @@ async function main(): Promise<void> {
   await writeFile(usdPath, exported.usda, "utf8");
 
   const checkerResult = runtimeProbe.usdChecker === "available" ? spawnSync("usdchecker", [usdPath], { encoding: "utf8" }) : null;
-  if (checkerResult) {
-    const checkerText = `${checkerResult.stdout ?? ""}${checkerResult.stderr ?? ""}`;
-    await writeFile(join(outDir, "usdchecker_report.txt"), checkerText, "utf8");
-    const stackManifest = exported.stackManifest as {
-      local_validation?: object;
-    };
-    stackManifest.local_validation = {
-      command: `usdchecker ${twin.project_id}.usda`,
-      status: checkerResult.status === 0 ? "passed" : "failed",
-      report: "usdchecker_report.txt"
-    };
-    const report = exported.simreadyReport as {
-      checks?: Array<{ id: string; status: string; evidence: string }>;
-    };
-    const check = report.checks?.find((item) => item.id === "USD.RUNTIME_VALIDATOR.001");
-    if (check) {
-      check.status = checkerResult.status === 0 ? "passed" : "failed";
-      check.evidence =
-        checkerResult.status === 0
-          ? "Local usdchecker completed with exit code 0; see usdchecker_report.txt."
-          : "Local usdchecker failed; see usdchecker_report.txt.";
-    }
+  const checkerStatus = checkerResult ? (checkerResult.status === 0 ? "passed" : "failed") : "not_run";
+  const checkerText = checkerResult
+    ? `${checkerResult.stdout ?? ""}${checkerResult.stderr ?? ""}`
+    : "usdchecker was not available on PATH; validation was not run in this environment.\n";
+  await writeFile(join(outDir, "usdchecker_report.txt"), checkerText, "utf8");
+
+  const stackManifest = exported.stackManifest as {
+    local_validation?: object;
+  };
+  stackManifest.local_validation = {
+    command: `usdchecker ${twin.project_id}.usda`,
+    status: checkerStatus,
+    report: "usdchecker_report.txt"
+  };
+  const report = exported.simreadyReport as {
+    checks?: Array<{ id: string; status: string; evidence: string }>;
+  };
+  const check = report.checks?.find((item) => item.id === "USD.RUNTIME_VALIDATOR.001");
+  if (check) {
+    check.status = checkerStatus === "not_run" ? "blocked" : checkerStatus;
+    check.evidence =
+      checkerStatus === "passed"
+        ? "Local usdchecker completed with exit code 0; see usdchecker_report.txt."
+        : checkerStatus === "failed"
+          ? "Local usdchecker failed; see usdchecker_report.txt."
+          : "usdchecker was not available on PATH; see usdchecker_report.txt.";
   }
 
   await writeFile(join(outDir, "nvidia_stack_manifest.json"), `${JSON.stringify(exported.stackManifest, null, 2)}\n`, "utf8");

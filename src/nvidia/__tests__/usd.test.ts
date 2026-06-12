@@ -22,6 +22,7 @@ describe("OpenUSD/Omniverse export", () => {
     expect(exported.usda).toContain('upAxis = "Y"');
     expect(exported.usda).toContain("OpenUSD -> Omniverse RTX/ovrtx -> SimReady validation candidate");
     expect(exported.usda).toContain("def Scope \"Looks\"");
+    expect(exported.usda).toContain('def PhysicsScene "PhysicsScene"');
   });
 
   it("exports official target, context, road, parcel, and flood layer prims", () => {
@@ -32,10 +33,14 @@ describe("OpenUSD/Omniverse export", () => {
     expect(exported.usda).toContain("official_parcel_boundary_ribbon");
     expect(exported.usda).toContain("FloodScenario_Cloudburst_WaterReference");
     expect(exported.usda).toContain("rel material:binding");
+    expect(exported.usda).toContain('prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]');
+    expect(exported.usda).toContain("bool physics:collisionEnabled = true");
   });
 
   it("reports external NVIDIA runtime gates instead of pretending full SimReady validation ran", () => {
     const report = exported.simreadyReport as { checks: Array<{ id: string; status: string }> };
+    expect(report.checks.find((check) => check.id === "SIMREADY.PHYSICS_SCENE.001")?.status).toBe("passed");
+    expect(report.checks.find((check) => check.id === "SIMREADY.PHYSICS_COLLISION_BASELINE.001")?.status).toBe("passed");
     expect(report.checks.find((check) => check.id === "SIMREADY.CONTENT_AGENTS.001")?.status).toBe("blocked");
     expect(report.checks.find((check) => check.id === "OVRTX.RENDER.001")?.status).toBe("blocked");
     expect(JSON.stringify(exported.stackManifest)).toContain("NVIDIA Omniverse / RTX Renderer / ovrtx");

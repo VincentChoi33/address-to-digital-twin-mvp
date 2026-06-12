@@ -111,10 +111,15 @@ def Xform "sadang_317_6" (
     )
     {
     }
+    def PhysicsScene "PhysicsScene"
+    {
+        vector3f physics:gravityDirection = (0, -1, 0)
+        float physics:gravityMagnitude = 9.81
+    }
     def Xform "Geometry"
     {
         def Mesh "Terrain_DrapedPreviewSurface" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string source = "live basemap/DEM preview surface"
                 string note = "Satellite tiles are not cached in this package; Omniverse material should be replaced by licensed imagery/terrain layer at deployment."
@@ -122,13 +127,14 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Terrain_DrapedPreviewImagery>
+            bool physics:collisionEnabled = true
             point3f[] points = [(-220, -0.04, -220), (220, -0.04, -220), (220, -0.04, 220), (-220, -0.04, 220)]
             int[] faceVertexCounts = [4]
             int[] faceVertexIndices = [0, 1, 2, 3]
             uniform token subdivisionScheme = "none"
         }
         def Mesh "target_vworld_target_lt_c_bldginfo_15621631" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "high"
@@ -140,6 +146,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Target_Building_Teal>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (-0.945813, 0, 6.517415),
                 (7.564533, 0, -0.060457),
@@ -159,7 +166,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "surrounding_vworld_context_1" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -171,6 +178,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Context_Building_Concrete>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (-11.374829, 0, -4.792648),
                 (-22.208427, 0, 4.764132),
@@ -190,7 +198,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "surrounding_vworld_context_2" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -202,6 +210,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Context_Building_Concrete>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (-9.365172, 0, 5.112562),
                 (-16.030167, 0, 11.5691),
@@ -231,7 +240,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "surrounding_vworld_context_3" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -243,6 +252,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Context_Building_Concrete>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (-24.082046, 0, 1.110624),
                 (-13.869454, 0, -7.581199),
@@ -266,7 +276,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "surrounding_vworld_context_4" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -278,6 +288,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Context_Building_Concrete>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (14.188893, 0, 21.594555),
                 (11.02556, 0, 16.93137),
@@ -301,7 +312,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "surrounding_vworld_context_5" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -313,6 +324,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Context_Building_Concrete>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (32.467498, 0, 7.82876),
                 (28.18494, 0, 0.696516),
@@ -332,7 +344,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "surrounding_vworld_context_6" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -344,6 +356,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Context_Building_Concrete>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (-29.92021, 0, -3.929922),
                 (-24.737503, 0, -8.430566),
@@ -377,7 +390,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "surrounding_vworld_context_7" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -389,6 +402,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Context_Building_Concrete>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (21.152465, 0, -12.849945),
                 (24.89617, 0, -8.467302),
@@ -414,7 +428,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "surrounding_vworld_context_8" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -426,6 +440,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Context_Building_Concrete>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (35.749202, 0, -13.424353),
                 (30.211381, 0, -19.456745),
@@ -447,7 +462,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "surrounding_vworld_context_9" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -459,6 +474,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Context_Building_Concrete>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (15.722416, 0, 27.62475),
                 (11.040577, 0, 30.382144),
@@ -486,7 +502,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "surrounding_vworld_context_10" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -498,6 +514,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Context_Building_Concrete>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (37.62017, 0, 16.314658),
                 (32.755475, 0, 8.483319),
@@ -521,7 +538,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "surrounding_vworld_context_11" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -533,6 +550,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Context_Building_Concrete>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (16.895526, 0, -38.697141),
                 (13.056418, 0, -35.094858),
@@ -552,7 +570,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "surrounding_vworld_context_12" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -564,6 +582,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Context_Building_Concrete>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (40.215499, 0, -2.271262),
                 (38.561838, 0, -1.579968),
@@ -589,7 +608,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "surrounding_vworld_context_13" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -601,6 +620,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Context_Building_Concrete>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (-20.751757, 0, 27.451091),
                 (-26.732143, 0, 19.546271),
@@ -616,7 +636,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "surrounding_vworld_context_14" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -628,6 +648,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Context_Building_Concrete>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (6.107863, 0, 44.327201),
                 (16.418508, 0, 37.966373),
@@ -655,7 +676,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "surrounding_vworld_context_15" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -667,6 +688,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Context_Building_Concrete>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (30.546177, 0, 29.304567),
                 (26.366974, 0, 22.594206),
@@ -682,7 +704,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "surrounding_vworld_context_16" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -694,6 +716,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Context_Building_Concrete>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (-34.932428, 0, 25.126732),
                 (-26.859348, 0, 19.322518),
@@ -715,7 +738,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "road_1" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -725,6 +748,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Road_Asphalt>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (-1701.30732, 0.06, 1496.063856),
                 (-1672.957462, 0.06, 1490.575938),
@@ -1364,7 +1388,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "road_2__14" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -1374,6 +1398,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Road_Asphalt>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (-111.573688, 0.06, 132.742946),
                 (-105.230238, 0.06, 140.396285),
@@ -1401,7 +1426,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "road_3__15" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -1411,6 +1436,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Road_Asphalt>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (754.922742, 0.06, -15.318244),
                 (691.270937, 0.06, -12.500751),
@@ -1606,7 +1632,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "road_4__16" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -1616,13 +1642,14 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Road_Asphalt>
+            bool physics:collisionEnabled = true
             point3f[] points = [(-168.542801, 0.06, 111.390739), (-164.628607, 0.06, 158.324915), (-156.656283, 0.06, 157.660043), (-160.570477, 0.06, 110.725867)]
             int[] faceVertexCounts = [4]
             int[] faceVertexIndices = [0, 1, 2, 3]
             uniform token subdivisionScheme = "none"
         }
         def Mesh "road_5__22" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -1632,13 +1659,14 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Road_Asphalt>
+            bool physics:collisionEnabled = true
             point3f[] points = [(-80.235918, 0.06, -193.596972), (-94.057942, 0.06, -210.592825), (-99.488723, 0.06, -206.176196), (-85.666699, 0.06, -189.180342)]
             int[] faceVertexCounts = [4]
             int[] faceVertexIndices = [0, 1, 2, 3]
             uniform token subdivisionScheme = "none"
         }
         def Mesh "road_6__16" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -1648,6 +1676,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Road_Asphalt>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (-138.210948, 0.06, -194.36767),
                 (-135.006097, 0.06, -202.245562),
@@ -1687,7 +1716,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "road_7__20" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -1697,6 +1726,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Road_Asphalt>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (199.510111, 0.06, 13.243667),
                 (194.795588, 0.06, 13.304893),
@@ -1732,7 +1762,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "road_8__16" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string sourceType = "official"
                 string confidence = "medium"
@@ -1742,6 +1772,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Road_Asphalt>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (-57.230988, 0.06, 67.044123),
                 (-64.433069, 0.06, 93.64084),
@@ -1761,7 +1792,7 @@ def Xform "sadang_317_6" (
             uniform token subdivisionScheme = "none"
         }
         def Mesh "official_parcel_boundary_ribbon" (
-            prepend apiSchemas = ["MaterialBindingAPI"]
+            prepend apiSchemas = ["MaterialBindingAPI", "PhysicsCollisionAPI"]
             customData = {
                 string role = "official cadastral parcel boundary visual guide"
                 string sourceType = "official"
@@ -1769,6 +1800,7 @@ def Xform "sadang_317_6" (
         )
         {
             rel material:binding = </sadang_317_6/Looks/Official_Parcel_Boundary_Gold>
+            bool physics:collisionEnabled = true
             point3f[] points = [
                 (-1.321606, 0.22, 8.119028),
                 (2.918549, 0.22, 5.265907),

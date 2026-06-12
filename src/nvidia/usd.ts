@@ -30,6 +30,7 @@ interface MeshSpec {
   faceVertexCounts: number[];
   faceVertexIndices: number[];
   materialPath: string;
+  physicsCollision?: boolean;
   customData?: Record<string, string | number | boolean>;
 }
 
@@ -147,6 +148,7 @@ function renderUsda({
   lines.push("{");
   lines.push(renderLooks(rootPath));
   lines.push(renderMetadataScope(rootPath, twin, manifest));
+  lines.push(renderPhysicsScene());
   lines.push("    def Xform \"Geometry\"");
   lines.push("    {");
   for (const mesh of meshes) lines.push(renderMesh(mesh, 2));
@@ -206,11 +208,23 @@ function renderMetadataScope(rootPath: string, twin: TwinProject, manifest: Sour
   return lines.join("\n").replaceAll("${rootPath}", rootPath);
 }
 
+function renderPhysicsScene(): string {
+  return [
+    "    def PhysicsScene \"PhysicsScene\"",
+    "    {",
+    "        vector3f physics:gravityDirection = (0, -1, 0)",
+    "        float physics:gravityMagnitude = 9.81",
+    "    }"
+  ].join("\n");
+}
+
 function renderMesh(mesh: MeshSpec, indentLevel: number): string {
   const indent = "    ".repeat(indentLevel);
+  const apiSchemas = ["MaterialBindingAPI"];
+  if (mesh.physicsCollision) apiSchemas.push("PhysicsCollisionAPI");
   const lines: string[] = [];
   lines.push(`${indent}def Mesh "${mesh.name}" (`);
-  lines.push(`${indent}    prepend apiSchemas = ["MaterialBindingAPI"]`);
+  lines.push(`${indent}    prepend apiSchemas = [${apiSchemas.map(q).join(", ")}]`);
   if (mesh.customData && Object.keys(mesh.customData).length > 0) {
     lines.push(`${indent}    customData = {`);
     for (const [key, value] of Object.entries(mesh.customData)) {
@@ -222,6 +236,9 @@ function renderMesh(mesh: MeshSpec, indentLevel: number): string {
   lines.push(`${indent})`);
   lines.push(`${indent}{`);
   lines.push(`${indent}    rel material:binding = <${mesh.materialPath}>`);
+  if (mesh.physicsCollision) {
+    lines.push(`${indent}    bool physics:collisionEnabled = true`);
+  }
   lines.push(`${indent}    point3f[] points = ${renderVec3Array(mesh.points, indent + "    ")}`);
   lines.push(`${indent}    int[] faceVertexCounts = ${renderNumberArray(mesh.faceVertexCounts)}`);
   lines.push(`${indent}    int[] faceVertexIndices = ${renderNumberArray(mesh.faceVertexIndices)}`);
@@ -242,6 +259,7 @@ function makeTerrainBoardMesh(name: string, materialPath: string): MeshSpec {
     ],
     faceVertexCounts: [4],
     faceVertexIndices: [0, 1, 2, 3],
+    physicsCollision: true,
     customData: {
       source: "live basemap/DEM preview surface",
       note: "Satellite tiles are not cached in this package; Omniverse material should be replaced by licensed imagery/terrain layer at deployment."
@@ -305,6 +323,7 @@ function makeBuildingMesh(building: BuildingFeature, materialPath: string): Mesh
     points,
     faceVertexCounts,
     faceVertexIndices,
+    physicsCollision: true,
     customData: {
       sourceType: building.source_type,
       confidence: building.confidence,
@@ -324,7 +343,7 @@ function makeRoadMesh(road: RoadHint, ordinal: number, materialPath: string): Me
     confidence: road.confidence,
     displayName: road.name,
     widthM: road.width_m
-  });
+  }, true);
 }
 
 function makeParcelBoundaryMesh(boundary: LocalPoint[], materialPath: string): MeshSpec | null {
@@ -335,14 +354,15 @@ function makeParcelBoundaryMesh(boundary: LocalPoint[], materialPath: string): M
   return meshFromQuads("official_parcel_boundary_ribbon", segments, materialPath, {
     role: "official cadastral parcel boundary visual guide",
     sourceType: "official"
-  });
+  }, true);
 }
 
 function meshFromQuads(
   name: string,
   quads: Array<Array<[number, number, number]>>,
   materialPath: string,
-  customData: Record<string, string | number | boolean>
+  customData: Record<string, string | number | boolean>,
+  physicsCollision = false
 ): MeshSpec {
   const points: Array<[number, number, number]> = [];
   const faceVertexCounts: number[] = [];
@@ -353,7 +373,7 @@ function meshFromQuads(
     faceVertexCounts.push(4);
     faceVertexIndices.push(offset, offset + 1, offset + 2, offset + 3);
   }
-  return { name, points, faceVertexCounts, faceVertexIndices, materialPath, customData };
+  return { name, points, faceVertexCounts, faceVertexIndices, materialPath, physicsCollision, customData };
 }
 
 function ribbonSegments(points: LocalPoint[], width: number, closed: boolean, y: number): Array<Array<[number, number, number]>> {
@@ -462,6 +482,8 @@ function buildStackManifest(
       mesh_count: meshes.length,
       building_meshes: twin.buildings.length,
       road_meshes: twin.roads.length,
+      physics_collision_meshes: countPhysicsCollisionMeshes(meshes),
+      physics_scene: "PhysicsScene with earth gravity",
       meters_per_unit: 1,
       up_axis: "Y"
     },
@@ -481,6 +503,8 @@ function buildSimReadyMinimumReport(
     { id: "USD.AXIS.001", status: "passed", evidence: "Root layer authors upAxis = Y." },
     { id: "USD.DEFAULT_PRIM.001", status: "passed", evidence: `defaultPrim = ${sanitizeIdentifier(twin.project_id)}.` },
     { id: "USD.MATERIAL_BINDING.001", status: "passed", evidence: `${meshes.length} generated meshes include material:binding relationships.` },
+    { id: "SIMREADY.PHYSICS_SCENE.001", status: "passed", evidence: "A USD PhysicsScene is authored with earth gravity in the meter-based Y-up stage." },
+    { id: "SIMREADY.PHYSICS_COLLISION_BASELINE.001", status: "passed", evidence: `${countPhysicsCollisionMeshes(meshes)} static terrain/building/road/parcel meshes include PhysicsCollisionAPI and physics:collisionEnabled=true; the flood-water result layer remains non-colliding.` },
     { id: "SRC.OFFICIAL_GEOMETRY.001", status: "passed", evidence: `${twin.buildings.filter((building) => building.source_type === "official").length} official building footprints, ${twin.roads.filter((road) => road.source_type === "official").length} official roads, parcel=${twin.parcel.source_type}.` },
     { id: "SIMREADY.CONTENT_AGENTS.001", status: "blocked", evidence: "Material/Physics Content Agents were not run in this local environment; requires NVIDIA_API_KEY, Docker, NVIDIA Container Toolkit, and NVIDIA GPU or provided endpoints." },
     { id: "OVRTX.RENDER.001", status: runtimeProbe.nvidiaSmi === "available" ? "not_run" : "blocked", evidence: runtimeProbe.nvidiaSmi === "available" ? "NVIDIA GPU detected but ovrtx render service still needs explicit setup." : "No local nvidia-smi runtime was detected on this workstation." },
@@ -496,10 +520,14 @@ function buildSimReadyMinimumReport(
     next_runtime_commands: [
       "Open the .usda in NVIDIA Omniverse or an ovrtx-based USD viewer.",
       "Run Omniverse Asset Validator / SimReady validation on an NVIDIA runtime host.",
-      "Run Content Agents material/physics assignment before claiming full SimReady conformance.",
+      "Run Content Agents material/physics assignment before claiming full SimReady conformance; this package only authors a conservative static-collider baseline.",
       "Run USD Performance Tuning baseline/after profiling once the stage grows beyond this MVP sample."
     ]
   };
+}
+
+function countPhysicsCollisionMeshes(meshes: MeshSpec[]): number {
+  return meshes.filter((mesh) => mesh.physicsCollision).length;
 }
 
 function buildPackageReadme(twin: TwinProject, runtimeProbe: LocalRuntimeProbe): string {
@@ -514,6 +542,8 @@ This folder is the NVIDIA-targeted export of the address digital twin. It is aut
 - \`nvidia_runtime_preflight.json\` / \`.md\` — local NVIDIA/Omniverse/SimReady runtime gate probe.
 - \`simready_minimum_report.json\` — minimum SimReady-candidate checks and blocked external gates.
 - \`usdchecker_report.txt\` — local USD checker output when \`usdchecker\` is available.
+- \`handoff_manifest.json\` — SHA-256 file inventory for moving the package to an NVIDIA GPU host.
+- \`NVIDIA_GPU_HOST_RUNBOOK.md\` — concrete GPU-host validation/runbook steps.
 
 ## Local runtime probe
 
@@ -526,7 +556,7 @@ ${runtimeProbe.note}
 
 ## Intended NVIDIA flow
 
-1. Open \`${twin.project_id}.usda\` with NVIDIA Omniverse / ovrtx.
+1. Open \`${twin.project_id}.usda\` with NVIDIA Omniverse / ovrtx. The stage already includes a USD PhysicsScene and conservative static collision APIs for terrain/buildings/roads/parcel geometry.
 2. Run Omniverse Asset Validator and SimReady validation.
 3. Run Omniverse Content Agents for material and physics assignment when a GPU/Docker/NVIDIA_API_KEY runtime is available.
 4. Use Omniverse USD Performance Tuning for large scene profiling and optimization.

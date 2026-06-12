@@ -1,0 +1,60 @@
+# NVIDIA GPU Host Runbook — sadang_317_6
+
+This handoff is for the NVIDIA-only runtime path. The local package can author and validate OpenUSD, but final visual acceptance must come from NVIDIA Omniverse / RTX / ovrtx, not the browser WebGL MVP.
+
+## Package state
+
+- Source confidence: high
+- Local preflight status: openusd_ready
+- OpenUSD stage: `sadang_317_6.usda`
+- Local authoring evidence: `usdchecker_report.txt`
+- SimReady baseline: `simready_minimum_report.json` includes USD units/axis/material binding plus conservative static PhysicsCollisionAPI semantics.
+
+## 1. Transfer
+
+Copy this folder and the two source files beside it:
+
+```bash
+scp -r src/samples/sadang_317_6/omniverse <gpu-host>:/data/sadang_317_6/
+scp src/samples/sadang_317_6/twin.json src/samples/sadang_317_6/source_manifest.json <gpu-host>:/data/sadang_317_6/
+```
+
+## 2. GPU host smoke gates
+
+Run on the NVIDIA machine:
+
+```bash
+cd /data/sadang_317_6/omniverse
+nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader
+usdchecker sadang_317_6.usda
+```
+
+If running from the full repository checkout, also run:
+
+```bash
+npm ci
+npm run nvidia:preflight
+```
+
+Acceptance threshold: `nvidia_runtime_preflight.json` should move from `openusd_ready` to `nvidia_runtime_ready` before claiming local NVIDIA runtime readiness.
+
+## 3. Omniverse / ovrtx validation
+
+1. Open `sadang_317_6.usda` in NVIDIA Omniverse, Kit, or ovrtx.
+2. Confirm the stage loads with meter units, Y-up axis, official buildings, roads, parcel boundary, terrain reference, flood-water reference layer, materials, and static collider APIs.
+3. Attach screenshot, stream URL, or render log back to the package.
+
+## 4. SimReady completion gates
+
+This package is only a conservative SimReady candidate. Before saying “full SimReady”:
+
+1. Run Omniverse Content Agents for material and physics assignment.
+2. Run Omniverse Asset Validator / SimReady validation.
+3. Copy validator reports into this package and update `handoff_manifest.json` checksums.
+4. Run USD Performance Tuning if the scene is scaled beyond this MVP sample.
+
+## 5. Do not fake these gates
+
+- Browser Three.js screenshots do not count for NVIDIA-only USD render acceptance.
+- The static flood-water plane is not an NVIDIA hydrology solve.
+- The Mac/local preflight cannot satisfy RTX, ovrtx, NVIDIA Container Toolkit, or Content Agents runtime gates without an NVIDIA GPU host.

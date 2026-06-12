@@ -26,6 +26,16 @@
       "evidence": "28 generated meshes include material:binding relationships."
     },
     {
+      "id": "SIMREADY.PHYSICS_SCENE.001",
+      "status": "passed",
+      "evidence": "A USD PhysicsScene is authored with earth gravity in the meter-based Y-up stage."
+    },
+    {
+      "id": "SIMREADY.PHYSICS_COLLISION_BASELINE.001",
+      "status": "passed",
+      "evidence": "27 static terrain/building/road/parcel meshes include PhysicsCollisionAPI and physics:collisionEnabled=true; the flood-water result layer remains non-colliding."
+    },
+    {
       "id": "SRC.OFFICIAL_GEOMETRY.001",
       "status": "passed",
       "evidence": "17 official building footprints, 8 official roads, parcel=official."
@@ -49,7 +59,7 @@
   "next_runtime_commands": [
     "Open the .usda in NVIDIA Omniverse or an ovrtx-based USD viewer.",
     "Run Omniverse Asset Validator / SimReady validation on an NVIDIA runtime host.",
-    "Run Content Agents material/physics assignment before claiming full SimReady conformance.",
+    "Run Content Agents material/physics assignment before claiming full SimReady conformance; this package only authors a conservative static-collider baseline.",
     "Run USD Performance Tuning baseline/after profiling once the stage grows beyond this MVP sample."
   ]
 }
