@@ -41,9 +41,7 @@ async function main(): Promise<void> {
 
   const checkerResult = runtimeProbe.usdChecker === "available" ? spawnSync("usdchecker", [usdPath], { encoding: "utf8" }) : null;
   const checkerStatus = checkerResult ? (checkerResult.status === 0 ? "passed" : "failed") : "not_run";
-  const checkerText = checkerResult
-    ? `${checkerResult.stdout ?? ""}${checkerResult.stderr ?? ""}`
-    : "usdchecker was not available on PATH; validation was not run in this environment.\n";
+  const checkerText = renderUsdCheckerReport(twin.project_id, checkerResult);
   await writeFile(join(outDir, "usdchecker_report.txt"), checkerText, "utf8");
 
   const stackManifest = exported.stackManifest as {
@@ -79,3 +77,35 @@ main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
+
+function renderUsdCheckerReport(projectId: string, result: ReturnType<typeof spawnSync> | null): string {
+  if (!result) {
+    return "command: usdchecker " + projectId + ".usda\nstatus: not_run\n\nusdchecker was not available on PATH; validation was not run in this environment.\n";
+  }
+  const stdout = String(result.stdout ?? "").trim();
+  const stderr = String(result.stderr ?? "").trim();
+  const stderrLines = stderr.split(/\r?\n/).filter(Boolean);
+  const nonDeterministicWarnings = stderrLines.filter(isUsdShadeDuplicateRegistrationWarning);
+  const stableStderr = stderrLines.filter((line) => !isUsdShadeDuplicateRegistrationWarning(line));
+  const lines = [
+    `command: usdchecker ${projectId}.usda`,
+    `exit_status: ${result.status ?? "unknown"}`,
+    "",
+    "stdout:",
+    stdout || "(empty)",
+    "",
+    "stderr:"
+  ];
+  if (stableStderr.length > 0) {
+    lines.push(stableStderr.join("\n"));
+  } else if (nonDeterministicWarnings.length > 0) {
+    lines.push("[known local UsdShade duplicate connectable-registration warnings suppressed]");
+  } else {
+    lines.push("(empty)");
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+function isUsdShadeDuplicateRegistrationWarning(line: string): boolean {
+  return line.includes("RegisterBehaviorForPrimTypeId") && line.includes("Connectable behavior already registered");
+}

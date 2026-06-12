@@ -16,7 +16,8 @@
     "export:omniverse": "tsx src/nvidia/exportOmniversePackage.ts",
     "nvidia:preflight": "tsx src/nvidia/runPreflight.ts",
     "nvidia:handoff": "tsx src/nvidia/packageHandoff.ts",
-    "nvidia:package": "npm run export:omniverse && npm run nvidia:preflight && npm run nvidia:handoff"
+    "nvidia:package": "npm run export:omniverse && npm run nvidia:preflight && npm run nvidia:handoff && npm run nvidia:validate",
+    "nvidia:validate": "tsx src/nvidia/validatePackage.ts"
   },
   "dependencies": {
     "three": "^0.160.0"

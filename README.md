@@ -86,7 +86,8 @@ usdchecker src/samples/sadang_317_6/omniverse/sadang_317_6.usda
 | `npm run export:omniverse` | generate OpenUSD + NVIDIA stack/SimReady reports for the Sadang sample |
 | `npm run nvidia:preflight` | probe local NVIDIA/Omniverse/SimReady runtime gates and write preflight reports |
 | `npm run nvidia:handoff` | write GPU-host runbook + SHA-256 handoff manifest from an already-generated package |
-| `npm run nvidia:package` | export OpenUSD, run preflight, then write the NVIDIA GPU-host handoff package |
+| `npm run nvidia:validate` | verify the generated NVIDIA package: SHA inventory, USD physics/material/unit gates, preflight ovstream gate, and viewer no-WebGL contract |
+| `npm run nvidia:package` | export OpenUSD, run preflight, write the handoff package, then run package validation |
 | `npm run prepare:deploy` | build `dist/` + copy samples for deployment |
 
 ## Project structure

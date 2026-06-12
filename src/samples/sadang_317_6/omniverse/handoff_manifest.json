@@ -51,8 +51,8 @@
       "path": "usdchecker_report.txt",
       "role": "local OpenUSD validator evidence",
       "required": true,
-      "size_bytes": 5013,
-      "sha256": "707745572f202f6b8b7cd9bb34f50e5851a29990454fa6a8e8e8eac1ec2e6383"
+      "size_bytes": 206,
+      "sha256": "7a875b781a62ee98a65ef2db4dd4936c574a4a9041c62b4777414315e7e302c5"
     },
     {
       "path": "README.md",

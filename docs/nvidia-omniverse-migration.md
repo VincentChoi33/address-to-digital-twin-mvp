@@ -30,6 +30,8 @@ Juso/VWorld/WFS twin.json
 - `src/nvidia/viewerContract.ts`
   - Writes `ovstream_viewer_contract.json` and `OVSTREAM_VIEWER_RUNBOOK.md`.
   - Defines the browser replacement path as NVIDIA ovstream/WebRTC video from an Omniverse RTX / ovrtx server. Client-side WebGL/Three.js/Babylon/glTF rendering is explicitly forbidden as final NVIDIA-only acceptance evidence.
+- `src/nvidia/packageValidator.ts` and `src/nvidia/validatePackage.ts`
+  - `npm run nvidia:validate` checks the generated package after handoff: SHA-256 inventory, USD units/material/physics semantics, preflight `OMNIVERSE.OVSTREAM.001`, and the viewer no-WebGL contract.
 - Web app artifact links
   - Every generated twin now exposes `omniverse.usda`, `nvidia_stack_manifest.json`, and `simready_minimum_report.json` as downloadable blobs.
 
@@ -60,6 +62,7 @@ Current generated evidence:
 - Local `usdchecker` exit code 0 (`Validation Result ... Success!`).
 - GPU-host handoff manifest status is `ready_for_gpu_host` with SHA-256 inventory.
 - ovstream viewer contract status is `contract_authored_runtime_gated`: the browser viewer contract is authored, but local NVIDIA GPU/ovrtx/ovstream first-frame validation is not possible on this Mac.
+- Local package validator status is `passed` after `npm run nvidia:package`.
 - Runtime preflight status is `openusd_ready`: local OpenUSD/usdchecker and Docker are present, but local NVIDIA GPU, Omniverse/ovrtx/Kit viewer, Content Agents auth/endpoints, and NVIDIA Container Toolkit gates are not ready on this Mac.
 - Therefore RTX rendering and full SimReady validation remain external NVIDIA GPU/runtime gates.
 
