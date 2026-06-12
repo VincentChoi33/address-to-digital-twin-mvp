@@ -6,6 +6,7 @@ Status: **openusd_ready**
 
 - OpenUSD authoring ready: true
 - Omniverse RTX ready: false
+- Omniverse ovstream/WebRTC ready: false
 - SimReady automation ready: false
 - Content Agents ready: false
 
@@ -21,6 +22,7 @@ Status: **openusd_ready**
 | DOCKER.DAEMON.001 | Docker daemon | passed | docker info returned runtime metadata. | - |
 | DOCKER.NVIDIA_RUNTIME.001 | NVIDIA Container Toolkit | not_run | Docker runtime metadata did not expose an nvidia runtime. | Install/configure NVIDIA Container Toolkit on the GPU host. |
 | OMNIVERSE.VIEWER.001 | NVIDIA Omniverse / ovrtx / Kit viewer | blocked | No ovrtx, kit, usdview, or known Omniverse app path was found. | Install/use an Omniverse Kit or ovrtx runtime on an NVIDIA GPU machine. |
+| OMNIVERSE.OVSTREAM.001 | NVIDIA Omniverse Streaming / ovstream WebRTC | blocked | No OVSTREAM_SIGNALING_URL, OMNIVERSE_STREAM_URL, or OVRTX_WEBRTC_URL was provided. | Expose an ovstream/WebRTC endpoint from the NVIDIA GPU host after ovrtx/Omniverse first-frame readiness. |
 | CONTENT_AGENTS.AUTH.001 | NVIDIA API / NGC / NVCF credentials | blocked | No NVIDIA_API_KEY, NGC_API_KEY, NVCF_API_KEY, or complete provided Content Agents endpoint set was found. | Provide NVIDIA_API_KEY for local deployment or set provided Content Agents endpoint URLs/tokens. |
 | CONTENT_AGENTS.RUNTIME.001 | Omniverse Content Agents | blocked | Content Agents prerequisites are incomplete. | Satisfy NVIDIA GPU + Docker daemon + NVIDIA runtime + auth, or provide healthy service endpoints. |
 
@@ -28,6 +30,7 @@ Status: **openusd_ready**
 
 - Move the package to an NVIDIA GPU workstation/cloud VM for RTX/ovrtx rendering.
 - Install or expose NVIDIA Omniverse Kit/ovrtx/usdview runtime for the USD stage.
+- Expose an ovstream/WebRTC endpoint from the NVIDIA GPU host for the browser-delivered NVIDIA-only viewer.
 - Configure Content Agents prerequisites: NVIDIA API/NGC/NVCF auth plus GPU Docker runtime, or provided service endpoints.
 - Run usdchecker on every exported .usda in CI and keep validator reports with the package.
 - After runtime gates pass, run SimReady/Asset Validator and USD Performance Tuning baseline profiling.

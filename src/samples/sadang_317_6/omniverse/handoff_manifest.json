@@ -6,6 +6,11 @@
   "openusd_stage": "sadang_317_6.usda",
   "runtime_preflight_status": "openusd_ready",
   "source_confidence": "high",
+  "viewer_contract": {
+    "path": "ovstream_viewer_contract.json",
+    "runbook": "OVSTREAM_VIEWER_RUNBOOK.md",
+    "status": "contract_authored_runtime_gated"
+  },
   "files": [
     {
       "path": "sadang_317_6.usda",
@@ -25,15 +30,15 @@
       "path": "nvidia_runtime_preflight.json",
       "role": "machine-readable runtime gate report",
       "required": true,
-      "size_bytes": 7325,
-      "sha256": "10e89b8dc7bff6704e62d2834f072a29a1061485546a6bc201cb5775651c763f"
+      "size_bytes": 8094,
+      "sha256": "9b8ba7dc40be2866722a7e157173c236ad12bab9790801f6d029a7fced070188"
     },
     {
       "path": "nvidia_runtime_preflight.md",
       "role": "human-readable runtime gate report",
       "required": true,
-      "size_bytes": 2715,
-      "sha256": "3aa5bc02a3ecac7b618c4eb50bde9bcaf6db6367ef36865952a18b4319ebf2d1"
+      "size_bytes": 3140,
+      "sha256": "631105e220b2733de9b173fe04040fbb49bb181449b24c1fae1a66508936be64"
     },
     {
       "path": "simready_minimum_report.json",
@@ -46,22 +51,36 @@
       "path": "usdchecker_report.txt",
       "role": "local OpenUSD validator evidence",
       "required": true,
-      "size_bytes": 4768,
-      "sha256": "816a2a0678468688c88d117ff4b7109cd3bbc9198b95a26e08ccee050c6a60e2"
+      "size_bytes": 5013,
+      "sha256": "707745572f202f6b8b7cd9bb34f50e5851a29990454fa6a8e8e8eac1ec2e6383"
     },
     {
       "path": "README.md",
       "role": "package overview",
       "required": true,
-      "size_bytes": 1781,
-      "sha256": "84e6071bfff47c93dd12e2e600fdd19665cb5dfc69460aeaaba5609b71d3b641"
+      "size_bytes": 2144,
+      "sha256": "c3e40f37da5cedf4c03e6a0de1f5aacbf445d578c9c40bb543a2327562277ca7"
     },
     {
       "path": "NVIDIA_GPU_HOST_RUNBOOK.md",
       "role": "GPU host validation runbook",
       "required": true,
-      "size_bytes": 2406,
-      "sha256": "92f230081e3b22d963aeab9da19b58aff997708ff23fa62cfdd1db6f7740681d"
+      "size_bytes": 2800,
+      "sha256": "b3b6ed15488f51fb3e3a6a0808433af80e0c432ba741fa1c30dd992133a98fe4"
+    },
+    {
+      "path": "ovstream_viewer_contract.json",
+      "role": "NVIDIA ovstream/WebRTC viewer contract",
+      "required": true,
+      "size_bytes": 3472,
+      "sha256": "7891bf600c79b8d5068adf21196b3ade5952468939e5f3391d9cdc61a4679b1a"
+    },
+    {
+      "path": "OVSTREAM_VIEWER_RUNBOOK.md",
+      "role": "NVIDIA ovstream/WebRTC viewer runbook",
+      "required": true,
+      "size_bytes": 1795,
+      "sha256": "8211daa70b27c1d5730c8459478b234bb7fddf90bc44a3d9a276235fcfb15ed3"
     },
     {
       "path": "../twin.json",
@@ -90,6 +109,11 @@
       "evidence_to_attach": "Omniverse/Kit/ovrtx load evidence for the OpenUSD stage; screenshot or stream URL is acceptable."
     },
     {
+      "id": "OMNIVERSE.OVSTREAM.001",
+      "required_status": "passed for browser-delivered NVIDIA-only viewer",
+      "evidence_to_attach": "ovstream lifecycle check, signaling/stream URL, server first-frame readiness log, and browser video first-frame capture."
+    },
+    {
       "id": "CONTENT_AGENTS.RUNTIME.001",
       "required_status": "passed before full SimReady claim",
       "evidence_to_attach": "Content Agents material/physics assignment logs or endpoint health + request IDs."
@@ -105,10 +129,12 @@
     "usdchecker sadang_317_6.usda",
     "npm run nvidia:preflight",
     "Open the stage in NVIDIA Omniverse / Kit / ovrtx and capture render evidence.",
+    "Expose an ovstream/WebRTC browser viewer and attach first-frame stream evidence.",
     "Run Content Agents material/physics assignment, then SimReady/Asset Validator."
   ],
   "nvidia_only_constraints": [
     "Do not use the browser Three.js/WebGL viewer as final USD-render acceptance evidence.",
+    "Browser UI for the NVIDIA-only viewer must display ovstream/WebRTC video, not client-rendered USD geometry.",
     "Do not claim full SimReady conformance from this Mac-authored package; only the authored baseline and usdchecker pass locally.",
     "The flood-water layer is a visual/result placeholder and must be replaced by an NVIDIA runtime simulation/stream if operational hydrology is required."
   ]

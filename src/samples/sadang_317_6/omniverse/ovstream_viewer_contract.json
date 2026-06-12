@@ -1,0 +1,95 @@
+{
+  "project_id": "sadang_317_6",
+  "generated_at": "2026-06-12T04:12:45Z",
+  "status": "contract_authored_runtime_gated",
+  "usd_stage": "sadang_317_6.usda",
+  "renderer": {
+    "product": "NVIDIA Omniverse RTX / ovrtx",
+    "ownership": "Server-side NVIDIA runtime owns USD stage loading, renderer.step(), camera/session layers, native picking, selection writes, and live USD mutations.",
+    "required_runtime": [
+      "NVIDIA GPU + driver",
+      "ovrtx or Omniverse Kit runtime",
+      "OpenUSD tools",
+      "NVENC-capable streaming path"
+    ]
+  },
+  "transport": {
+    "product": "NVIDIA ovstream WebRTC",
+    "browser_surface": "video_stream_only",
+    "fixed_resolution_per_session": true,
+    "readiness_rule": "A /healthz-style ready signal must mean the ovrtx server produced and copied the first valid RTX frame into the ovstream buffer; browser connection alone is not readiness."
+  },
+  "source_artifacts": {
+    "twin_json": "../twin.json",
+    "source_manifest_json": "../source_manifest.json",
+    "source_confidence": "high"
+  },
+  "runtime_gates": [
+    {
+      "id": "NVIDIA.GPU.001",
+      "required_for": "RTX rendering and NVENC-backed streaming",
+      "current_status": "blocked",
+      "evidence_required": "nvidia-smi output from the GPU host"
+    },
+    {
+      "id": "OMNIVERSE.VIEWER.001",
+      "required_for": "ovrtx/Kit stage loading and RTX frame production",
+      "current_status": "blocked",
+      "evidence_required": "ovrtx/Kit process log plus first-frame readiness evidence"
+    },
+    {
+      "id": "OMNIVERSE.OVSTREAM.001",
+      "required_for": "browser-delivered NVIDIA-only viewer",
+      "current_status": "blocked",
+      "evidence_required": "ovstream import/lifecycle check, signaling URL, and browser video first-frame capture"
+    }
+  ],
+  "browser_client_contract": {
+    "allowed_render_surface": "HTML video element displaying the ovstream WebRTC media track with object-fit: contain",
+    "forbidden_renderers": [
+      "WebGL",
+      "Three.js",
+      "Babylon.js",
+      "PlayCanvas",
+      "A-Frame",
+      "model-viewer",
+      "react-three-fiber",
+      "glTF browser viewer"
+    ],
+    "data_channel_messages": [
+      {
+        "type": "viewer.ready",
+        "owner": "ovrtx_server",
+        "payload": "server frame readiness and stage metadata"
+      },
+      {
+        "type": "camera.set",
+        "owner": "browser",
+        "payload": "named camera preset or orbital camera intent; server applies it in session state"
+      },
+      {
+        "type": "layer.visibility",
+        "owner": "browser",
+        "payload": "semantic layer id and visibility boolean; server mutates session/composite layer only"
+      },
+      {
+        "type": "selection.changed",
+        "owner": "ovrtx_server",
+        "payload": "native picking result, prim path, and display metadata"
+      },
+      {
+        "type": "render.aov",
+        "owner": "browser",
+        "payload": "requested AOV/render mode; server validates and applies"
+      }
+    ],
+    "input_routing": "Mouse, keyboard, wheel, and touch input must use NVIDIA native streaming input forwarding where available; do not invent JSON mouse events for USD picking."
+  },
+  "validation_artifacts_to_attach": [
+    "nvidia-smi output",
+    "ovrtx/Kit first-frame server log",
+    "ovstream import/lifecycle check output",
+    "browser video first-frame screenshot or stream capture",
+    "updated nvidia_runtime_preflight.json from the GPU host"
+  ]
+}

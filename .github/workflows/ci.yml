@@ -38,9 +38,14 @@ jobs:
           test -s src/samples/sadang_317_6/omniverse/nvidia_runtime_preflight.json
           test -s src/samples/sadang_317_6/omniverse/handoff_manifest.json
           test -s src/samples/sadang_317_6/omniverse/NVIDIA_GPU_HOST_RUNBOOK.md
+          test -s src/samples/sadang_317_6/omniverse/ovstream_viewer_contract.json
+          test -s src/samples/sadang_317_6/omniverse/OVSTREAM_VIEWER_RUNBOOK.md
           grep -q 'metersPerUnit = 1' src/samples/sadang_317_6/omniverse/sadang_317_6.usda
           grep -q 'MaterialBindingAPI' src/samples/sadang_317_6/omniverse/sadang_317_6.usda
           grep -q 'PhysicsScene' src/samples/sadang_317_6/omniverse/sadang_317_6.usda
           grep -q 'PhysicsCollisionAPI' src/samples/sadang_317_6/omniverse/sadang_317_6.usda
           grep -q 'openusd_authoring_ready' src/samples/sadang_317_6/omniverse/nvidia_runtime_preflight.json
+          grep -q 'OMNIVERSE.OVSTREAM.001' src/samples/sadang_317_6/omniverse/nvidia_runtime_preflight.json
           grep -q 'ready_for_gpu_host' src/samples/sadang_317_6/omniverse/handoff_manifest.json
+          grep -q 'video_stream_only' src/samples/sadang_317_6/omniverse/ovstream_viewer_contract.json
+          grep -q 'Three.js' src/samples/sadang_317_6/omniverse/ovstream_viewer_contract.json

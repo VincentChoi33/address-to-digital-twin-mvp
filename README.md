@@ -7,7 +7,7 @@ Type a Korean address, get a real-data 3D digital twin — actual DEM terrain, a
 
 **One flow, end to end:** `주소 → Juso/VWorld 지오코딩 → WFS 실건물·도로 + 실DEM + 위성 → GPU 수문 격자 베이크 → virtual-pipe-model 침수 해석`. Any address works — keyless/offline runs degrade to deterministic preview twins, so the loop never breaks.
 
-**NVIDIA/Omniverse track:** the app now exports each twin as OpenUSD (`*.usda`) with an NVIDIA stack manifest, SimReady minimum report, USD PhysicsScene/static-collider baseline, runtime preflight, and GPU-host handoff manifest. The committed Sadang sample includes a generated Omniverse package under `src/samples/sadang_317_6/omniverse/`, and local `usdchecker` validation passes.
+**NVIDIA/Omniverse track:** the app now exports each twin as OpenUSD (`*.usda`) with an NVIDIA stack manifest, SimReady minimum report, USD PhysicsScene/static-collider baseline, runtime preflight, GPU-host handoff manifest, and an ovstream/WebRTC viewer contract that forbids browser-side USD rendering as final NVIDIA evidence. The committed Sadang sample includes a generated Omniverse package under `src/samples/sadang_317_6/omniverse/`, and local `usdchecker` validation passes.
 
 ![Web app](docs/images/app-screenshot.png)
 
@@ -160,11 +160,13 @@ src/samples/sadang_317_6/omniverse/
   simready_minimum_report.json
   handoff_manifest.json
   NVIDIA_GPU_HOST_RUNBOOK.md
+  ovstream_viewer_contract.json
+  OVSTREAM_VIEWER_RUNBOOK.md
   usdchecker_report.txt
   README.md
 ```
 
-The USD stage is authored as meter-based, Y-up OpenUSD with `MaterialBindingAPI`, `UsdPreviewSurface` materials, a USD `PhysicsScene`, conservative `PhysicsCollisionAPI` static colliders for terrain/buildings/roads/parcel geometry, official building meshes, road ribbons, parcel boundary, terrain reference, and flood-water reference layer. Full NVIDIA-only rendering still requires an Omniverse/RTX/ovrtx runtime; this Mac can author and `usdchecker`-validate the stage but cannot run RTX rendering without an NVIDIA GPU.
+The USD stage is authored as meter-based, Y-up OpenUSD with `MaterialBindingAPI`, `UsdPreviewSurface` materials, a USD `PhysicsScene`, conservative `PhysicsCollisionAPI` static colliders for terrain/buildings/roads/parcel geometry, official building meshes, road ribbons, parcel boundary, terrain reference, and flood-water reference layer. Full NVIDIA-only rendering still requires an Omniverse/RTX/ovrtx runtime; browser delivery must be ovstream/WebRTC video from the NVIDIA renderer, not Three.js/WebGL USD rendering. This Mac can author and `usdchecker`-validate the stage but cannot run RTX rendering or ovstream first-frame validation without an NVIDIA GPU.
 
 ## Data source policy
 

@@ -5,6 +5,7 @@
   "summary": {
     "openusd_authoring_ready": true,
     "omniverse_rtx_ready": false,
+    "omniverse_streaming_ready": false,
     "simready_automation_ready": false,
     "content_agents_ready": false
   },
@@ -141,6 +142,17 @@
       "remediation": "Install/use an Omniverse Kit or ovrtx runtime on an NVIDIA GPU machine."
     },
     {
+      "id": "OMNIVERSE.OVSTREAM.001",
+      "product": "NVIDIA Omniverse Streaming / ovstream WebRTC",
+      "status": "blocked",
+      "required_for": [
+        "browser-delivered NVIDIA-only viewer",
+        "remote RTX/ovrtx stream acceptance"
+      ],
+      "evidence": "No OVSTREAM_SIGNALING_URL, OMNIVERSE_STREAM_URL, or OVRTX_WEBRTC_URL was provided.",
+      "remediation": "Expose an ovstream/WebRTC endpoint from the NVIDIA GPU host after ovrtx/Omniverse first-frame readiness."
+    },
+    {
       "id": "CONTENT_AGENTS.AUTH.001",
       "product": "NVIDIA API / NGC / NVCF credentials",
       "status": "blocked",
@@ -169,11 +181,15 @@
     "CONTENT_AGENTS_MATERIAL_BASE_URL": "missing",
     "CONTENT_AGENTS_PHYSICS_BASE_URL": "missing",
     "CONTENT_AGENTS_TEXTURE_BASE_URL": "missing",
-    "CONTENT_AGENTS_OVRTX_BASE_URL": "missing"
+    "CONTENT_AGENTS_OVRTX_BASE_URL": "missing",
+    "OVSTREAM_SIGNALING_URL": "missing",
+    "OMNIVERSE_STREAM_URL": "missing",
+    "OVRTX_WEBRTC_URL": "missing"
   },
   "next_actions": [
     "Move the package to an NVIDIA GPU workstation/cloud VM for RTX/ovrtx rendering.",
     "Install or expose NVIDIA Omniverse Kit/ovrtx/usdview runtime for the USD stage.",
+    "Expose an ovstream/WebRTC endpoint from the NVIDIA GPU host for the browser-delivered NVIDIA-only viewer.",
     "Configure Content Agents prerequisites: NVIDIA API/NGC/NVCF auth plus GPU Docker runtime, or provided service endpoints.",
     "Run usdchecker on every exported .usda in CI and keep validator reports with the package.",
     "After runtime gates pass, run SimReady/Asset Validator and USD Performance Tuning baseline profiling."

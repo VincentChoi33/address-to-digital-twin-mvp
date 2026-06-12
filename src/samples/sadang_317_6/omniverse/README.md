@@ -11,6 +11,8 @@ This folder is the NVIDIA-targeted export of the address digital twin. It is aut
 - `usdchecker_report.txt` — local USD checker output when `usdchecker` is available.
 - `handoff_manifest.json` — SHA-256 file inventory for moving the package to an NVIDIA GPU host.
 - `NVIDIA_GPU_HOST_RUNBOOK.md` — concrete GPU-host validation/runbook steps.
+- `ovstream_viewer_contract.json` — browser viewer contract: NVIDIA ovrtx/Omniverse server renders, browser displays ovstream WebRTC video only.
+- `OVSTREAM_VIEWER_RUNBOOK.md` — GPU-host steps for the browser-delivered NVIDIA-only viewer.
 
 ## Local runtime probe
 
@@ -24,7 +26,8 @@ No local NVIDIA GPU was detected. This Mac can author OpenUSD deterministically,
 ## Intended NVIDIA flow
 
 1. Open `sadang_317_6.usda` with NVIDIA Omniverse / ovrtx. The stage already includes a USD PhysicsScene and conservative static collision APIs for terrain/buildings/roads/parcel geometry.
-2. Run Omniverse Asset Validator and SimReady validation.
-3. Run Omniverse Content Agents for material and physics assignment when a GPU/Docker/NVIDIA_API_KEY runtime is available.
-4. Use Omniverse USD Performance Tuning for large scene profiling and optimization.
-5. Add cuOpt only for operational routing/dispatch optimization; add NuRec only when camera/LiDAR captures exist.
+2. Expose browser delivery through ovstream/WebRTC only; browser WebGL/Three.js is not NVIDIA-only acceptance evidence.
+3. Run Omniverse Asset Validator and SimReady validation.
+4. Run Omniverse Content Agents for material and physics assignment when a GPU/Docker/NVIDIA_API_KEY runtime is available.
+5. Use Omniverse USD Performance Tuning for large scene profiling and optimization.
+6. Add cuOpt only for operational routing/dispatch optimization; add NuRec only when camera/LiDAR captures exist.

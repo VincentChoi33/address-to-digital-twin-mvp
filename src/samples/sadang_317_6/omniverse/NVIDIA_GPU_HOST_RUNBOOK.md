@@ -9,6 +9,7 @@ This handoff is for the NVIDIA-only runtime path. The local package can author a
 - OpenUSD stage: `sadang_317_6.usda`
 - Local authoring evidence: `usdchecker_report.txt`
 - SimReady baseline: `simready_minimum_report.json` includes USD units/axis/material binding plus conservative static PhysicsCollisionAPI semantics.
+- Browser viewer replacement: `ovstream_viewer_contract.json` + `OVSTREAM_VIEWER_RUNBOOK.md` define the NVIDIA-only WebRTC video-stream path.
 
 ## 1. Transfer
 
@@ -42,7 +43,8 @@ Acceptance threshold: `nvidia_runtime_preflight.json` should move from `openusd_
 
 1. Open `sadang_317_6.usda` in NVIDIA Omniverse, Kit, or ovrtx.
 2. Confirm the stage loads with meter units, Y-up axis, official buildings, roads, parcel boundary, terrain reference, flood-water reference layer, materials, and static collider APIs.
-3. Attach screenshot, stream URL, or render log back to the package.
+3. Follow `OVSTREAM_VIEWER_RUNBOOK.md` to expose browser delivery through ovstream/WebRTC only.
+4. Attach screenshot, stream URL, or render log back to the package.
 
 ## 4. SimReady completion gates
 
@@ -56,5 +58,6 @@ This package is only a conservative SimReady candidate. Before saying “full Si
 ## 5. Do not fake these gates
 
 - Browser Three.js screenshots do not count for NVIDIA-only USD render acceptance.
+- Browser-side WebGL/Three.js/Babylon/glTF rendering is forbidden for the NVIDIA-only viewer path; the browser may display only the ovstream video plus UI.
 - The static flood-water plane is not an NVIDIA hydrology solve.
 - The Mac/local preflight cannot satisfy RTX, ovrtx, NVIDIA Container Toolkit, or Content Agents runtime gates without an NVIDIA GPU host.

@@ -36,6 +36,7 @@ export interface NvidiaRuntimePreflightReport {
   summary: {
     openusd_authoring_ready: boolean;
     omniverse_rtx_ready: boolean;
+    omniverse_streaming_ready: boolean;
     simready_automation_ready: boolean;
     content_agents_ready: boolean;
   };
@@ -89,7 +90,10 @@ export function runNvidiaRuntimePreflight(
     "CONTENT_AGENTS_MATERIAL_BASE_URL",
     "CONTENT_AGENTS_PHYSICS_BASE_URL",
     "CONTENT_AGENTS_TEXTURE_BASE_URL",
-    "CONTENT_AGENTS_OVRTX_BASE_URL"
+    "CONTENT_AGENTS_OVRTX_BASE_URL",
+    "OVSTREAM_SIGNALING_URL",
+    "OMNIVERSE_STREAM_URL",
+    "OVRTX_WEBRTC_URL"
   ]);
 
   const hasNvidiaGpu = commands.nvidia_smi.ok;
@@ -99,6 +103,10 @@ export function runNvidiaRuntimePreflight(
   const hasUsdRuntime = commands.python_pxr.ok || commands.usdchecker.ok;
   const hasUsdChecker = commands.usdchecker.ok;
   const hasViewerRuntime = commands.ovrtx.ok || commands.kit.ok || commands.usdview.ok || knownOmniversePathExists(runner);
+  const hasOvstreamEndpoint =
+    envState.OVSTREAM_SIGNALING_URL === "present" ||
+    envState.OMNIVERSE_STREAM_URL === "present" ||
+    envState.OVRTX_WEBRTC_URL === "present";
   const hasContentAgentAuth = envState.NVIDIA_API_KEY === "present" || envState.NGC_API_KEY === "present" || envState.NVCF_API_KEY === "present";
   const hasProvidedContentAgentEndpoints =
     envState.CONTENT_AGENTS_MATERIAL_BASE_URL === "present" &&
@@ -172,6 +180,16 @@ export function runNvidiaRuntimePreflight(
       remediation: hasViewerRuntime && hasNvidiaGpu ? undefined : "Install/use an Omniverse Kit or ovrtx runtime on an NVIDIA GPU machine."
     },
     {
+      id: "OMNIVERSE.OVSTREAM.001",
+      product: "NVIDIA Omniverse Streaming / ovstream WebRTC",
+      status: hasOvstreamEndpoint && hasViewerRuntime && hasNvidiaGpu ? "passed" : hasOvstreamEndpoint ? "warning" : "blocked",
+      required_for: ["browser-delivered NVIDIA-only viewer", "remote RTX/ovrtx stream acceptance"],
+      evidence: hasOvstreamEndpoint
+        ? "At least one ovstream/WebRTC endpoint environment variable is present (redacted)."
+        : "No OVSTREAM_SIGNALING_URL, OMNIVERSE_STREAM_URL, or OVRTX_WEBRTC_URL was provided.",
+      remediation: hasOvstreamEndpoint && hasViewerRuntime && hasNvidiaGpu ? undefined : "Expose an ovstream/WebRTC endpoint from the NVIDIA GPU host after ovrtx/Omniverse first-frame readiness."
+    },
+    {
       id: "CONTENT_AGENTS.AUTH.001",
       product: "NVIDIA API / NGC / NVCF credentials",
       status: hasContentAgentAuth || hasProvidedContentAgentEndpoints ? "passed" : "blocked",
@@ -197,6 +215,7 @@ export function runNvidiaRuntimePreflight(
 
   const openusdReady = gates.find((gate) => gate.id === "OPENUSD.AUTHORING.001")?.status === "passed" && hasUsdRuntime;
   const omniverseReady = hasNvidiaGpu && hasViewerRuntime;
+  const omniverseStreamingReady = omniverseReady && hasOvstreamEndpoint;
   const simreadyAutomationReady = contentAgentsReady && hasUsdRuntime;
   const status = omniverseReady && simreadyAutomationReady ? "nvidia_runtime_ready" : openusdReady ? "openusd_ready" : "blocked";
 
@@ -207,13 +226,14 @@ export function runNvidiaRuntimePreflight(
     summary: {
       openusd_authoring_ready: openusdReady,
       omniverse_rtx_ready: omniverseReady,
+      omniverse_streaming_ready: omniverseStreamingReady,
       simready_automation_ready: simreadyAutomationReady,
       content_agents_ready: contentAgentsReady
     },
     commands: Object.fromEntries(Object.entries(commands).map(([key, value]) => [key, compactCommand(value)])),
     gates,
     redacted_environment: envState,
-    next_actions: buildNextActions({ hasNvidiaGpu, hasViewerRuntime, hasUsdRuntime, contentAgentsReady, hasUsdChecker })
+    next_actions: buildNextActions({ hasNvidiaGpu, hasViewerRuntime, hasUsdRuntime, hasOvstreamEndpoint, contentAgentsReady, hasUsdChecker })
   };
 }
 
@@ -249,7 +269,7 @@ export function renderPreflightMarkdown(report: NvidiaRuntimePreflightReport): s
     .map((gate) => `| ${gate.id} | ${gate.product} | ${gate.status} | ${gate.evidence.replace(/\|/g, "\\|")} | ${gate.remediation ?? "-"} |`)
     .join("\n");
   const actions = report.next_actions.map((action) => `- ${action}`).join("\n");
-  return `# NVIDIA Runtime Preflight — ${report.project_id}\n\nStatus: **${report.status}**\n\n## Summary\n\n- OpenUSD authoring ready: ${report.summary.openusd_authoring_ready}\n- Omniverse RTX ready: ${report.summary.omniverse_rtx_ready}\n- SimReady automation ready: ${report.summary.simready_automation_ready}\n- Content Agents ready: ${report.summary.content_agents_ready}\n\n## Gates\n\n| Gate | Product | Status | Evidence | Remediation |\n| --- | --- | --- | --- | --- |\n${rows}\n\n## Next actions\n\n${actions}\n`;
+  return `# NVIDIA Runtime Preflight — ${report.project_id}\n\nStatus: **${report.status}**\n\n## Summary\n\n- OpenUSD authoring ready: ${report.summary.openusd_authoring_ready}\n- Omniverse RTX ready: ${report.summary.omniverse_rtx_ready}\n- Omniverse ovstream/WebRTC ready: ${report.summary.omniverse_streaming_ready}\n- SimReady automation ready: ${report.summary.simready_automation_ready}\n- Content Agents ready: ${report.summary.content_agents_ready}\n\n## Gates\n\n| Gate | Product | Status | Evidence | Remediation |\n| --- | --- | --- | --- | --- |\n${rows}\n\n## Next actions\n\n${actions}\n`;
 }
 
 function redactEnv(runner: RuntimeCommandRunner, keys: string[]): Record<string, "present" | "missing"> {
@@ -291,6 +311,7 @@ function buildNextActions(input: {
   hasNvidiaGpu: boolean;
   hasViewerRuntime: boolean;
   hasUsdRuntime: boolean;
+  hasOvstreamEndpoint: boolean;
   contentAgentsReady: boolean;
   hasUsdChecker: boolean;
 }): string[] {
@@ -298,6 +319,7 @@ function buildNextActions(input: {
   if (!input.hasUsdRuntime) actions.push("Install OpenUSD/usdchecker or run validation inside an Omniverse Kit environment.");
   if (!input.hasNvidiaGpu) actions.push("Move the package to an NVIDIA GPU workstation/cloud VM for RTX/ovrtx rendering.");
   if (!input.hasViewerRuntime) actions.push("Install or expose NVIDIA Omniverse Kit/ovrtx/usdview runtime for the USD stage.");
+  if (!input.hasOvstreamEndpoint) actions.push("Expose an ovstream/WebRTC endpoint from the NVIDIA GPU host for the browser-delivered NVIDIA-only viewer.");
   if (!input.contentAgentsReady) actions.push("Configure Content Agents prerequisites: NVIDIA API/NGC/NVCF auth plus GPU Docker runtime, or provided service endpoints.");
   if (input.hasUsdChecker) actions.push("Run usdchecker on every exported .usda in CI and keep validator reports with the package.");
   actions.push("After runtime gates pass, run SimReady/Asset Validator and USD Performance Tuning baseline profiling.");

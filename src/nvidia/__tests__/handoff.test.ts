@@ -14,6 +14,7 @@ const preflight: NvidiaRuntimePreflightReport = {
   summary: {
     openusd_authoring_ready: true,
     omniverse_rtx_ready: false,
+    omniverse_streaming_ready: false,
     simready_automation_ready: false,
     content_agents_ready: false
   },
@@ -38,8 +39,10 @@ describe("NVIDIA GPU host handoff", () => {
 
     expect(manifest.status).toBe("ready_for_gpu_host");
     expect(manifest.runtime_preflight_status).toBe("openusd_ready");
+    expect(manifest.viewer_contract.path).toBe("ovstream_viewer_contract.json");
     expect(manifest.files[0].sha256).toHaveLength(64);
     expect(manifest.gpu_host_acceptance_gates.map((gate) => gate.id)).toContain("OMNIVERSE.VIEWER.001");
+    expect(manifest.gpu_host_acceptance_gates.map((gate) => gate.id)).toContain("OMNIVERSE.OVSTREAM.001");
     expect(manifest.nvidia_only_constraints.join(" ")).toContain("Do not use the browser Three.js/WebGL viewer");
   });
 
