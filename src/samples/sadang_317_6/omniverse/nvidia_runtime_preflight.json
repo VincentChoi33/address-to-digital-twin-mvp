@@ -34,6 +34,18 @@
       "stdout": "",
       "stderr": "Traceback (most recent call last): File \"<string>\", line 1, in <module> from pxr import Usd; print('pxr-usd-ok') ^^^^^^^^^^^^^^^^^^^ ModuleNotFoundError: No module named 'pxr'"
     },
+    "python_ovrtx": {
+      "ok": false,
+      "code": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last): File \"<string>\", line 1, in <module> import ovrtx; print('ovrtx-python-ok', getattr(ovrtx, '__version__', 'unknown')) ^^^^^^^^^^^^ ModuleNotFoundError: No module named 'ovrtx'"
+    },
+    "python_ovstream": {
+      "ok": false,
+      "code": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last): File \"<string>\", line 1, in <module> import ovstream; ovstream.initialize(); print('ovstream-python-ok', ovstream.get_version()); ovstream.shutdown() ^^^^^^^^^^^^^^^ ModuleNotFoundError: No module named 'ovstream'"
+    },
     "usdchecker": {
       "ok": true,
       "code": 0,
@@ -138,7 +150,7 @@
         "NVIDIA-only visual runtime",
         "RTX/ovrtx render verification"
       ],
-      "evidence": "No ovrtx, kit, usdview, or known Omniverse app path was found.",
+      "evidence": "No ovrtx command, ovrtx Python package, kit, usdview, or known Omniverse app path was found.",
       "remediation": "Install/use an Omniverse Kit or ovrtx runtime on an NVIDIA GPU machine."
     },
     {
@@ -149,8 +161,8 @@
         "browser-delivered NVIDIA-only viewer",
         "remote RTX/ovrtx stream acceptance"
       ],
-      "evidence": "No OVSTREAM_SIGNALING_URL, OMNIVERSE_STREAM_URL, or OVRTX_WEBRTC_URL was provided.",
-      "remediation": "Expose an ovstream/WebRTC endpoint from the NVIDIA GPU host after ovrtx/Omniverse first-frame readiness."
+      "evidence": "ovstream Python lifecycle check failed and no stream runtime was detected.",
+      "remediation": "Install ovstream on the NVIDIA GPU host and expose OVSTREAM_SIGNALING_URL, OMNIVERSE_STREAM_URL, or OVRTX_WEBRTC_URL after first-frame readiness."
     },
     {
       "id": "CONTENT_AGENTS.AUTH.001",
@@ -189,6 +201,7 @@
   "next_actions": [
     "Move the package to an NVIDIA GPU workstation/cloud VM for RTX/ovrtx rendering.",
     "Install or expose NVIDIA Omniverse Kit/ovrtx/usdview runtime for the USD stage.",
+    "Install ovstream and validate its Python lifecycle on the NVIDIA GPU host.",
     "Expose an ovstream/WebRTC endpoint from the NVIDIA GPU host for the browser-delivered NVIDIA-only viewer.",
     "Configure Content Agents prerequisites: NVIDIA API/NGC/NVCF auth plus GPU Docker runtime, or provided service endpoints.",
     "Run usdchecker on every exported .usda in CI and keep validator reports with the package.",
