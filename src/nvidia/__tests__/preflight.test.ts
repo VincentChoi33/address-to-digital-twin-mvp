@@ -41,8 +41,10 @@ describe("NVIDIA runtime preflight", () => {
     expect(report.summary.openusd_authoring_ready).toBe(true);
     expect(report.summary.omniverse_rtx_ready).toBe(false);
     expect(report.summary.omniverse_streaming_ready).toBe(false);
+    expect(report.summary.nvidia_warp_flood_ready).toBe(false);
     expect(report.gates.find((gate) => gate.id === "NVIDIA.GPU.001")?.status).toBe("blocked");
     expect(report.gates.find((gate) => gate.id === "OMNIVERSE.OVSTREAM.001")?.status).toBe("blocked");
+    expect(report.gates.find((gate) => gate.id === "NVIDIA.WARP_FLOOD.001")?.status).toBe("blocked");
     expect(report.gates.find((gate) => gate.id === "CONTENT_AGENTS.RUNTIME.001")?.status).toBe("blocked");
     expect(report.gates.find((gate) => gate.id === "SIMREADY.VALIDATOR.001")?.status).toBe("blocked");
     expect(runtimeProbeFromPreflight(report).usdChecker).toBe("available");
@@ -68,6 +70,7 @@ describe("NVIDIA runtime preflight", () => {
     expect(report.status).toBe("nvidia_runtime_ready");
     expect(report.summary.omniverse_rtx_ready).toBe(true);
     expect(report.summary.omniverse_streaming_ready).toBe(true);
+    expect(report.summary.nvidia_warp_flood_ready).toBe(true);
     expect(report.summary.content_agents_ready).toBe(true);
     expect(report.summary.simready_automation_ready).toBe(true);
     expect(report.redacted_environment.NVIDIA_API_KEY).toBe("present");

@@ -6,6 +6,7 @@
     "openusd_authoring_ready": true,
     "omniverse_rtx_ready": false,
     "omniverse_streaming_ready": false,
+    "nvidia_warp_flood_ready": false,
     "simready_automation_ready": false,
     "content_agents_ready": false
   },
@@ -23,10 +24,10 @@
       "stderr": ""
     },
     "docker_info": {
-      "ok": true,
-      "code": 0,
-      "stdout": "{\"io.containerd.runc.v2\":{\"path\":\"runc\",\"status\":{\"org.opencontainers.runtime-spec.features\":\"{\\\"ociVersionMin\\\":\\\"1.0.0\\\",\\\"ociVersionMax\\\":\\\"1.2.1\\\",\\\"hooks\\\":[\\\"prestart\\\",\\\"createRuntime\\\",\\\"createContainer\\\",\\\"startContainer\\\",\\\"poststart\\\",\\\"poststop\\\"],\\\"mountOptions\\\":[\\\"async\\\",\\\"atime\\\",\\\"bind\\\",\\\"defaults\\\",\\\"dev\\\",\\\"diratime\\\",\\\"dirsync\\\",\\\"exec\\\",\\\"iversion\\\",\\\"lazytime\\\",\\\"loud\\\",\\\"mand\\\",\\\"noatime\\\",\\\"nodev\\\",\\\"nodiratime\\\",\\\"noexec\\\",\\\"noiversion\\\",\\\"nolazytime\\\",\\\"nomand\\\",\\\"norelatime\\\",\\\"nostrictatime\\\",\\\"nosuid\\\",\\\"nosymfollow\\\",\\\"private\\\",\\\"ratime\\\",\\\"rbind\\\",\\\"rdev\\\",\\\"r",
-      "stderr": ""
+      "ok": false,
+      "code": 1,
+      "stdout": "null",
+      "stderr": "Cannot connect to the Docker daemon at unix:///Users/handy_choi/.docker/run/docker.sock. Is the docker daemon running?"
     },
     "python_pxr": {
       "ok": false,
@@ -45,6 +46,12 @@
       "code": 1,
       "stdout": "",
       "stderr": "Traceback (most recent call last): File \"<string>\", line 1, in <module> import ovstream; ovstream.initialize(); print('ovstream-python-ok', ovstream.get_version()); ovstream.shutdown() ^^^^^^^^^^^^^^^ ModuleNotFoundError: No module named 'ovstream'"
+    },
+    "python_warp_cuda": {
+      "ok": false,
+      "code": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last): File \"<string>\", line 1, in <module> import warp as wp; wp.init(); device=wp.get_device('cuda:0'); assert device.is_cuda; print('warp-cuda-ok', getattr(wp, '__version__', 'unknown'), device) ^^^^^^^^^^^^^^^^^ ModuleNotFoundError: No module named 'warp'"
     },
     "simready_validate": {
       "ok": false,
@@ -132,11 +139,12 @@
     {
       "id": "DOCKER.DAEMON.001",
       "product": "Docker daemon",
-      "status": "passed",
+      "status": "blocked",
       "required_for": [
         "local Omniverse Content Agents"
       ],
-      "evidence": "docker info returned runtime metadata."
+      "evidence": "Cannot connect to the Docker daemon at unix:///Users/handy_choi/.docker/run/docker.sock. Is the docker daemon running?",
+      "remediation": "Start Docker Desktop/daemon and re-run preflight."
     },
     {
       "id": "DOCKER.NVIDIA_RUNTIME.001",
@@ -169,6 +177,17 @@
       ],
       "evidence": "ovstream Python lifecycle check failed and no stream runtime was detected.",
       "remediation": "Install ovstream on the NVIDIA GPU host and expose OVSTREAM_SIGNALING_URL, OMNIVERSE_STREAM_URL, or OVRTX_WEBRTC_URL after first-frame readiness."
+    },
+    {
+      "id": "NVIDIA.WARP_FLOOD.001",
+      "product": "NVIDIA Warp / CUDA",
+      "status": "blocked",
+      "required_for": [
+        "NVIDIA-only shallow-water flood simulation smoke",
+        "GPU hydrology runtime replacement for browser WebGL water"
+      ],
+      "evidence": "NVIDIA Warp CUDA lifecycle check failed; warp-lang/CUDA device is not available.",
+      "remediation": "Install warp-lang in the NVIDIA GPU Python environment and run nvidia_warp_flood_smoke.py on a CUDA-capable host."
     },
     {
       "id": "CONTENT_AGENTS.AUTH.001",
@@ -246,6 +265,7 @@
     "Install or expose NVIDIA Omniverse Kit/ovrtx/usdview runtime for the USD stage.",
     "Install ovstream and validate its Python lifecycle on the NVIDIA GPU host.",
     "Expose an ovstream/WebRTC endpoint from the NVIDIA GPU host for the browser-delivered NVIDIA-only viewer.",
+    "Install NVIDIA Warp/warp-lang on the CUDA GPU host and run nvidia_warp_flood_smoke.py for NVIDIA-only flood simulation evidence.",
     "Configure Content Agents prerequisites: NVIDIA API/NGC/NVCF auth plus GPU Docker runtime, or provided service endpoints.",
     "Run usdchecker on every exported .usda in CI and keep validator reports with the package.",
     "After runtime gates pass, run SimReady/Asset Validator and USD Performance Tuning baseline profiling."

@@ -45,6 +45,7 @@ async function main(): Promise<void> {
   await writeSimReadyAssetSource(outDir, twin, exported.usda, exported.simreadyMetadata);
   await copyFile(join(process.cwd(), "scripts/nvidia_ovrtx_first_frame.py"), join(outDir, "nvidia_ovrtx_first_frame.py"));
   await copyFile(join(process.cwd(), "scripts/nvidia_ovstream_smoke_server.py"), join(outDir, "nvidia_ovstream_smoke_server.py"));
+  await copyFile(join(process.cwd(), "scripts/nvidia_warp_flood_smoke.py"), join(outDir, "nvidia_warp_flood_smoke.py"));
   await copyOvstreamBrowserClient(outDir);
 
   const checkerResult = runtimeProbe.usdChecker === "available" ? spawnSync("usdchecker", [usdPath], { encoding: "utf8" }) : null;
@@ -77,6 +78,13 @@ async function main(): Promise<void> {
       first_frame_command: `python3 nvidia_ovrtx_first_frame.py --stage ${composite.fileName} --output-json ovrtx_first_frame_report.json --output-ppm ovrtx_first_frame.ppm`,
       ovstream_smoke_script: "nvidia_ovstream_smoke_server.py",
       ovstream_smoke_command: `python3 nvidia_ovstream_smoke_server.py --stage ${composite.fileName} --output-json ovstream_smoke_report.json`
+    },
+    nvidia_warp_flood_smoke: {
+      product: "NVIDIA Warp / CUDA",
+      script: "nvidia_warp_flood_smoke.py",
+      command: `python3 nvidia_warp_flood_smoke.py --stage ${twin.project_id}.usda --output-json warp_flood_report.json --output-pgm warp_flood_depth.pgm`,
+      blocked_check_command: "python3 nvidia_warp_flood_smoke.py --allow-missing --output-json warp_flood_report.json --output-pgm warp_flood_depth.pgm",
+      purpose: "GPU-host shallow-water smoke that replaces the browser MVP flood layer with an NVIDIA Warp/CUDA runtime acceptance artifact."
     }
   });
   const report = exported.simreadyReport as {

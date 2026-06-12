@@ -37,6 +37,7 @@ export interface NvidiaRuntimePreflightReport {
     openusd_authoring_ready: boolean;
     omniverse_rtx_ready: boolean;
     omniverse_streaming_ready: boolean;
+    nvidia_warp_flood_ready: boolean;
     simready_automation_ready: boolean;
     content_agents_ready: boolean;
   };
@@ -81,6 +82,10 @@ export function runNvidiaRuntimePreflight(
       "-c",
       "import ovstream; ovstream.initialize(); print('ovstream-python-ok', ovstream.get_version()); ovstream.shutdown()"
     ]),
+    python_warp_cuda: runner.run("python3", [
+      "-c",
+      "import warp as wp; wp.init(); device=wp.get_device('cuda:0'); assert device.is_cuda; print('warp-cuda-ok', getattr(wp, '__version__', 'unknown'), device)"
+    ]),
     simready_validate: runner.run("simready-validate", ["--help"]),
     usdchecker: runner.run("usdchecker", ["--help"]),
     ovrtx: runner.run("ovrtx", ["--help"]),
@@ -119,6 +124,7 @@ export function runNvidiaRuntimePreflight(
   const hasUsdChecker = commands.usdchecker.ok;
   const hasViewerRuntime = commands.ovrtx.ok || commands.python_ovrtx.ok || commands.kit.ok || commands.usdview.ok || knownOmniversePathExists(runner);
   const hasOvstreamRuntime = commands.python_ovstream.ok;
+  const hasWarpCudaRuntime = commands.python_warp_cuda.ok && hasNvidiaGpu;
   const hasOvstreamEndpoint =
     envState.OVSTREAM_SIGNALING_URL === "present" ||
     envState.OMNIVERSE_STREAM_URL === "present" ||
@@ -216,6 +222,16 @@ export function runNvidiaRuntimePreflight(
           : "Install ovstream on the NVIDIA GPU host and expose OVSTREAM_SIGNALING_URL, OMNIVERSE_STREAM_URL, or OVRTX_WEBRTC_URL after first-frame readiness."
     },
     {
+      id: "NVIDIA.WARP_FLOOD.001",
+      product: "NVIDIA Warp / CUDA",
+      status: hasWarpCudaRuntime ? "passed" : commands.python_warp_cuda.ok ? "warning" : "blocked",
+      required_for: ["NVIDIA-only shallow-water flood simulation smoke", "GPU hydrology runtime replacement for browser WebGL water"],
+      evidence: commands.python_warp_cuda.ok
+        ? `${firstLine(commands.python_warp_cuda.stdout || commands.python_warp_cuda.stderr)}; nvidia_gpu=${hasNvidiaGpu}`
+        : "NVIDIA Warp CUDA lifecycle check failed; warp-lang/CUDA device is not available.",
+      remediation: hasWarpCudaRuntime ? undefined : "Install warp-lang in the NVIDIA GPU Python environment and run nvidia_warp_flood_smoke.py on a CUDA-capable host."
+    },
+    {
       id: "CONTENT_AGENTS.AUTH.001",
       product: "NVIDIA API / NGC / NVCF credentials",
       status: hasContentAgentAuth || hasProvidedContentAgentEndpoints ? "passed" : "blocked",
@@ -285,13 +301,14 @@ export function runNvidiaRuntimePreflight(
       openusd_authoring_ready: openusdReady,
       omniverse_rtx_ready: omniverseReady,
       omniverse_streaming_ready: omniverseStreamingReady,
+      nvidia_warp_flood_ready: hasWarpCudaRuntime,
       simready_automation_ready: simreadyAutomationReady,
       content_agents_ready: contentAgentsReady
     },
     commands: Object.fromEntries(Object.entries(commands).map(([key, value]) => [key, compactCommand(value)])),
     gates,
     redacted_environment: envState,
-    next_actions: buildNextActions({ hasNvidiaGpu, hasViewerRuntime, hasUsdRuntime, hasOvstreamRuntime, hasOvstreamEndpoint, contentAgentsReady, hasUsdChecker, hasSimReadyValidator })
+    next_actions: buildNextActions({ hasNvidiaGpu, hasViewerRuntime, hasUsdRuntime, hasOvstreamRuntime, hasOvstreamEndpoint, hasWarpCudaRuntime, contentAgentsReady, hasUsdChecker, hasSimReadyValidator })
   };
 }
 
@@ -327,7 +344,7 @@ export function renderPreflightMarkdown(report: NvidiaRuntimePreflightReport): s
     .map((gate) => `| ${gate.id} | ${gate.product} | ${gate.status} | ${gate.evidence.replace(/\|/g, "\\|")} | ${gate.remediation ?? "-"} |`)
     .join("\n");
   const actions = report.next_actions.map((action) => `- ${action}`).join("\n");
-  return `# NVIDIA Runtime Preflight — ${report.project_id}\n\nStatus: **${report.status}**\n\n## Summary\n\n- OpenUSD authoring ready: ${report.summary.openusd_authoring_ready}\n- Omniverse RTX ready: ${report.summary.omniverse_rtx_ready}\n- Omniverse ovstream/WebRTC ready: ${report.summary.omniverse_streaming_ready}\n- SimReady automation ready: ${report.summary.simready_automation_ready}\n- Content Agents ready: ${report.summary.content_agents_ready}\n\n## Gates\n\n| Gate | Product | Status | Evidence | Remediation |\n| --- | --- | --- | --- | --- |\n${rows}\n\n## Next actions\n\n${actions}\n`;
+  return `# NVIDIA Runtime Preflight — ${report.project_id}\n\nStatus: **${report.status}**\n\n## Summary\n\n- OpenUSD authoring ready: ${report.summary.openusd_authoring_ready}\n- Omniverse RTX ready: ${report.summary.omniverse_rtx_ready}\n- Omniverse ovstream/WebRTC ready: ${report.summary.omniverse_streaming_ready}\n- NVIDIA Warp flood ready: ${report.summary.nvidia_warp_flood_ready}\n- SimReady automation ready: ${report.summary.simready_automation_ready}\n- Content Agents ready: ${report.summary.content_agents_ready}\n\n## Gates\n\n| Gate | Product | Status | Evidence | Remediation |\n| --- | --- | --- | --- | --- |\n${rows}\n\n## Next actions\n\n${actions}\n`;
 }
 
 function redactEnv(runner: RuntimeCommandRunner, keys: string[]): Record<string, "present" | "missing"> {
@@ -382,6 +399,7 @@ function buildNextActions(input: {
   hasUsdRuntime: boolean;
   hasOvstreamRuntime: boolean;
   hasOvstreamEndpoint: boolean;
+  hasWarpCudaRuntime: boolean;
   contentAgentsReady: boolean;
   hasUsdChecker: boolean;
   hasSimReadyValidator: boolean;
@@ -392,6 +410,7 @@ function buildNextActions(input: {
   if (!input.hasViewerRuntime) actions.push("Install or expose NVIDIA Omniverse Kit/ovrtx/usdview runtime for the USD stage.");
   if (!input.hasOvstreamRuntime) actions.push("Install ovstream and validate its Python lifecycle on the NVIDIA GPU host.");
   if (!input.hasOvstreamEndpoint) actions.push("Expose an ovstream/WebRTC endpoint from the NVIDIA GPU host for the browser-delivered NVIDIA-only viewer.");
+  if (!input.hasWarpCudaRuntime) actions.push("Install NVIDIA Warp/warp-lang on the CUDA GPU host and run nvidia_warp_flood_smoke.py for NVIDIA-only flood simulation evidence.");
   if (!input.contentAgentsReady) actions.push("Configure Content Agents prerequisites: NVIDIA API/NGC/NVCF auth plus GPU Docker runtime, or provided service endpoints.");
   if (!input.hasSimReadyValidator) actions.push("Install simready-validate or provide the NVIDIA SimReady Foundation checkout on branch main.");
   if (input.hasUsdChecker) actions.push("Run usdchecker on every exported .usda in CI and keep validator reports with the package.");

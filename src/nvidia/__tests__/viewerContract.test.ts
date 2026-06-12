@@ -15,6 +15,7 @@ const preflight: NvidiaRuntimePreflightReport = {
     openusd_authoring_ready: true,
     omniverse_rtx_ready: false,
     omniverse_streaming_ready: false,
+    nvidia_warp_flood_ready: false,
     simready_automation_ready: false,
     content_agents_ready: false
   },

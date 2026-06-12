@@ -41,6 +41,13 @@
       "sha256": "25e093f33ba3f0f8eb7f0b787d89d051f5ae11ef2799a4071ed585ed9a97e7de"
     },
     {
+      "path": "nvidia_warp_flood_smoke.py",
+      "role": "NVIDIA Warp/CUDA shallow-water flood simulation smoke script",
+      "required": true,
+      "size_bytes": 9252,
+      "sha256": "bcdd6f3d8c73d60628109705c9bba2a21cddb625ae051922034b0ea630d3ac1e"
+    },
+    {
       "path": "ovstream_browser_client/package.json",
       "role": "NVIDIA ov-web-rtc Direct browser client manifest",
       "required": true,
@@ -100,22 +107,22 @@
       "path": "nvidia_stack_manifest.json",
       "role": "NVIDIA product mapping and current local gate status",
       "required": true,
-      "size_bytes": 4466,
-      "sha256": "005aa6b3b1ce7431b3f7fddfc3998e49981a5b0c8730d5d25cc4b60da15de6ad"
+      "size_bytes": 5270,
+      "sha256": "b89f918137e763852c8440d4e98485ba3416761c7ed612db27519f4eb1fba673"
     },
     {
       "path": "nvidia_runtime_preflight.json",
       "role": "machine-readable runtime gate report",
       "required": true,
-      "size_bytes": 10646,
-      "sha256": "fb4dfb6a7ee751991f71b9be2dfaef2e221d39cdb000840c275a71be31a5d0ca"
+      "size_bytes": 11242,
+      "sha256": "3bfec7311eed13cf06e1a29329b13e0f0e1501cbf085e4e77aeb01f5767c155a"
     },
     {
       "path": "nvidia_runtime_preflight.md",
       "role": "human-readable runtime gate report",
       "required": true,
-      "size_bytes": 3961,
-      "sha256": "9f89bed1462820e4b7cb57642ea507529d6117ffa534b60343eba5ac763f4fc5"
+      "size_bytes": 4510,
+      "sha256": "a51c21581f934e4797d2322919ec2bd06a00634100e2a91b7c9f2de7fced0546"
     },
     {
       "path": "simready_minimum_report.json",
@@ -149,15 +156,15 @@
       "path": "README.md",
       "role": "package overview",
       "required": true,
-      "size_bytes": 3636,
-      "sha256": "bdf2f85bb4d7bc709faf933acfefbfec488f390e642809ce8d8a5d82cc9b9b8b"
+      "size_bytes": 4068,
+      "sha256": "f11cee1bd6f0ab64fc2d2f59ae545dd2bcf364e587facf5fc890bdf40900e0bc"
     },
     {
       "path": "NVIDIA_GPU_HOST_RUNBOOK.md",
       "role": "GPU host validation runbook",
       "required": true,
-      "size_bytes": 4055,
-      "sha256": "8d8ac34c0b5cfeeb121b84550791cdb9658c7545ec543ee84cd87d6678ebdd69"
+      "size_bytes": 4546,
+      "sha256": "0797ce436eff6c91ed7c80a41634af7799d0a00c583f76d1950dc85f595ba57f"
     },
     {
       "path": "ovstream_viewer_contract.json",
@@ -205,6 +212,11 @@
       "evidence_to_attach": "ovstream lifecycle check, signaling/stream URL, ovstream smoke server /healthz report, server first-frame readiness log, and browser video first-frame capture."
     },
     {
+      "id": "NVIDIA.WARP_FLOOD.001",
+      "required_status": "passed before claiming NVIDIA-only hydrology runtime",
+      "evidence_to_attach": "NVIDIA Warp flood report JSON and depth PGM from nvidia_warp_flood_smoke.py on a CUDA GPU host."
+    },
+    {
       "id": "CONTENT_AGENTS.RUNTIME.001",
       "required_status": "passed before Content-Agents-assisted SimReady claim",
       "evidence_to_attach": "Content Agents material/physics assignment logs or endpoint health + request IDs."
@@ -220,6 +232,7 @@
     "usdchecker sadang_317_6.usda",
     "python3 nvidia_ovrtx_first_frame.py --stage sadang_317_6.ovrtx_viewer.usda --output-json ovrtx_first_frame_report.json --output-ppm ovrtx_first_frame.ppm",
     "python3 nvidia_ovstream_smoke_server.py --stage sadang_317_6.ovrtx_viewer.usda --output-json ovstream_smoke_report.json",
+    "python3 nvidia_warp_flood_smoke.py --stage sadang_317_6.usda --output-json warp_flood_report.json --output-pgm warp_flood_depth.pgm",
     "cd ovstream_browser_client && npm install && npm run build && npm run dev -- --port 5191",
     "cd ovstream_browser_client && npm run probe:first-frame -- --url http://127.0.0.1:5191/?server=127.0.0.1\\&signalingport=49100 --output-json browser_first_frame_report.json --screenshot browser_first_frame.png",
     "npm run nvidia:preflight",

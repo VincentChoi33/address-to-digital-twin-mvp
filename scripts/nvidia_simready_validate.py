@@ -149,15 +149,18 @@ def resolve_validator(auto_install: bool) -> Path:
     if found:
         return Path(found).resolve()
 
-    tmp_matches = sorted(
+    tmp_candidates = sorted(
         {
+            Path(tempfile.gettempdir()) / "nvidia-simready-validate-venv/bin/simready-validate",
+            Path("/tmp") / "nvidia-simready-validate-venv/bin/simready-validate",
             *Path(tempfile.gettempdir()).glob("simready-runner-venv-*/bin/simready-validate"),
             *Path("/tmp").glob("simready-runner-venv-*/bin/simready-validate"),
         },
         reverse=True,
     )
-    if tmp_matches:
-        return tmp_matches[0].resolve()
+    for candidate in tmp_candidates:
+        if candidate.is_file():
+            return candidate.resolve()
 
     if auto_install:
         python = resolve_python()

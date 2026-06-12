@@ -15,6 +15,7 @@ const preflight: NvidiaRuntimePreflightReport = {
     openusd_authoring_ready: true,
     omniverse_rtx_ready: false,
     omniverse_streaming_ready: false,
+    nvidia_warp_flood_ready: false,
     simready_automation_ready: false,
     content_agents_ready: false
   },
@@ -45,6 +46,7 @@ describe("NVIDIA GPU host handoff", () => {
     expect(manifest.gpu_host_acceptance_gates.map((gate) => gate.id)).toContain("OMNIVERSE.OVSTREAM.001");
     expect(manifest.gpu_host_commands.join(" ")).toContain("nvidia_ovrtx_first_frame.py");
     expect(manifest.gpu_host_commands.join(" ")).toContain("nvidia_ovstream_smoke_server.py");
+    expect(manifest.gpu_host_commands.join(" ")).toContain("nvidia_warp_flood_smoke.py");
     expect(manifest.nvidia_only_constraints.join(" ")).toContain("Do not use the browser Three.js/WebGL viewer");
   });
 
@@ -55,6 +57,7 @@ describe("NVIDIA GPU host handoff", () => {
     expect(runbook).toContain(`usdchecker ${twin.project_id}.usda`);
     expect(runbook).toContain(`${twin.project_id}.ovrtx_viewer.usda`);
     expect(runbook).toContain("nvidia_ovstream_smoke_server.py");
+    expect(runbook).toContain("nvidia_warp_flood_smoke.py");
     expect(runbook).toContain("nvidia_runtime_ready");
     expect(runbook).toContain("Browser Three.js screenshots do not count");
   });
