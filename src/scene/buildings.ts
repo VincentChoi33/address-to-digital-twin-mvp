@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { BuildingFeature, TwinProject } from "../types/twin";
+import type { BuildingFeature, LocalPoint, RoadHint, TwinProject } from "../types/twin";
 import { heightAt, type Heightfield } from "./terrain";
 
 export interface BuildingPickInfo {
@@ -31,18 +31,43 @@ export function buildCityGroup(
   const officialMaterial = new THREE.MeshStandardMaterial({ color: 0xb9c0cc, roughness: 0.62, metalness: 0.08 });
   const fallbackMaterial = new THREE.MeshStandardMaterial({ color: 0x8e96a3, roughness: 0.8, metalness: 0.02 });
   const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x10131a, transparent: true, opacity: 0.35 });
+  const targetOutlineMaterial = new THREE.LineBasicMaterial({ color: 0x5eead4, transparent: true, opacity: 0.95 });
+  const targetHaloMaterial = new THREE.MeshBasicMaterial({
+    color: 0x2dd4bf,
+    transparent: true,
+    opacity: 0.72,
+    depthWrite: false,
+    side: THREE.DoubleSide
+  });
 
   for (const building of twin.buildings) {
-    const mesh = extrudeBuilding(building, field, building.role === "target" ? targetMaterial : building.source_type === "official" ? officialMaterial : fallbackMaterial);
+    const points = cleanRing(building.footprint ?? []);
+    if (!points) continue;
+    const mesh = extrudeBuildingFromPoints(
+      building,
+      points,
+      field,
+      building.role === "target" ? targetMaterial : building.source_type === "official" ? officialMaterial : fallbackMaterial
+    );
     if (!mesh) continue;
     mesh.castShadow = true;
     mesh.receiveShadow = true;
+    mesh.userData.layer = "building";
     group.add(mesh);
 
     const edges = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry, 30), edgeMaterial);
     edges.position.copy(mesh.position);
     edges.rotation.copy(mesh.rotation);
+    edges.userData.layer = "building";
     group.add(edges);
+
+    if (building.role === "target") {
+      const roofY = mesh.position.y + Math.max(3, building.height_m) + 0.28;
+      const roofLine = makeLineLoop(points, () => roofY, targetOutlineMaterial);
+      roofLine.userData.layer = "building";
+      group.add(roofLine);
+      addSegmentRibbons(group, points, field, targetHaloMaterial, 1.2, 0.62, true, "building");
+    }
 
     pickInfo.set(mesh, {
       name: building.name,
@@ -52,6 +77,8 @@ export function buildCityGroup(
       isTarget: building.role === "target"
     });
   }
+  addRoadRibbons(group, twin.roads, field);
+  addParcelBoundary(group, twin.parcel.boundary, field);
   return { group, pickInfo };
 }
 
@@ -83,14 +110,12 @@ function cleanRing(points: Array<{ x: number; z: number }>): Array<{ x: number; 
   return ring;
 }
 
-function extrudeBuilding(
+function extrudeBuildingFromPoints(
   building: BuildingFeature,
+  points: Array<{ x: number; z: number }>,
   field: Heightfield,
   material: THREE.Material
 ): THREE.Mesh | null {
-  const points = cleanRing(building.footprint ?? []);
-  if (!points) return null;
-
   // Shape lives in XY with y = -localZ, so rotateX(-90°) lands exactly on
   // world XZ (z = localZ) without a winding-flipping negative scale.
   const shape = new THREE.Shape();
@@ -111,4 +136,138 @@ function extrudeBuilding(
   const mesh = new THREE.Mesh(geometry, material);
   mesh.position.y = base - 0.6;
   return mesh;
+}
+
+function makeLineLoop(
+  points: Array<{ x: number; z: number }>,
+  yAt: (point: { x: number; z: number }) => number,
+  material: THREE.Material
+): THREE.LineLoop {
+  const geometry = new THREE.BufferGeometry().setFromPoints(
+    points.map((point) => new THREE.Vector3(point.x, yAt(point), point.z))
+  );
+  return new THREE.LineLoop(geometry, material);
+}
+
+function addRoadRibbons(group: THREE.Group, roads: RoadHint[], field: Heightfield): void {
+  if (roads.length === 0) return;
+  const roadGroup = new THREE.Group();
+  roadGroup.name = "official-road-ribbons";
+  const roadMaterial = new THREE.MeshBasicMaterial({
+    color: 0x26384a,
+    transparent: true,
+    opacity: 0.46,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    polygonOffset: true,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits: -1
+  });
+  const centerlineMaterial = new THREE.LineBasicMaterial({
+    color: 0xdbeafe,
+    transparent: true,
+    opacity: 0.36
+  });
+
+  for (const road of roads) {
+    if (road.centerline.length < 2) continue;
+    const width = Math.max(3.5, Math.min(14, road.width_m || 5));
+    addPolylineRibbons(roadGroup, road.centerline, field, roadMaterial, width, 0.18, false, "site");
+    const line = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints(
+        road.centerline.map((point) => new THREE.Vector3(point.x, heightAt(field, point.x, point.z) + 0.36, point.z))
+      ),
+      centerlineMaterial
+    );
+    line.userData.layer = "site";
+    roadGroup.add(line);
+  }
+  group.add(roadGroup);
+}
+
+function addParcelBoundary(group: THREE.Group, boundary: LocalPoint[], field: Heightfield): void {
+  const points = cleanRing(boundary ?? []);
+  if (!points) return;
+  const parcelGroup = new THREE.Group();
+  parcelGroup.name = "official-parcel-boundary";
+  const parcelRibbonMaterial = new THREE.MeshBasicMaterial({
+    color: 0xffc857,
+    transparent: true,
+    opacity: 0.82,
+    depthWrite: false,
+    side: THREE.DoubleSide
+  });
+  const parcelLineMaterial = new THREE.LineBasicMaterial({
+    color: 0xfff3bf,
+    transparent: true,
+    opacity: 0.98
+  });
+  addSegmentRibbons(parcelGroup, points, field, parcelRibbonMaterial, 0.78, 0.82, true, "site");
+  const line = makeLineLoop(points, (point) => heightAt(field, point.x, point.z) + 1.12, parcelLineMaterial);
+  line.userData.layer = "site";
+  parcelGroup.add(line);
+  group.add(parcelGroup);
+}
+
+function addSegmentRibbons(
+  group: THREE.Group,
+  points: Array<{ x: number; z: number }>,
+  field: Heightfield,
+  material: THREE.Material,
+  width: number,
+  yOffset: number,
+  closed: boolean,
+  layer: "building" | "site"
+): void {
+  const count = closed ? points.length : points.length - 1;
+  for (let index = 0; index < count; index++) {
+    const a = points[index];
+    const b = points[(index + 1) % points.length];
+    addRibbonSegment(group, a, b, field, material, width, yOffset, layer);
+  }
+}
+
+function addPolylineRibbons(
+  group: THREE.Group,
+  points: LocalPoint[],
+  field: Heightfield,
+  material: THREE.Material,
+  width: number,
+  yOffset: number,
+  closed: boolean,
+  layer: "building" | "site"
+): void {
+  const count = closed ? points.length : points.length - 1;
+  for (let index = 0; index < count; index++) {
+    const a = points[index];
+    const b = points[(index + 1) % points.length];
+    addRibbonSegment(group, a, b, field, material, width, yOffset, layer);
+  }
+}
+
+function addRibbonSegment(
+  group: THREE.Group,
+  a: { x: number; z: number },
+  b: { x: number; z: number },
+  field: Heightfield,
+  material: THREE.Material,
+  width: number,
+  yOffset: number,
+  layer: "building" | "site"
+): void {
+  const dx = b.x - a.x;
+  const dz = b.z - a.z;
+  const length = Math.hypot(dx, dz);
+  if (length < 0.1) return;
+  const geometry = new THREE.PlaneGeometry(width, length);
+  geometry.rotateX(-Math.PI / 2);
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.rotation.z = -Math.atan2(dx, dz);
+  const midX = (a.x + b.x) / 2;
+  const midZ = (a.z + b.z) / 2;
+  mesh.position.set(midX, heightAt(field, midX, midZ) + yOffset, midZ);
+  mesh.receiveShadow = false;
+  mesh.renderOrder = layer === "site" ? 3 : 4;
+  mesh.userData.layer = layer;
+  group.add(mesh);
 }

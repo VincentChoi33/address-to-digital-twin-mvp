@@ -256,6 +256,10 @@ export class WaterSolver {
     return this.water[this.waterIndex].texture;
   }
 
+  get fluxTexture(): THREE.Texture {
+    return this.flux[this.fluxIndex].texture;
+  }
+
   reset(): void {
     for (const target of [...this.water, ...this.flux]) {
       this.renderer.setRenderTarget(target);

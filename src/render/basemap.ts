@@ -16,12 +16,28 @@ function tileUrl(mode: BasemapMode, z: number, x: number, y: number, customTileU
   return `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`;
 }
 
-function loadImage(url: string): Promise<HTMLImageElement | null> {
+function loadImage(url: string, timeoutMs = 3500): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const image = new Image();
+    let settled = false;
+    const finish = (value: HTMLImageElement | null) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeout);
+      image.onload = null;
+      image.onerror = null;
+      resolve(value);
+    };
+    const timeout = window.setTimeout(() => {
+      // A few satellite providers leave failed tiles pending for a long time.
+      // Do not hold the whole WebGL scene hostage; draw the tiles that arrived
+      // and let the caller fall back to the procedural board if coverage is low.
+      image.src = "";
+      finish(null);
+    }, timeoutMs);
     image.crossOrigin = "anonymous";
-    image.onload = () => resolve(image);
-    image.onerror = () => resolve(null);
+    image.onload = () => finish(image);
+    image.onerror = () => finish(null);
     image.src = url;
   });
 }

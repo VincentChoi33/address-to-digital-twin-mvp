@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import sadangTwin from "../../samples/sadang_317_6/twin.json";
 import type { TwinProject } from "../../types/twin";
 import { buildSourceManifest } from "../manifest";
+import { buildPreviewTwin } from "../previewTwin";
 import { generateQaReport } from "../qa";
 
 const twin = sadangTwin as unknown as TwinProject;
+const fallbackTwin = buildPreviewTwin("부산 해운대구 우동 1408 디지털 트윈 프리뷰").twin;
 
 describe("buildSourceManifest", () => {
   it("copies project identity and geocoding summary from the twin", () => {
@@ -14,19 +16,25 @@ describe("buildSourceManifest", () => {
     expect(manifest.geocoding.confidence).toBe(twin.geocoding.confidence);
   });
 
-  it("records the five standard layers", () => {
+  it("records the standard confidence layers, including spatial reference when available", () => {
     const manifest = buildSourceManifest(twin);
-    expect(manifest.layers.map((layer) => layer.name)).toEqual([
-      "satellite_ground",
-      "target_building_massing",
-      "surrounding_context_massing",
-      "parcel_boundary",
-      "road_hints"
-    ]);
+    expect(manifest.layers.map((layer) => layer.name)).toContain("satellite_ground");
+    expect(manifest.layers.map((layer) => layer.name)).toContain("target_building_massing");
+    expect(manifest.layers.map((layer) => layer.name)).toContain("surrounding_context_massing");
+    expect(manifest.layers.map((layer) => layer.name)).toContain("parcel_boundary");
+    expect(manifest.layers.map((layer) => layer.name)).toContain("road_hints");
+    expect(manifest.layers.map((layer) => layer.name)).toContain("spatial_reference");
   });
 
-  it("marks the target layer as procedural fallback when no official geometry exists", () => {
+  it("marks the WFS Sadang target as official geometry", () => {
     const manifest = buildSourceManifest(twin);
+    const targetLayer = manifest.layers.find((layer) => layer.name === "target_building_massing");
+    expect(targetLayer?.source).toBe("official footprint/attributes");
+    expect(targetLayer?.confidence).toBe("high");
+  });
+
+  it("still marks generated fallback twins as procedural when no official geometry exists", () => {
+    const manifest = buildSourceManifest(fallbackTwin);
     const targetLayer = manifest.layers.find((layer) => layer.name === "target_building_massing");
     expect(targetLayer?.source).toBe("procedural fallback");
     expect(targetLayer?.confidence).toBe("low");
@@ -71,8 +79,15 @@ describe("generateQaReport", () => {
   });
 
   it("states when no official geometry was used", () => {
+    const manifest = buildSourceManifest(fallbackTwin);
+    const html = generateQaReport(fallbackTwin, manifest);
+    expect(html).toContain("공식 geometry 없이 프리뷰용으로 생성");
+  });
+
+  it("states which official geometry exists when WFS data is connected", () => {
     const manifest = buildSourceManifest(twin);
     const html = generateQaReport(twin, manifest);
-    expect(html).toContain("공식 geometry 없이 프리뷰용으로 생성");
+    expect(html).toContain("대상 건물 footprint");
+    expect(html).toContain("필지 경계");
   });
 });

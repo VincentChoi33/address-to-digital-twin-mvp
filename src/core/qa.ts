@@ -22,9 +22,26 @@ export function generateQaReport(twin: TwinProject, manifest: SourceManifest): s
 
   const limitations = manifest.limitations.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
   const nextActions = manifest.next_actions.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
-  const officialItems = twin.buildings.some((building) => building.source_type === "official")
-    ? "일부 대상 건물 geometry"
-    : "없음. 현재 산출물은 공식 geometry 없이 프리뷰용으로 생성되었습니다.";
+  const officialItems = [
+    twin.buildings.some((building) => building.role === "target" && building.source_type === "official")
+      ? "대상 건물 footprint"
+      : "",
+    twin.buildings.some((building) => building.role === "surrounding" && building.source_type === "official")
+      ? "주변 건물 footprint"
+      : "",
+    twin.parcel.source_type === "official" ? "필지 경계" : "",
+    twin.roads.some((road) => road.source_type === "official") ? "도로 geometry" : ""
+  ].filter(Boolean);
+  const officialText =
+    officialItems.length > 0
+      ? `${officialItems.join(", ")}. 단, 이 MVP의 표시는 검토용이며 법적/측량급 효력은 없습니다.`
+      : "없음. 현재 산출물은 공식 geometry 없이 프리뷰용으로 생성되었습니다.";
+  const approximateItems = [
+    twin.buildings.some((building) => building.source_type !== "official") ? "일부 건물 매스/높이" : "",
+    twin.parcel.source_type !== "official" ? "필지 경계" : "",
+    twin.roads.some((road) => road.source_type !== "official") ? "일부 도로 힌트" : "",
+    "강우-침수 해석은 시연용 가속 shallow-water 모델"
+  ].filter(Boolean);
 
   return `<!doctype html>
 <html lang="ko">
@@ -65,13 +82,13 @@ export function generateQaReport(twin: TwinProject, manifest: SourceManifest): s
     </section>
 
     <h2>생성된 것</h2>
-    <p>브라우저에서 볼 수 있는 3D 프리뷰, 대상 건물 매스, 주변 건물 맥락, 추정 필지 경계, 도로 힌트를 생성했습니다.</p>
+    <p>브라우저에서 볼 수 있는 3D 프리뷰, 대상 건물 매스, 주변 건물 맥락, 필지/도로 레이어, 침수 시뮬레이션 입력을 생성했습니다.</p>
 
     <h2>근사값인 것</h2>
-    <p>대상 건물 크기, 높이, 층수, 필지 경계, 일부 주변 건물은 공식 데이터가 아니라 프리뷰용 추정값입니다.</p>
+    <p>${escapeHtml(approximateItems.join(", "))}</p>
 
     <h2>공식 데이터인 것</h2>
-    <p>${escapeHtml(officialItems)}</p>
+    <p>${escapeHtml(officialText)}</p>
 
     <h2>검증이 필요한 것</h2>
     <ul>${limitations}</ul>

@@ -11,9 +11,12 @@ import {
   coordinateText,
   confidenceKo,
   createUi,
+  dataReadinessSummary,
+  floodRiskSummary,
   geocodingStatusKo,
   layerRows,
-  rainLabelText
+  rainLabelText,
+  scenarioNarrativeText
 } from "./ui";
 
 const app = document.querySelector<HTMLDivElement>("#app");
@@ -104,11 +107,16 @@ function rebuildArtifactLinks(): void {
 // ---------------------------------------------------------------- project loading
 
 function updateProjectUi(): void {
+  const readiness = dataReadinessSummary(manifest);
   controls.parcelAddress.textContent = twin.addresses.parcel_address;
   controls.roadAddress.textContent = twin.addresses.road_address_candidate;
   controls.buildingName.textContent = twin.addresses.building_name_candidate;
   controls.coordinates.textContent = coordinateText(twin);
   controls.confidence.textContent = confidenceKo(twin.geocoding.confidence);
+  controls.stageAddress.textContent = twin.addresses.parcel_address;
+  controls.readinessPill.textContent = `${readiness.label} · ${readiness.score}`;
+  controls.readinessPill.className = `readiness-pill ${readiness.tone}`;
+  controls.readinessDetail.textContent = readiness.detail;
   controls.sourceStatus.textContent = geocodingStatusKo(manifest.geocoding.provider);
   controls.sourceStatus.className = `status-pill ${manifest.geocoding.provider}`;
   controls.layerRows.innerHTML = layerRows(manifest);
@@ -238,6 +246,7 @@ function applyScenario(id: string): void {
     if (viewer?.solver) viewer.solver.drainScale = scenarioDrainScale;
     setRain(Math.max(140, Number(controls.rainSlider.value)));
   }
+  controls.scenarioNarrative.textContent = scenarioNarrativeText(id, Number(controls.rainSlider.value));
 }
 
 // ---------------------------------------------------------------- stats loop
@@ -333,6 +342,20 @@ window.setInterval(() => {
   controls.gaugeNetworkBar.style.width = `${Math.min(100, load * 100)}%`;
   controls.gaugeNetworkBar.className = load > 0.95 ? "gauge-bar high" : "gauge-bar";
 
+  const risk = floodRiskSummary(
+    {
+      floodedAreaM2: stats.floodedAreaM2,
+      maxDepthM: stats.maxDepthM,
+      volumeM3: stats.volumeM3
+    },
+    load,
+    backflowActive
+  );
+  controls.riskCard.className = `risk-card ${risk.level}`;
+  controls.riskLevel.textContent = risk.label;
+  controls.riskReason.textContent = risk.detail;
+  controls.riskBar.style.width = `${risk.percent}%`;
+
   const flooding = stats.floodedAreaM2 > 1500 && backflowActive;
   controls.floodAlert.hidden = !flooding;
 
@@ -373,6 +396,7 @@ controls.rainSlider.addEventListener("input", (event) => {
   const value = Number((event.target as HTMLInputElement).value);
   viewer?.setRain(value);
   controls.rainLabel.textContent = rainLabelText(value);
+  controls.scenarioNarrative.textContent = scenarioNarrativeText("manual", value);
 });
 
 for (const button of controls.scenarioButtons) {
@@ -414,6 +438,6 @@ viewer?.start(() => {});
 
 const queryFromUrl = new URLSearchParams(window.location.search).get("q");
 controls.promptInput.value = queryFromUrl ?? "사당동 317-6번지 디지털 트윈 만들어줘";
-void runPrompt();
+renderAgentRun(runLocalAddressAgent(controls.promptInput.value, initialTwin, initialManifest));
 
 window.addEventListener("beforeunload", () => viewer?.dispose());

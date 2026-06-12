@@ -43,6 +43,14 @@ export class CityViewer {
   private terrainMesh: THREE.Mesh | null = null;
   private cityPickInfo = new Map<THREE.Object3D, BuildingPickInfo>();
   private drainMarkers: THREE.InstancedMesh | null = null;
+  private backflowPlumes: THREE.InstancedMesh | null = null;
+  private backflowPlumeMaterial: THREE.MeshBasicMaterial | null = null;
+  private backflowDrainBases: Array<{ x: number; z: number; y: number; phase: number }> = [];
+  private backflowVisualActive = false;
+  private plumeMatrix = new THREE.Matrix4();
+  private plumePosition = new THREE.Vector3();
+  private plumeQuaternion = new THREE.Quaternion();
+  private plumeScale = new THREE.Vector3();
 
   solver: WaterSolver | null = null;
   surface: WaterSurface | null = null;
@@ -123,7 +131,13 @@ export class CityViewer {
       this.baked.buildingMask,
       DOMAIN_SIZE_M
     );
-    this.surface = new WaterSurface(DOMAIN_SIZE_M, this.solver.terrainTexture, this.solver.depthTexture, this.skyRig.envMap);
+    this.surface = new WaterSurface(
+      DOMAIN_SIZE_M,
+      this.solver.terrainTexture,
+      this.solver.depthTexture,
+      this.solver.fluxTexture,
+      this.skyRig.envMap
+    );
     this.projectGroup.add(this.surface.mesh);
 
     this.buildDrainMarkers(this.baked.drains, field);
@@ -138,6 +152,10 @@ export class CityViewer {
     this.solver = null;
     this.terrainMesh = null;
     this.drainMarkers = null;
+    this.backflowPlumes = null;
+    this.backflowPlumeMaterial = null;
+    this.backflowDrainBases = [];
+    this.backflowVisualActive = false;
     this.cityPickInfo.clear();
   }
 
@@ -146,22 +164,50 @@ export class CityViewer {
     const geometry = new THREE.CylinderGeometry(1.0, 1.0, 0.3, 10);
     const material = new THREE.MeshStandardMaterial({ color: 0x14181f, roughness: 0.85 });
     const markers = new THREE.InstancedMesh(geometry, material, drains.length);
+    const plumeGeometry = new THREE.CylinderGeometry(0.38, 1.25, 1, 12, 1, true);
+    const plumeMaterial = new THREE.MeshBasicMaterial({
+      color: 0xff6b45,
+      transparent: true,
+      opacity: 0.38,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+    const plumes = new THREE.InstancedMesh(plumeGeometry, plumeMaterial, drains.length);
+    plumes.visible = false;
     const matrix = new THREE.Matrix4();
     drains.forEach((drain, index) => {
-      matrix.makeTranslation(drain.x, heightAt(field, drain.x, drain.z) + 0.12, drain.z);
+      const baseY = heightAt(field, drain.x, drain.z) + 0.12;
+      matrix.makeTranslation(drain.x, baseY, drain.z);
       markers.setMatrixAt(index, matrix);
       markers.setColorAt(index, new THREE.Color(0x14181f));
+
+      this.backflowDrainBases.push({
+        x: drain.x,
+        z: drain.z,
+        y: baseY,
+        phase: index * 1.618
+      });
+      this.plumePosition.set(drain.x, baseY, drain.z);
+      this.plumeScale.set(0.01, 0.01, 0.01);
+      this.plumeMatrix.compose(this.plumePosition, this.plumeQuaternion, this.plumeScale);
+      plumes.setMatrixAt(index, this.plumeMatrix);
     });
     this.drainMarkers = markers;
+    this.backflowPlumes = plumes;
+    this.backflowPlumeMaterial = plumeMaterial;
     this.projectGroup.add(markers);
+    this.projectGroup.add(plumes);
   }
 
   /** Flip drain grates red while the network backflows. */
   setBackflowVisual(active: boolean): void {
+    this.backflowVisualActive = active;
     if (!this.drainMarkers) return;
     const color = new THREE.Color(active ? 0xd6453a : 0x14181f);
     for (let i = 0; i < this.drainMarkers.count; i++) this.drainMarkers.setColorAt(i, color);
     if (this.drainMarkers.instanceColor) this.drainMarkers.instanceColor.needsUpdate = true;
+    if (this.backflowPlumes) this.backflowPlumes.visible = active;
+    if (this.backflowPlumeMaterial) this.backflowPlumeMaterial.opacity = active ? 0.38 : 0;
   }
 
   // ---------------------------------------------------------------- loop
@@ -179,9 +225,18 @@ export class CityViewer {
       this.rain.update(dt);
       if (this.solver) this.solver.step(dt);
       if (this.surface && this.solver) {
-        this.surface.update(this.solver.depthTexture, this.camera, this.skyRig.sunDirection, this.elapsedS);
+        this.surface.update(
+          this.solver.depthTexture,
+          this.solver.fluxTexture,
+          this.camera,
+          this.skyRig.sunDirection,
+          this.elapsedS,
+          this.solver.rainMmPerHour,
+          this.solver.backflowMps
+        );
         (this.surface.mesh.material as THREE.ShaderMaterial).uniforms.uEnvMap.value = this.skyRig.envMap;
       }
+      this.updateBackflowPlumes();
       this.controls.update();
       this.renderer.render(this.scene, this.camera);
       this.animationId = requestAnimationFrame(loop);
@@ -200,6 +255,21 @@ export class CityViewer {
     if ((this.skyRig.mode === "storm") !== wantStorm) this.skyRig.setMode(wantStorm ? "storm" : "day");
   }
 
+  private updateBackflowPlumes(): void {
+    if (!this.backflowPlumes || !this.backflowVisualActive || this.backflowDrainBases.length === 0) return;
+    for (let index = 0; index < this.backflowDrainBases.length; index++) {
+      const base = this.backflowDrainBases[index];
+      const pulse = 0.5 + 0.5 * Math.sin(this.elapsedS * 7.4 + base.phase);
+      const height = 1.8 + pulse * 5.4;
+      const radius = 0.45 + (1 - pulse) * 0.55;
+      this.plumePosition.set(base.x, base.y + height * 0.5, base.z);
+      this.plumeScale.set(radius, height, radius);
+      this.plumeMatrix.compose(this.plumePosition, this.plumeQuaternion, this.plumeScale);
+      this.backflowPlumes.setMatrixAt(index, this.plumeMatrix);
+    }
+    this.backflowPlumes.instanceMatrix.needsUpdate = true;
+  }
+
   // ---------------------------------------------------------------- controls
 
   setView(view: "orbit" | "top"): void {
@@ -212,11 +282,12 @@ export class CityViewer {
       this.camera.lookAt(0, 0, 0);
       this.controls.target.set(0, 0, 0);
     } else {
-      // ground (the flood) is the subject — clamp so supertalls can't tilt
-      // the camera into the sky
-      const lift = Math.max(DOMAIN_SIZE_M * 0.42, Math.min(tallest * 1.1, DOMAIN_SIZE_M * 0.62));
-      const aim = Math.min(tallest * 0.2, 32);
-      this.camera.position.set(DOMAIN_SIZE_M * 0.5, lift, DOMAIN_SIZE_M * 0.68);
+      // The site/ground is the subject. Use a steeper oblique angle so the
+      // first view reads like a real satellite/GIS board instead of a skyline
+      // shot with too much empty sky.
+      const lift = Math.max(DOMAIN_SIZE_M * 0.72, Math.min(tallest * 1.35, DOMAIN_SIZE_M * 0.9));
+      const aim = Math.min(Math.max(tallest * 0.12, 3), 20);
+      this.camera.position.set(DOMAIN_SIZE_M * 0.42, lift, DOMAIN_SIZE_M * 0.45);
       this.camera.lookAt(0, aim, 0);
       this.controls.target.set(0, aim, 0);
     }
@@ -229,11 +300,8 @@ export class CityViewer {
   }
 
   setBuildingsVisible(visible: boolean): void {
-    for (const mesh of this.cityPickInfo.keys()) {
-      mesh.visible = visible;
-    }
     this.projectGroup.traverse((object) => {
-      if (object instanceof THREE.LineSegments && object !== this.rain.object) object.visible = visible;
+      if (object.userData.layer === "building") object.visible = visible;
     });
   }
 

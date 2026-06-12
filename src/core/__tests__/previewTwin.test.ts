@@ -20,7 +20,8 @@ describe("buildPreviewTwin", () => {
     expect(twin.roads.length).toBeGreaterThan(0);
     expect(twin.geocoding.provider).toBe("fallback");
     expect(manifest.project_id).toBe(twin.project_id);
-    expect(manifest.layers.length).toBe(5);
+    expect(manifest.layers.map((layer) => layer.name)).toContain("spatial_reference");
+    expect(manifest.layers.length).toBeGreaterThanOrEqual(5);
   });
 
   it("is deterministic for the same query", () => {

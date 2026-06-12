@@ -33,20 +33,20 @@
     <section class="grid">
       <div class="metric"><b>프로젝트</b>sadang_317_6</div>
       <div class="metric"><b>입력 주소</b>사당동 317-6번지 디지털 트윈 만들어줘</div>
-      <div class="metric"><b>좌표 신뢰도</b>낮음</div>
+      <div class="metric"><b>좌표 신뢰도</b>높음</div>
     </section>
 
     <h2>생성된 것</h2>
-    <p>브라우저에서 볼 수 있는 3D 프리뷰, 대상 건물 매스, 주변 건물 맥락, 추정 필지 경계, 도로 힌트를 생성했습니다.</p>
+    <p>브라우저에서 볼 수 있는 3D 프리뷰, 대상 건물 매스, 주변 건물 맥락, 필지/도로 레이어, 침수 시뮬레이션 입력을 생성했습니다.</p>
 
     <h2>근사값인 것</h2>
-    <p>대상 건물 크기, 높이, 층수, 필지 경계, 일부 주변 건물은 공식 데이터가 아니라 프리뷰용 추정값입니다.</p>
+    <p>강우-침수 해석은 시연용 가속 shallow-water 모델</p>
 
     <h2>공식 데이터인 것</h2>
-    <p>없음. 현재 산출물은 공식 geometry 없이 프리뷰용으로 생성되었습니다.</p>
+    <p>대상 건물 footprint, 주변 건물 footprint, 필지 경계, 도로 geometry. 단, 이 MVP의 표시는 검토용이며 법적/측량급 효력은 없습니다.</p>
 
     <h2>검증이 필요한 것</h2>
-    <ul><li>Not survey-grade</li><li>Exact PNU/parcel boundary not verified</li><li>Building footprint/height should be replaced with official GIS data</li><li>Preview coordinate may be approximate until VWorld/Juso verification succeeds</li><li>Optional basemap tiles are for browser preview only and are not cached by this MVP</li></ul>
+    <ul><li>Not survey-grade</li><li>Exact PNU/parcel boundary not legally certified by this MVP</li><li>Building footprint/height should be reviewed against official records before production use</li><li>VWorld/Juso/WFS geometry is connected</li><li>Optional basemap tiles are for browser preview only and are not cached by this MVP</li><li>Satellite imagery is a texture layer draped over the cadastral/WFS frame; it is not the source of parcel or building geometry</li></ul>
 
     <h2>레이어별 신뢰도</h2>
     <table>
@@ -54,41 +54,47 @@
       <tbody>
         <tr>
           <td>satellite_ground</td>
-          <td>procedural</td>
-          <td><span class="badge low">낮음</span></td>
-        </tr>
-      
-        <tr>
-          <td>target_building_massing</td>
-          <td>procedural fallback</td>
-          <td><span class="badge low">낮음</span></td>
-        </tr>
-      
-        <tr>
-          <td>surrounding_context_massing</td>
-          <td>OSM/Overpass best-effort only</td>
+          <td>VWorld WMTS live proxy</td>
           <td><span class="badge medium">중간</span></td>
         </tr>
-      
+
+        <tr>
+          <td>spatial_reference</td>
+          <td>official_parcel_centroid</td>
+          <td><span class="badge high">높음</span></td>
+        </tr>
+
+        <tr>
+          <td>target_building_massing</td>
+          <td>VWorld WFS building footprint</td>
+          <td><span class="badge high">높음</span></td>
+        </tr>
+
+        <tr>
+          <td>surrounding_context_massing</td>
+          <td>VWorld WFS building footprints only</td>
+          <td><span class="badge medium">중간</span></td>
+        </tr>
+
         <tr>
           <td>parcel_boundary</td>
-          <td>procedural fallback</td>
-          <td><span class="badge low">낮음</span></td>
+          <td>VWorld WFS continuous cadastral map</td>
+          <td><span class="badge high">높음</span></td>
         </tr>
-      
+
         <tr>
           <td>road_hints</td>
-          <td>OSM/Overpass best-effort</td>
+          <td>VWorld WFS road-name road layer</td>
           <td><span class="badge medium">중간</span></td>
         </tr>
       </tbody>
     </table>
 
     <h2>다음 권장 업그레이드</h2>
-    <ol><li>Add Juso and VWorld keys</li><li>Resolve PNU</li><li>Fetch parcel boundary</li><li>Fetch GIS building integrated info</li><li>Generate official LOD1/LOD2 geometry</li><li>Export glTF/3D Tiles</li></ol>
+    <ol><li>Resolve and persist selected PNU</li><li>Cross-check WFS parcel boundary against selected Juso/VWorld address</li><li>Fetch/compare GIS building integrated info attributes</li><li>Generate official-review LOD1/LOD2 geometry</li><li>Export glTF/3D Tiles</li></ol>
 
     <h2>좌표 요약</h2>
-    <p>선택 좌표: <code>37.48420, 126.96975</code> / 공급자: <code>fallback</code></p>
+    <p>선택 좌표: <code>37.48235, 126.97341</code> / 공급자: <code>vworld</code></p>
   </main>
 </body>
 </html>

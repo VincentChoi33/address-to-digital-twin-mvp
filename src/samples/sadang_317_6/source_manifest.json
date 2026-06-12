@@ -1,9 +1,17 @@
 {
   "project_id": "sadang_317_6",
-  "generated_at": "2026-06-10T18:03:24.453Z",
+  "generated_at": "2026-06-12T04:12:45Z",
   "input": {
     "raw_query": "사당동 317-6번지 디지털 트윈 만들어줘",
     "normalized_address_candidates": [
+      {
+        "label": "서울특별시 동작구 사당동 317-6 행복이가득한집",
+        "type": "parcel"
+      },
+      {
+        "label": "서울특별시 동작구 사당로20가길 39",
+        "type": "road"
+      },
       {
         "label": "사당동 317-6",
         "type": "raw"
@@ -24,72 +32,81 @@
   },
   "geocoding": {
     "selected": {
-      "provider": "fallback",
-      "request_time": "2026-06-10T18:03:22.593Z",
-      "address_query": "사당동 317-6번지 디지털 트윈 만들어줘",
+      "provider": "vworld",
+      "request_time": "2026-06-12T04:12:36Z",
+      "address_query": "서울특별시 동작구 사당동 317-6 행복이가득한집",
       "result_count": 1,
       "selected_lon_lat": [
-        126.96975,
-        37.4842
+        126.97339874031411,
+        37.48233599943097
       ],
-      "confidence": "low",
-      "restrictions_note": "approximate preview coordinate; official geocoding required",
-      "note": "approximate preview coordinate; official geocoding required"
+      "confidence": "high",
+      "restrictions_note": "Raw VWorld response is not persisted; derived coordinate summary only."
     },
-    "provider": "fallback",
-    "confidence": "low",
+    "provider": "vworld",
+    "confidence": "high",
     "notes": [
-      "JUSO_API_KEY missing or Juso normalization unavailable.",
-      "VWORLD_API_KEY missing or VWorld geocoder unavailable.",
-      "Nominatim fallback unavailable or disabled.",
-      "Using hardcoded Sadang approximation because official geocoding is unavailable.",
-      "Road/parcel/building-name candidates require Juso/VWorld verification.",
-      "Overpass context is best-effort preview context.",
-      "OSM features are not a substitute for official Korean parcel/building records.",
-      "Overture building footprints can be used later for overseas expansion. MVP does not download Overture data; building geometry is 2D footprint/roofprint and height/num_floors can approximate 3D when available."
+      "Juso normalized the address before VWorld geocoding.",
+      "VWorld geocoder returned a coordinate summary.",
+      "Parcel/PNU/building geometry still require official API verification.",
+      "VWorld WFS returned 17 parcel, 294 building, and 39 road features near the selected coordinate.",
+      "Expected PNU from normalized parcel/address: 1159010700103170006.",
+      "Nearby WFS building footprints are eligible for surrounding context massing.",
+      "Surrounding context candidates are selected by distance from the official local anchor within 130 m, then filtered for duplicate/same-PNU/oversized footprints.",
+      "Local 3D origin is anchored to official_parcel_centroid; satellite imagery is only draped as a visual texture over that WFS/cadastral frame.",
+      "WFS/cadastral geometry is the alignment authority; WMTS satellite imagery is a preview texture, not the legal geometry source.",
+      "Surrounding context massing uses VWorld WFS footprints only; procedural fill is suppressed."
     ]
   },
   "layers": [
     {
       "name": "satellite_ground",
-      "source": "procedural",
-      "usage": "preview basemap",
-      "license_note": "Offline procedural grid is fallback. VWorld WMTS, ArcGIS, or custom tiles are optional live preview sources and must not be cached or redistributed without reviewing provider terms."
+      "source": "VWorld WMTS live proxy",
+      "usage": "visual texture draped onto cadastral/WFS local meter frame",
+      "confidence": "medium",
+      "license_note": "VWorld/ArcGIS/custom tiles are optional browser preview sources. This MVP requests live tiles only and does not cache or persist them."
+    },
+    {
+      "name": "spatial_reference",
+      "source": "official_parcel_centroid",
+      "usage": "local origin and geometry alignment authority",
+      "confidence": "high",
+      "license_note": "Cadastral/WFS geometry determines preview alignment; imagery is not used to infer legal boundaries."
     },
     {
       "name": "target_building_massing",
-      "source": "procedural fallback",
-      "confidence": "low"
+      "source": "VWorld WFS building footprint",
+      "confidence": "high"
     },
     {
       "name": "surrounding_context_massing",
-      "source": "OSM/Overpass best-effort only",
+      "source": "VWorld WFS building footprints only",
       "confidence": "medium"
     },
     {
       "name": "parcel_boundary",
-      "source": "procedural fallback",
-      "confidence": "low"
+      "source": "VWorld WFS continuous cadastral map",
+      "confidence": "high"
     },
     {
       "name": "road_hints",
-      "source": "OSM/Overpass best-effort",
+      "source": "VWorld WFS road-name road layer",
       "confidence": "medium"
     }
   ],
   "limitations": [
     "Not survey-grade",
-    "Exact PNU/parcel boundary not verified",
-    "Building footprint/height should be replaced with official GIS data",
-    "Preview coordinate may be approximate until VWorld/Juso verification succeeds",
-    "Optional basemap tiles are for browser preview only and are not cached by this MVP"
+    "Exact PNU/parcel boundary not legally certified by this MVP",
+    "Building footprint/height should be reviewed against official records before production use",
+    "VWorld/Juso/WFS geometry is connected",
+    "Optional basemap tiles are for browser preview only and are not cached by this MVP",
+    "Satellite imagery is a texture layer draped over the cadastral/WFS frame; it is not the source of parcel or building geometry"
   ],
   "next_actions": [
-    "Add Juso and VWorld keys",
-    "Resolve PNU",
-    "Fetch parcel boundary",
-    "Fetch GIS building integrated info",
-    "Generate official LOD1/LOD2 geometry",
+    "Resolve and persist selected PNU",
+    "Cross-check WFS parcel boundary against selected Juso/VWorld address",
+    "Fetch/compare GIS building integrated info attributes",
+    "Generate official-review LOD1/LOD2 geometry",
     "Export glTF/3D Tiles"
   ]
 }

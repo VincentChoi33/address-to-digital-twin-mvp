@@ -1,9 +1,17 @@
 {
   "project_id": "sadang_317_6",
-  "created_at": "2026-06-10T18:03:24.453Z",
+  "created_at": "2026-06-12T04:12:45Z",
   "input": {
     "raw_query": "사당동 317-6번지 디지털 트윈 만들어줘",
     "normalized_address_candidates": [
+      {
+        "label": "서울특별시 동작구 사당동 317-6 행복이가득한집",
+        "type": "parcel"
+      },
+      {
+        "label": "서울특별시 동작구 사당로20가길 39",
+        "type": "road"
+      },
       {
         "label": "사당동 317-6",
         "type": "raw"
@@ -23,46 +31,53 @@
     ]
   },
   "center": {
-    "lat": 37.4842,
-    "lon": 126.96975
+    "lat": 37.482346503094895,
+    "lon": 126.97340690692307
   },
   "spatial_reference": {
     "crs": "EPSG:4326",
     "local_frame": "local_meter_tangent_plane",
     "projection": "WebMercator-derived local meters with latitude scale correction",
-    "anchor_source": "geocoder_search_point",
+    "anchor_source": "official_parcel_centroid",
     "anchor_lon_lat": [
-      126.96975,
-      37.4842
+      126.97340690692307,
+      37.482346503094895
     ],
     "search_lon_lat": [
-      126.96975,
-      37.4842
+      126.97339874031411,
+      37.48233599943097
     ],
-    "texture_alignment": "Static sample uses the available target/geocoder anchor. In deployed WFS mode, official parcel centroid is preferred and satellite imagery is draped as a preview texture."
+    "texture_alignment": "Satellite WMTS tiles are draped as a visual texture onto the cadastral/WFS local meter frame; cadastral geometry is the alignment authority."
   },
   "addresses": {
-    "parcel_address": "서울 동작구 사당동 317-6",
-    "road_address_candidate": "서울 동작구 사당로20가길 39",
+    "parcel_address": "서울특별시 동작구 사당동 317-6 행복이가득한집",
+    "road_address_candidate": "서울특별시 동작구 사당로20가길 39",
     "building_name_candidate": "행복이가득한집"
   },
   "geocoding": {
     "selected": {
-      "provider": "fallback",
-      "request_time": "2026-06-10T18:03:22.593Z",
-      "address_query": "사당동 317-6번지 디지털 트윈 만들어줘",
+      "provider": "vworld",
+      "request_time": "2026-06-12T04:12:36Z",
+      "address_query": "서울특별시 동작구 사당동 317-6 행복이가득한집",
       "result_count": 1,
       "selected_lon_lat": [
-        126.96975,
-        37.4842
+        126.97339874031411,
+        37.48233599943097
       ],
-      "confidence": "low",
-      "restrictions_note": "approximate preview coordinate; official geocoding required",
-      "note": "approximate preview coordinate; official geocoding required"
+      "confidence": "high",
+      "restrictions_note": "Raw VWorld response is not persisted; derived coordinate summary only."
     },
-    "provider": "fallback",
-    "confidence": "low",
+    "provider": "vworld",
+    "confidence": "high",
     "candidates": [
+      {
+        "label": "서울특별시 동작구 사당동 317-6 행복이가득한집",
+        "type": "parcel"
+      },
+      {
+        "label": "서울특별시 동작구 사당로20가길 39",
+        "type": "road"
+      },
       {
         "label": "사당동 317-6",
         "type": "raw"
@@ -81,640 +96,2149 @@
       }
     ],
     "notes": [
-      "JUSO_API_KEY missing or Juso normalization unavailable.",
-      "VWORLD_API_KEY missing or VWorld geocoder unavailable.",
-      "Nominatim fallback unavailable or disabled.",
-      "Using hardcoded Sadang approximation because official geocoding is unavailable.",
-      "Road/parcel/building-name candidates require Juso/VWorld verification.",
-      "Overpass context is best-effort preview context.",
-      "OSM features are not a substitute for official Korean parcel/building records.",
-      "Overture building footprints can be used later for overseas expansion. MVP does not download Overture data; building geometry is 2D footprint/roofprint and height/num_floors can approximate 3D when available."
-    ]
+      "Juso normalized the address before VWorld geocoding.",
+      "VWorld geocoder returned a coordinate summary.",
+      "Parcel/PNU/building geometry still require official API verification.",
+      "VWorld WFS returned 17 parcel, 294 building, and 39 road features near the selected coordinate.",
+      "Expected PNU from normalized parcel/address: 1159010700103170006.",
+      "Nearby WFS building footprints are eligible for surrounding context massing.",
+      "Surrounding context candidates are selected by distance from the official local anchor within 130 m, then filtered for duplicate/same-PNU/oversized footprints.",
+      "Local 3D origin is anchored to official_parcel_centroid; satellite imagery is only draped as a visual texture over that WFS/cadastral frame.",
+      "WFS/cadastral geometry is the alignment authority; WMTS satellite imagery is a preview texture, not the legal geometry source.",
+      "Surrounding context massing uses VWorld WFS footprints only; procedural fill is suppressed."
+    ],
+    "normalized": {
+      "provider": "juso",
+      "request_time": "2026-06-12T04:12:36Z",
+      "result_count": 1,
+      "road_address": "서울특별시 동작구 사당로20가길 39",
+      "parcel_address": "서울특별시 동작구 사당동 317-6 행복이가득한집",
+      "building_name": "행복이가득한집",
+      "adm_cd": "1159010700",
+      "rn_mgt_sn": "115904157251",
+      "confidence": "high",
+      "restrictions_note": "Raw Juso response is not persisted; derived normalization summary only."
+    }
   },
   "buildings": [
     {
-      "id": "target-building",
+      "id": "vworld-target-lt_c_bldginfo.15621631",
       "name": "행복이가득한집",
       "role": "target",
       "footprint": [
         {
-          "x": -9.373570901533228,
-          "z": -5.948627451263826
+          "x": -0.9458129445752588,
+          "z": 6.517415133600231
         },
         {
-          "x": 8.594038817300447,
-          "z": -7.027979567893828
+          "x": 7.56453296924246,
+          "z": -0.060457056930933506
         },
         {
-          "x": 9.373570901533228,
-          "z": 5.948627451263826
+          "x": 1.9922616359559275,
+          "z": -6.05278388632436
         },
         {
-          "x": -8.594038817300447,
-          "z": 7.027979567893828
+          "x": -0.747055643176524,
+          "z": -3.893186749336531
         },
         {
-          "x": -9.373570901533228,
-          "z": -5.948627451263826
+          "x": -2.213442836691222,
+          "z": -5.513997849149557
+        },
+        {
+          "x": -7.44738507631081,
+          "z": -1.0957283953322232
+        },
+        {
+          "x": -0.9458129445752588,
+          "z": 6.517415133600231
         }
       ],
-      "height_m": 21,
+      "height_m": 16.0,
       "floors_estimate": 5,
-      "source_type": "procedural",
-      "confidence": "low",
-      "material_hint": "teal_target"
+      "source_type": "official",
+      "confidence": "high",
+      "material_hint": "teal_target",
+      "source_ref": {
+        "provider": "VWorld WFS",
+        "feature_id": "lt_c_bldginfo.15621631",
+        "pnu": "1159010700103170006",
+        "layer_hint": "lt_c_bldginfo/lt_c_spbd"
+      },
+      "geometry_metrics": {
+        "area_m2": 99.9,
+        "width_m": 15.0,
+        "depth_m": 12.6,
+        "max_dimension_m": 15.0
+      }
     },
     {
-      "id": "osm-building-1185571653",
-      "name": "OSM building",
+      "id": "vworld-context-1",
+      "name": "VWorld 주변 건물 1",
       "role": "surrounding",
       "footprint": [
         {
-          "x": -33.34637874655739,
-          "z": -87.86487600011043
+          "x": -11.374829330251519,
+          "z": -4.792647894597772
         },
         {
-          "x": -29.486148942687016,
-          "z": -82.92226800009189
+          "x": -22.208427242408913,
+          "z": 4.7641317178133455
         },
         {
-          "x": -22.49886799137956,
-          "z": -88.37694799976674
+          "x": -17.01335309635224,
+          "z": 10.596166045286296
         },
         {
-          "x": -17.60512128315628,
-          "z": -81.36378800007179
+          "x": -8.30336651678389,
+          "z": 3.106583481432472
         },
         {
-          "x": 4.637575851771194,
-          "z": -96.89292800041329
+          "x": -8.708831409095003,
+          "z": 2.574476060163107
         },
         {
-          "x": -1.4486903620540332,
-          "z": -105.60928400023755
+          "x": -6.382929313265393,
+          "z": 0.6942892274575272
         },
         {
-          "x": -23.69138749698151,
-          "z": -90.08014399989605
-        },
-        {
-          "x": -28.62046811687242,
-          "z": -91.5606999997965
-        },
-        {
-          "x": -64.75822585253498,
-          "z": -137.75850000022274
-        },
-        {
-          "x": -73.36203324317945,
-          "z": -131.02363999982515
-        },
-        {
-          "x": -37.2242755075169,
-          "z": -84.82584000018988
-        },
-        {
-          "x": -33.34637874655739,
-          "z": -87.86487600011043
+          "x": -11.374829330251519,
+          "z": -4.792647894597772
         }
       ],
-      "height_m": 32,
-      "floors_estimate": 10,
-      "source_type": "osm",
+      "height_m": 6.4,
+      "floors_estimate": 2,
+      "source_type": "official",
       "confidence": "medium",
-      "material_hint": "neutral_gray"
+      "material_hint": "neutral_gray",
+      "source_ref": {
+        "provider": "VWorld WFS",
+        "feature_id": "lt_c_bldginfo.9856825",
+        "pnu": "1159010700103170015",
+        "layer_hint": "lt_c_bldginfo/lt_c_spbd"
+      },
+      "geometry_metrics": {
+        "area_m2": 112.6,
+        "width_m": 15.8,
+        "depth_m": 15.4,
+        "max_dimension_m": 15.8
+      },
+      "distance_from_anchor_m": 12.3
+    },
+    {
+      "id": "vworld-context-2",
+      "name": "VWorld 주변 건물 2",
+      "role": "surrounding",
+      "footprint": [
+        {
+          "x": -9.365172183817457,
+          "z": 5.1125619796221144
+        },
+        {
+          "x": -16.030166986708743,
+          "z": 11.569099828920937
+        },
+        {
+          "x": -15.937413578995177,
+          "z": 11.913077587253056
+        },
+        {
+          "x": -11.708741594768567,
+          "z": 16.207791405228157
+        },
+        {
+          "x": -11.162821542881181,
+          "z": 16.33358269527856
+        },
+        {
+          "x": -10.382809560830143,
+          "z": 16.33358269527856
+        },
+        {
+          "x": -9.555095823960228,
+          "z": 16.23896092793597
+        },
+        {
+          "x": -9.1496309331272,
+          "z": 15.957322030997869
+        },
+        {
+          "x": -1.9546166632881539,
+          "z": 10.851088045674306
+        },
+        {
+          "x": -6.727441966264108,
+          "z": 5.17601413704986
+        },
+        {
+          "x": -8.085175170081783,
+          "z": 6.49181162620324
+        },
+        {
+          "x": -9.365172183817457,
+          "z": 5.1125619796221144
+        }
+      ],
+      "height_m": 12.8,
+      "floors_estimate": 4,
+      "source_type": "official",
+      "confidence": "medium",
+      "material_hint": "neutral_gray",
+      "source_ref": {
+        "provider": "VWorld WFS",
+        "feature_id": "lt_c_bldginfo.9348279",
+        "pnu": "1159010700103170001",
+        "layer_hint": "lt_c_bldginfo/lt_c_spbd"
+      },
+      "geometry_metrics": {
+        "area_m2": 89.4,
+        "width_m": 14.1,
+        "depth_m": 11.2,
+        "max_dimension_m": 14.1
+      },
+      "distance_from_anchor_m": 15.2
+    },
+    {
+      "id": "vworld-context-3",
+      "name": "VWorld 주변 건물 3",
+      "role": "surrounding",
+      "footprint": [
+        {
+          "x": -24.082046058416594,
+          "z": 1.1106242270311237
+        },
+        {
+          "x": -13.869454290738656,
+          "z": -7.581199456860832
+        },
+        {
+          "x": -11.48259995411856,
+          "z": -4.836062477905619
+        },
+        {
+          "x": -8.062207658502322,
+          "z": -7.714782741623179
+        },
+        {
+          "x": -14.329687860074225,
+          "z": -15.129764882139128
+        },
+        {
+          "x": -19.16081530487264,
+          "z": -11.197966137294298
+        },
+        {
+          "x": -20.697871761829507,
+          "z": -12.328970723244165
+        },
+        {
+          "x": -27.640243417597254,
+          "z": -3.2375151378065006
+        },
+        {
+          "x": -24.082046058416594,
+          "z": 1.1106242270311237
+        }
+      ],
+      "height_m": 12.8,
+      "floors_estimate": 4,
+      "source_type": "official",
+      "confidence": "medium",
+      "material_hint": "neutral_gray",
+      "source_ref": {
+        "provider": "VWorld WFS",
+        "feature_id": "lt_c_spbd.1106868454",
+        "pnu": "1159010700103170016",
+        "layer_hint": "lt_c_bldginfo/lt_c_spbd"
+      },
+      "geometry_metrics": {
+        "area_m2": 134.2,
+        "width_m": 19.6,
+        "depth_m": 16.2,
+        "max_dimension_m": 19.6
+      },
+      "distance_from_anchor_m": 19.3
+    },
+    {
+      "id": "vworld-context-4",
+      "name": "VWorld 주변 건물 4",
+      "role": "surrounding",
+      "footprint": [
+        {
+          "x": 14.188892945432787,
+          "z": 21.594554564727204
+        },
+        {
+          "x": 11.025560091559658,
+          "z": 16.931369640559804
+        },
+        {
+          "x": 7.285389383227955,
+          "z": 18.813786541050323
+        },
+        {
+          "x": 6.965610971990574,
+          "z": 18.29281008765931
+        },
+        {
+          "x": 5.72713214782967,
+          "z": 19.084293555175304
+        },
+        {
+          "x": 2.393309700595229,
+          "z": 14.720560035382434
+        },
+        {
+          "x": -8.116092971174886,
+          "z": 22.05541853003504
+        },
+        {
+          "x": -1.0049984507496128,
+          "z": 32.07754630950806
+        },
+        {
+          "x": 14.188892945432787,
+          "z": 21.594554564727204
+        }
+      ],
+      "height_m": 9.6,
+      "floors_estimate": 3,
+      "source_type": "official",
+      "confidence": "medium",
+      "material_hint": "neutral_gray",
+      "source_ref": {
+        "provider": "VWorld WFS",
+        "feature_id": "lt_c_spbd.1106868448",
+        "pnu": "1159010700103180075",
+        "layer_hint": "lt_c_bldginfo/lt_c_spbd"
+      },
+      "geometry_metrics": {
+        "area_m2": 193.8,
+        "width_m": 22.3,
+        "depth_m": 17.4,
+        "max_dimension_m": 22.3
+      },
+      "distance_from_anchor_m": 21.4
+    },
+    {
+      "id": "vworld-context-5",
+      "name": "VWorld 주변 건물 5",
+      "role": "surrounding",
+      "footprint": [
+        {
+          "x": 32.4674976425325,
+          "z": 7.82876004832887
+        },
+        {
+          "x": 28.184940347111414,
+          "z": 0.6965156170273024
+        },
+        {
+          "x": 24.70889600568457,
+          "z": 3.0019431088344195
+        },
+        {
+          "x": 23.92800065780355,
+          "z": 1.86314422309865
+        },
+        {
+          "x": 20.610078792552567,
+          "z": 4.371173643176839
+        },
+        {
+          "x": 25.518942427432986,
+          "z": 12.027736845203727
+        },
+        {
+          "x": 32.4674976425325,
+          "z": 7.82876004832887
+        }
+      ],
+      "height_m": 6.4,
+      "floors_estimate": 2,
+      "source_type": "official",
+      "confidence": "medium",
+      "material_hint": "neutral_gray",
+      "source_ref": {
+        "provider": "VWorld WFS",
+        "feature_id": "lt_c_spbd.1106869003",
+        "pnu": "1159010700103180051",
+        "layer_hint": "lt_c_bldginfo/lt_c_spbd"
+      },
+      "geometry_metrics": {
+        "area_m2": 72.3,
+        "width_m": 11.9,
+        "depth_m": 11.3,
+        "max_dimension_m": 11.9
+      },
+      "distance_from_anchor_m": 27.4
+    },
+    {
+      "id": "vworld-context-6",
+      "name": "경남빌딩",
+      "role": "surrounding",
+      "footprint": [
+        {
+          "x": -29.920210493224115,
+          "z": -3.9299221705864364
+        },
+        {
+          "x": -24.737503467309068,
+          "z": -8.430566472454117
+        },
+        {
+          "x": -25.8743952269347,
+          "z": -9.816492806778463
+        },
+        {
+          "x": -21.892182294491448,
+          "z": -13.275185071717285
+        },
+        {
+          "x": -21.586537733577565,
+          "z": -13.540125069867717
+        },
+        {
+          "x": -15.523998394214251,
+          "z": -18.804414294746824
+        },
+        {
+          "x": -13.98605857290549,
+          "z": -20.053416241221555
+        },
+        {
+          "x": -19.51857844679913,
+          "z": -26.592305711938973
+        },
+        {
+          "x": -27.50950528215075,
+          "z": -19.65266697151723
+        },
+        {
+          "x": -28.39110432873706,
+          "z": -18.887903734372628
+        },
+        {
+          "x": -28.93084082129268,
+          "z": -18.419249664823894
+        },
+        {
+          "x": -34.7221868671113,
+          "z": -13.389843981578878
+        },
+        {
+          "x": -35.25308969841095,
+          "z": -10.10035721086944
+        },
+        {
+          "x": -29.920210493224115,
+          "z": -3.9299221705864364
+        }
+      ],
+      "height_m": 12.8,
+      "floors_estimate": 4,
+      "source_type": "official",
+      "confidence": "medium",
+      "material_hint": "neutral_gray",
+      "source_ref": {
+        "provider": "VWorld WFS",
+        "feature_id": "lt_c_spbd.1106868455",
+        "pnu": "1159010700103160001",
+        "layer_hint": "lt_c_bldginfo/lt_c_spbd"
+      },
+      "geometry_metrics": {
+        "area_m2": 202.1,
+        "width_m": 21.3,
+        "depth_m": 22.7,
+        "max_dimension_m": 22.7
+      },
+      "distance_from_anchor_m": 29.2
+    },
+    {
+      "id": "vworld-context-7",
+      "name": "VWorld 주변 건물 7",
+      "role": "surrounding",
+      "footprint": [
+        {
+          "x": 21.152465382598123,
+          "z": -12.849945225562639
+        },
+        {
+          "x": 24.896169552771656,
+          "z": -8.467301873010829
+        },
+        {
+          "x": 27.18762038418825,
+          "z": -7.97860972088087
+        },
+        {
+          "x": 30.95959225796495,
+          "z": -11.226909171400624
+        },
+        {
+          "x": 32.13005191617362,
+          "z": -9.856567782821323
+        },
+        {
+          "x": 34.64676101797598,
+          "z": -12.025068915013094
+        },
+        {
+          "x": 29.96580575688362,
+          "z": -17.506431683139585
+        },
+        {
+          "x": 30.496708589661356,
+          "z": -17.963953877265617
+        },
+        {
+          "x": 29.05328890772612,
+          "z": -19.65266697151723
+        },
+        {
+          "x": 21.152465382598123,
+          "z": -12.849945225562639
+        }
+      ],
+      "height_m": 14.0,
+      "floors_estimate": 4,
+      "source_type": "official",
+      "confidence": "medium",
+      "material_hint": "neutral_gray",
+      "source_ref": {
+        "provider": "VWorld WFS",
+        "feature_id": "lt_c_bldginfo.9858282",
+        "pnu": "1159010700103170002",
+        "layer_hint": "lt_c_bldginfo/lt_c_spbd"
+      },
+      "geometry_metrics": {
+        "area_m2": 80.4,
+        "width_m": 13.5,
+        "depth_m": 11.7,
+        "max_dimension_m": 13.5
+      },
+      "distance_from_anchor_m": 31.0
+    },
+    {
+      "id": "vworld-context-8",
+      "name": "VWorld 주변 건물 8",
+      "role": "surrounding",
+      "footprint": [
+        {
+          "x": 35.749201513188595,
+          "z": -13.42435297113358
+        },
+        {
+          "x": 30.21138144431508,
+          "z": -19.45674510176281
+        },
+        {
+          "x": 21.52877920251992,
+          "z": -11.78127954387126
+        },
+        {
+          "x": 24.315798236471252,
+          "z": -8.667676778352593
+        },
+        {
+          "x": 26.777738661249156,
+          "z": -8.361548449002157
+        },
+        {
+          "x": 32.10531767441229,
+          "z": -12.739739083754959
+        },
+        {
+          "x": 33.48513501954519,
+          "z": -11.242493882130113
+        },
+        {
+          "x": 35.749201513188595,
+          "z": -13.42435297113358
+        }
+      ],
+      "height_m": 12.8,
+      "floors_estimate": 4,
+      "source_type": "official",
+      "confidence": "medium",
+      "material_hint": "neutral_gray",
+      "source_ref": {
+        "provider": "VWorld WFS",
+        "feature_id": "lt_c_bldginfo.15746938",
+        "pnu": "1159010700103170002",
+        "layer_hint": "lt_c_bldginfo/lt_c_spbd"
+      },
+      "geometry_metrics": {
+        "area_m2": 76.5,
+        "width_m": 14.2,
+        "depth_m": 11.1,
+        "max_dimension_m": 14.2
+      },
+      "distance_from_anchor_m": 32.4
+    },
+    {
+      "id": "vworld-context-9",
+      "name": "VWorld 주변 건물 9",
+      "role": "surrounding",
+      "footprint": [
+        {
+          "x": 15.722415937591652,
+          "z": 27.624750071467595
+        },
+        {
+          "x": 11.040577309191221,
+          "z": 30.382143861800643
+        },
+        {
+          "x": 9.83919985136753,
+          "z": 28.719024524756612
+        },
+        {
+          "x": 0.818268515905424,
+          "z": 34.20264415539761
+        },
+        {
+          "x": 0.818268515905424,
+          "z": 34.48428367017535
+        },
+        {
+          "x": 6.38700638587204,
+          "z": 42.85443627239361
+        },
+        {
+          "x": 18.357496056176977,
+          "z": 35.74331260412704
+        },
+        {
+          "x": 22.509315216151563,
+          "z": 33.612648363797796
+        },
+        {
+          "x": 19.094223114037117,
+          "z": 28.409555234215098
+        },
+        {
+          "x": 16.720619266344798,
+          "z": 29.661904054960985
+        },
+        {
+          "x": 15.722415937591652,
+          "z": 27.624750071467595
+        }
+      ],
+      "height_m": 6.4,
+      "floors_estimate": 2,
+      "source_type": "official",
+      "confidence": "medium",
+      "material_hint": "neutral_gray",
+      "source_ref": {
+        "provider": "VWorld WFS",
+        "feature_id": "lt_c_bldginfo.9854021",
+        "pnu": "1159010700103180002",
+        "layer_hint": "lt_c_bldginfo/lt_c_spbd"
+      },
+      "geometry_metrics": {
+        "area_m2": 171.2,
+        "width_m": 21.7,
+        "depth_m": 15.2,
+        "max_dimension_m": 21.7
+      },
+      "distance_from_anchor_m": 34.5
+    },
+    {
+      "id": "vworld-context-10",
+      "name": "VWorld 주변 건물 10",
+      "role": "surrounding",
+      "footprint": [
+        {
+          "x": 37.62017023170634,
+          "z": 16.314658341071002
+        },
+        {
+          "x": 32.7554748868468,
+          "z": 8.48331938961634
+        },
+        {
+          "x": 29.494088431758318,
+          "z": 10.367960769990482
+        },
+        {
+          "x": 30.30325148619867,
+          "z": 11.64257080370938
+        },
+        {
+          "x": 26.927027477647137,
+          "z": 13.797719745100043
+        },
+        {
+          "x": 29.01353744685514,
+          "z": 16.5361845969441
+        },
+        {
+          "x": 28.48351797990738,
+          "z": 16.90799249760514
+        },
+        {
+          "x": 30.813836904886884,
+          "z": 20.767448524874244
+        },
+        {
+          "x": 37.62017023170634,
+          "z": 16.314658341071002
+        }
+      ],
+      "height_m": 6.4,
+      "floors_estimate": 2,
+      "source_type": "official",
+      "confidence": "medium",
+      "material_hint": "neutral_gray",
+      "source_ref": {
+        "provider": "VWorld WFS",
+        "feature_id": "lt_c_spbd.1106873363",
+        "pnu": "1159010700103180052",
+        "layer_hint": "lt_c_bldginfo/lt_c_spbd"
+      },
+      "geometry_metrics": {
+        "area_m2": 67.8,
+        "width_m": 10.7,
+        "depth_m": 12.3,
+        "max_dimension_m": 12.3
+      },
+      "distance_from_anchor_m": 34.7
+    },
+    {
+      "id": "vworld-context-11",
+      "name": "VWorld 주변 건물 11",
+      "role": "surrounding",
+      "footprint": [
+        {
+          "x": 16.89552569329026,
+          "z": -38.697141330915954
+        },
+        {
+          "x": 13.056418017913224,
+          "z": -35.094858083489484
+        },
+        {
+          "x": 11.183682566257433,
+          "z": -34.875559579241724
+        },
+        {
+          "x": 7.859577140196592,
+          "z": -32.24397706488891
+        },
+        {
+          "x": 11.57148014196896,
+          "z": -26.570041882016017
+        },
+        {
+          "x": 20.749650584820778,
+          "z": -33.93157406804757
+        },
+        {
+          "x": 16.89552569329026,
+          "z": -38.697141330915954
+        }
+      ],
+      "height_m": 7.0,
+      "floors_estimate": 2,
+      "source_type": "official",
+      "confidence": "medium",
+      "material_hint": "neutral_gray",
+      "source_ref": {
+        "provider": "VWorld WFS",
+        "feature_id": "lt_c_bldginfo.9850051",
+        "pnu": "1159010700103170026",
+        "layer_hint": "lt_c_bldginfo/lt_c_spbd"
+      },
+      "geometry_metrics": {
+        "area_m2": 71.9,
+        "width_m": 12.9,
+        "depth_m": 12.1,
+        "max_dimension_m": 12.9
+      },
+      "distance_from_anchor_m": 37.1
+    },
+    {
+      "id": "vworld-context-12",
+      "name": "VWorld 주변 건물 12",
+      "role": "surrounding",
+      "footprint": [
+        {
+          "x": 40.21549889089877,
+          "z": -2.2712621450797563
+        },
+        {
+          "x": 38.56183815177507,
+          "z": -1.5799681703618216
+        },
+        {
+          "x": 37.81274397229522,
+          "z": -1.2671604099419287
+        },
+        {
+          "x": 37.21912216854513,
+          "z": -0.42113224557301765
+        },
+        {
+          "x": 36.610483147163464,
+          "z": 0.0798055206999011
+        },
+        {
+          "x": 35.81457057869472,
+          "z": -1.0489742084546052
+        },
+        {
+          "x": 31.194567555436663,
+          "z": 1.9588790204196216
+        },
+        {
+          "x": 34.92237114362674,
+          "z": 7.883306660041238
+        },
+        {
+          "x": 42.75782560324862,
+          "z": 2.7447949605435715
+        },
+        {
+          "x": 40.21549889089877,
+          "z": -2.2712621450797563
+        }
+      ],
+      "height_m": 6.4,
+      "floors_estimate": 2,
+      "source_type": "official",
+      "confidence": "medium",
+      "material_hint": "neutral_gray",
+      "source_ref": {
+        "provider": "VWorld WFS",
+        "feature_id": "lt_c_bldginfo.9858231",
+        "pnu": "1159010700103180056",
+        "layer_hint": "lt_c_bldginfo/lt_c_spbd"
+      },
+      "geometry_metrics": {
+        "area_m2": 62.5,
+        "width_m": 11.6,
+        "depth_m": 10.2,
+        "max_dimension_m": 11.6
+      },
+      "distance_from_anchor_m": 37.5
+    },
+    {
+      "id": "vworld-context-13",
+      "name": "VWorld 주변 건물 13",
+      "role": "surrounding",
+      "footprint": [
+        {
+          "x": -20.75175707450207,
+          "z": 27.451091067185498
+        },
+        {
+          "x": -26.732143397589653,
+          "z": 19.54627058150131
+        },
+        {
+          "x": -34.77430544960199,
+          "z": 25.682218459853665
+        },
+        {
+          "x": -28.793919123558236,
+          "z": 33.5870447765842
+        },
+        {
+          "x": -20.75175707450207,
+          "z": 27.451091067185498
+        }
+      ],
+      "height_m": 12.8,
+      "floors_estimate": 4,
+      "source_type": "official",
+      "confidence": "medium",
+      "material_hint": "neutral_gray",
+      "source_ref": {
+        "provider": "VWorld WFS",
+        "feature_id": "lt_c_spbd.1106868450",
+        "pnu": "1159010700102670055",
+        "layer_hint": "lt_c_bldginfo/lt_c_spbd"
+      },
+      "geometry_metrics": {
+        "area_m2": 100.3,
+        "width_m": 14.0,
+        "depth_m": 14.0,
+        "max_dimension_m": 14.0
+      },
+      "distance_from_anchor_m": 37.6
+    },
+    {
+      "id": "vworld-context-14",
+      "name": "아크(ARC)빌딩",
+      "role": "surrounding",
+      "footprint": [
+        {
+          "x": 6.107862799857534,
+          "z": 44.32720106236046
+        },
+        {
+          "x": 16.418508171707,
+          "z": 37.966372997484825
+        },
+        {
+          "x": 20.2160976545531,
+          "z": 35.7600106012827
+        },
+        {
+          "x": 21.70103553049736,
+          "z": 34.89728076080392
+        },
+        {
+          "x": 19.834483639651427,
+          "z": 31.84600084679879
+        },
+        {
+          "x": 15.405287625322295,
+          "z": 24.60575557837311
+        },
+        {
+          "x": -0.2099692510670147,
+          "z": 34.23937974293211
+        },
+        {
+          "x": 1.1415803904627215,
+          "z": 36.450194536927775
+        },
+        {
+          "x": 3.0178493054384283,
+          "z": 39.425778516622174
+        },
+        {
+          "x": 4.279295638222622,
+          "z": 41.4273129704171
+        },
+        {
+          "x": 6.107862799857534,
+          "z": 44.32720106236046
+        }
+      ],
+      "height_m": 12.8,
+      "floors_estimate": 4,
+      "source_type": "official",
+      "confidence": "medium",
+      "material_hint": "neutral_gray",
+      "source_ref": {
+        "provider": "VWorld WFS",
+        "feature_id": "lt_c_bldginfo.18040043",
+        "pnu": "1159010700103180002",
+        "layer_hint": "lt_c_bldginfo/lt_c_spbd"
+      },
+      "geometry_metrics": {
+        "area_m2": 218.3,
+        "width_m": 21.9,
+        "depth_m": 19.7,
+        "max_dimension_m": 21.9
+      },
+      "distance_from_anchor_m": 38.3
+    },
+    {
+      "id": "vworld-context-15",
+      "name": "VWorld 주변 건물 15",
+      "role": "surrounding",
+      "footprint": [
+        {
+          "x": 30.54617707466211,
+          "z": 29.304567172868857
+        },
+        {
+          "x": 26.366973573958166,
+          "z": 22.594206388949925
+        },
+        {
+          "x": 18.77091124243599,
+          "z": 27.129376635488306
+        },
+        {
+          "x": 23.04640160973916,
+          "z": 33.88760866256748
+        },
+        {
+          "x": 30.54617707466211,
+          "z": 29.304567172868857
+        }
+      ],
+      "height_m": 9.6,
+      "floors_estimate": 3,
+      "source_type": "official",
+      "confidence": "medium",
+      "material_hint": "neutral_gray",
+      "source_ref": {
+        "provider": "VWorld WFS",
+        "feature_id": "lt_c_spbd.1106873364",
+        "pnu": "1159010700103180047",
+        "layer_hint": "lt_c_bldginfo/lt_c_spbd"
+      },
+      "geometry_metrics": {
+        "area_m2": 70.1,
+        "width_m": 11.8,
+        "depth_m": 11.3,
+        "max_dimension_m": 11.8
+      },
+      "distance_from_anchor_m": 38.4
+    },
+    {
+      "id": "vworld-context-16",
+      "name": "VWorld 주변 건물 16",
+      "role": "surrounding",
+      "footprint": [
+        {
+          "x": -34.93242792282168,
+          "z": 25.12673242345672
+        },
+        {
+          "x": -26.85934806971624,
+          "z": 19.322517851068532
+        },
+        {
+          "x": -29.81508996389084,
+          "z": 15.347289989642551
+        },
+        {
+          "x": -32.37331726118031,
+          "z": 11.907511605199147
+        },
+        {
+          "x": -32.938671361327245,
+          "z": 12.313828394166048
+        },
+        {
+          "x": -40.23527269274539,
+          "z": 17.56032615658663
+        },
+        {
+          "x": -40.44639711428575,
+          "z": 17.71394740198817
+        },
+        {
+          "x": -34.93242792282168,
+          "z": 25.12673242345672
+        }
+      ],
+      "height_m": 9.6,
+      "floors_estimate": 3,
+      "source_type": "official",
+      "confidence": "medium",
+      "material_hint": "neutral_gray",
+      "source_ref": {
+        "provider": "VWorld WFS",
+        "feature_id": "lt_c_spbd.1106868453",
+        "pnu": "1159010700102670060",
+        "layer_hint": "lt_c_bldginfo/lt_c_spbd"
+      },
+      "geometry_metrics": {
+        "area_m2": 91.9,
+        "width_m": 13.6,
+        "depth_m": 13.2,
+        "max_dimension_m": 13.6
+      },
+      "distance_from_anchor_m": 38.6
     }
   ],
   "roads": [
     {
-      "id": "osm-road-278199766",
-      "name": "사당로16다길",
+      "id": "vworld-road-1-1",
+      "name": "사당로",
       "centerline": [
         {
-          "x": -187.46406616212502,
-          "z": 83.79056399995619
+          "x": -1702.8277222216334,
+          "z": 1488.209661493484
         },
         {
-          "x": -165.40687206156966,
-          "z": 67.52671199972951
+          "x": -1674.4778642793058,
+          "z": 1482.7217428400443
         },
         {
-          "x": -139.48944815588862,
-          "z": 44.06045599996929
+          "x": -1573.35456673678,
+          "z": 1463.1449669683057
         },
         {
-          "x": -131.93682462543086,
-          "z": 37.23654000011294
+          "x": -1483.881980451844,
+          "z": 1445.826188994133
         },
         {
-          "x": -119.37561917445765,
-          "z": 25.859636000045327
+          "x": -1483.283058454592,
+          "z": 1445.70928319292
         },
         {
-          "x": -82.19551105715294,
-          "z": -13.39179599988455
+          "x": -1380.5149338327205,
+          "z": 1426.6391850970494
         },
         {
-          "x": -68.19444872141496,
-          "z": -28.163960000080692
+          "x": -1259.0362386465388,
+          "z": 1405.2800145885305
         },
         {
-          "x": -24.698403966956022,
-          "z": -65.1110679999752
+          "x": -1219.6602090514648,
+          "z": 1397.902740859533
         },
         {
-          "x": -18.850641655004374,
-          "z": -70.07594000025392
+          "x": -1130.5745369793663,
+          "z": 1381.2120450511384
         },
         {
-          "x": -6.828278350058405,
-          "z": -80.2951160002388
+          "x": -1120.0236161150654,
+          "z": 1379.5597893480824
         },
         {
-          "x": 15.387918350490686,
-          "z": -95.92444400016916
+          "x": -1115.5511351765454,
+          "z": 1378.859473520076
         },
         {
-          "x": 25.157744812358732,
-          "z": -102.80401999988499
+          "x": -1111.9761538710293,
+          "z": 1378.299443573193
         },
         {
-          "x": 58.21261879205172,
-          "z": -123.06426000014625
+          "x": -1110.0477663735628,
+          "z": 1377.9776768830525
         },
         {
-          "x": 92.32751010796537,
-          "z": -148.77918000008236
+          "x": -1089.8858258363257,
+          "z": 1374.6085911017567
         },
         {
-          "x": 119.22545005049786,
-          "z": -168.32697199992765
+          "x": -1068.396186532012,
+          "z": 1369.0005025611272
         },
         {
-          "x": 139.59544988963623,
-          "z": -181.46273199998404
+          "x": -1053.4708383318844,
+          "z": 1363.4391796640143
         },
         {
-          "x": 162.80982958412588,
-          "z": -185.72628799997688
+          "x": -1045.177800401895,
+          "z": 1359.3697855848177
         },
         {
-          "x": 179.63760481812602,
-          "z": -189.2773960003447
+          "x": -1034.4263555060134,
+          "z": 1353.4455084630522
         },
         {
-          "x": 251.66578291154363,
-          "z": -210.12763200038194
+          "x": -1030.8337068824196,
+          "z": 1350.8023536711225
         },
         {
-          "x": 279.04073065531264,
-          "z": -220.62510800045516
+          "x": -1030.1393813799643,
+          "z": 1350.291314152125
         },
         {
-          "x": 302.3699455620945,
-          "z": -239.27120800004587
+          "x": -1026.8223428790652,
+          "z": 1347.850794705018
         },
         {
-          "x": 326.7680112836415,
-          "z": -263.205008000524
+          "x": -1021.1564347737133,
+          "z": 1342.5266347735471
         },
         {
-          "x": 343.49861826243864,
-          "z": -277.84358799995005
+          "x": -1014.1707781952327,
+          "z": 1335.548004549005
+        },
+        {
+          "x": -1008.2451605476915,
+          "z": 1328.8399298042646
+        },
+        {
+          "x": -1002.9378989486179,
+          "z": 1321.7087791006259
+        },
+        {
+          "x": -1000.2383331288784,
+          "z": 1317.416731158701
+        },
+        {
+          "x": -983.8925327554388,
+          "z": 1283.3465220377032
+        },
+        {
+          "x": -971.0236600892559,
+          "z": 1249.9377897457791
+        },
+        {
+          "x": -949.0252020949579,
+          "z": 1196.7003108590436
+        },
+        {
+          "x": -932.1590992772223,
+          "z": 1157.7251746122517
+        },
+        {
+          "x": -923.6734876081221,
+          "z": 1146.815464709172
+        },
+        {
+          "x": -919.3653127036315,
+          "z": 1142.5134869062304
+        },
+        {
+          "x": -902.4470913034052,
+          "z": 1123.5209049785826
+        },
+        {
+          "x": -874.1467018475564,
+          "z": 1093.750100613404
+        },
+        {
+          "x": -857.3079833675939,
+          "z": 1074.9780711701926
+        },
+        {
+          "x": -838.1106782605269,
+          "z": 1053.850264512786
+        },
+        {
+          "x": -818.9336905660713,
+          "z": 1032.0400382454295
+        },
+        {
+          "x": -808.8898216600946,
+          "z": 1017.8205585917639
+        },
+        {
+          "x": -801.0826349070321,
+          "z": 1003.4185172311977
+        },
+        {
+          "x": -796.6428385012651,
+          "z": 991.7441535254495
+        },
+        {
+          "x": -791.3240931464019,
+          "z": 976.3190108964264
+        },
+        {
+          "x": -784.8030869678848,
+          "z": 956.8413996375563
+        },
+        {
+          "x": -779.0629761357708,
+          "z": 939.8910720098684
+        },
+        {
+          "x": -771.1029671000341,
+          "z": 916.5113664529702
+        },
+        {
+          "x": -765.2427185224333,
+          "z": 900.6543968997071
+        },
+        {
+          "x": -761.8938788560893,
+          "z": 893.5737125430786
+        },
+        {
+          "x": -754.70858161038,
+          "z": 881.2292885764887
+        },
+        {
+          "x": -750.0806282946521,
+          "z": 874.7008235688503
+        },
+        {
+          "x": -713.3679465217667,
+          "z": 835.5646536623688
+        },
+        {
+          "x": -686.3484374425275,
+          "z": 807.2176814294946
+        },
+        {
+          "x": -682.2001517443947,
+          "z": 801.5108916158171
+        },
+        {
+          "x": -678.5871857096677,
+          "z": 791.842979616515
+        },
+        {
+          "x": -671.152779311729,
+          "z": 771.9549933163602
+        },
+        {
+          "x": -652.9342434881116,
+          "z": 723.2015729269203
+        },
+        {
+          "x": -641.0247060571191,
+          "z": 683.8757439664258
+        },
+        {
+          "x": -631.6530785093265,
+          "z": 652.0625268350277
+        },
+        {
+          "x": -626.2150787748064,
+          "z": 641.0198865920873
+        },
+        {
+          "x": -615.0926202510267,
+          "z": 623.6816684518602
+        },
+        {
+          "x": -601.2485117632359,
+          "z": 607.9944752640884
+        },
+        {
+          "x": -586.6535423643054,
+          "z": 592.1559063557764
+        },
+        {
+          "x": -586.5652057886979,
+          "z": 592.059051489835
+        },
+        {
+          "x": -565.3396928512891,
+          "z": 568.7326475371772
+        },
+        {
+          "x": -562.9899398780501,
+          "z": 566.3535873466221
+        },
+        {
+          "x": -549.5080113613358,
+          "z": 552.7126905475264
+        },
+        {
+          "x": -523.5865259452031,
+          "z": 526.4807734033733
+        },
+        {
+          "x": -496.88856200886113,
+          "z": 499.6099266252726
+        },
+        {
+          "x": -496.37709322286486,
+          "z": 499.0955996236868
+        },
+        {
+          "x": -495.0008093380957,
+          "z": 497.691776527371
+        },
+        {
+          "x": -461.5954490419797,
+          "z": 463.5937544297876
+        },
+        {
+          "x": -437.99633225983473,
+          "z": 439.5051318465301
+        },
+        {
+          "x": -436.7331191953906,
+          "z": 438.22934298365044
+        },
+        {
+          "x": -421.6363980345936,
+          "z": 422.97221473902465
+        },
+        {
+          "x": -414.88218328878673,
+          "z": 416.1457582488194
+        },
+        {
+          "x": -411.8195541321408,
+          "z": 413.0509216986446
+        },
+        {
+          "x": -404.9045668141462,
+          "z": 406.06082568887336
+        },
+        {
+          "x": -400.53013947831965,
+          "z": 401.6401134382846
+        },
+        {
+          "x": -399.8207967582327,
+          "z": 400.92429447655246
+        },
+        {
+          "x": -384.48821693413396,
+          "z": 385.1473484820876
+        },
+        {
+          "x": -383.6711035872238,
+          "z": 384.3068473285766
+        },
+        {
+          "x": -372.8595898193378,
+          "z": 373.10648180718243
+        },
+        {
+          "x": -371.2456805410851,
+          "z": 371.43550122491496
+        },
+        {
+          "x": -364.7776763079326,
+          "z": 364.73377035337245
+        },
+        {
+          "x": -364.5709687155421,
+          "z": 364.5222540175258
+        },
+        {
+          "x": -354.35926031073797,
+          "z": 354.0399564894825
+        },
+        {
+          "x": -352.6481807956218,
+          "z": 352.28437333118876
+        },
+        {
+          "x": -351.58902522903435,
+          "z": 351.19784899771724
+        },
+        {
+          "x": -324.59248365841836,
+          "z": 325.1480253340945
+        },
+        {
+          "x": -313.39317231482084,
+          "z": 317.13716434181424
+        },
+        {
+          "x": -313.15643028568917,
+          "z": 317.0102552682633
+        },
+        {
+          "x": -301.1161547192501,
+          "z": 310.5312155729723
+        },
+        {
+          "x": -300.9014968343899,
+          "z": 310.4232316192771
+        },
+        {
+          "x": -269.90507501768724,
+          "z": 294.7600072246442
+        },
+        {
+          "x": -266.81064469264015,
+          "z": 293.19591287536167
+        },
+        {
+          "x": -266.4572983813417,
+          "z": 293.0244747946901
+        },
+        {
+          "x": -246.45348031880226,
+          "z": 283.3382289266336
+        },
+        {
+          "x": -234.74005009024043,
+          "z": 277.5739105152289
+        },
+        {
+          "x": -233.68972817899657,
+          "z": 277.05848401331815
+        },
+        {
+          "x": -217.57536964118688,
+          "z": 269.1311616727733
+        },
+        {
+          "x": -216.91461203879263,
+          "z": 268.80721143092995
+        },
+        {
+          "x": -169.8250324597655,
+          "z": 245.95594921063068
+        },
+        {
+          "x": -134.55223690845165,
+          "z": 228.84008656536352
+        },
+        {
+          "x": -107.90992501644227,
+          "z": 212.6693858689094
+        },
+        {
+          "x": -100.39689906554771,
+          "z": 205.97223581638096
+        },
+        {
+          "x": -98.35014055573261,
+          "z": 204.14655089956761
+        },
+        {
+          "x": -90.995237082492,
+          "z": 196.32505407811803
+        },
+        {
+          "x": -90.4192825938634,
+          "z": 195.71166914077222
+        },
+        {
+          "x": -83.87177544044701,
+          "z": 188.74513342202198
+        },
+        {
+          "x": -83.5970486835824,
+          "z": 188.4523564801333
+        },
+        {
+          "x": -72.7820014508984,
+          "z": 176.91272298605506
+        },
+        {
+          "x": -63.39093985632436,
+          "z": 167.1765175598639
+        },
+        {
+          "x": -54.71010434766724,
+          "z": 159.96732454507875
+        },
+        {
+          "x": -50.014131867465224,
+          "z": 156.36829646042838
+        },
+        {
+          "x": -44.68920295031394,
+          "z": 153.08987600688712
+        },
+        {
+          "x": -34.42007577099542,
+          "z": 146.8347201607551
+        },
+        {
+          "x": -10.535631840548042,
+          "z": 133.51177709659953
+        },
+        {
+          "x": 23.916516903491907,
+          "z": 116.87148681052834
+        },
+        {
+          "x": 52.484566193999676,
+          "z": 107.72312625592241
+        },
+        {
+          "x": 76.39551109786834,
+          "z": 104.59834782596623
+        },
+        {
+          "x": 79.75141769233035,
+          "z": 104.16085667282324
+        },
+        {
+          "x": 96.75002537569439,
+          "z": 102.69030770707275
+        },
+        {
+          "x": 102.78871384060443,
+          "z": 102.40421305043617
+        },
+        {
+          "x": 105.77979036797821,
+          "z": 102.26060911918262
+        },
+        {
+          "x": 133.16147941681575,
+          "z": 100.95036252083266
+        },
+        {
+          "x": 134.84959141887438,
+          "z": 100.87800396631243
+        },
+        {
+          "x": 167.04385723303696,
+          "z": 101.56708009627147
+        },
+        {
+          "x": 177.3810035797858,
+          "z": 102.60347742080748
+        },
+        {
+          "x": 200.519886789639,
+          "z": 108.24633472817091
+        },
+        {
+          "x": 232.4473761379287,
+          "z": 118.45558579627885
+        },
+        {
+          "x": 247.99108038356778,
+          "z": 124.35560575786187
+        },
+        {
+          "x": 275.06182467946775,
+          "z": 133.54294705903772
+        },
+        {
+          "x": 307.6288708487541,
+          "z": 146.97164557291782
+        },
+        {
+          "x": 309.6924133093388,
+          "z": 147.82659453314676
+        },
+        {
+          "x": 359.25895053225344,
+          "z": 168.35875456519813
+        },
+        {
+          "x": 374.7549530260298,
+          "z": 174.48701970077136
+        },
+        {
+          "x": 374.98639485870353,
+          "z": 174.57719039246766
+        },
+        {
+          "x": 375.1763185018025,
+          "z": 174.65177602756253
+        },
+        {
+          "x": 403.8865896805903,
+          "z": 185.87525191599835
+        },
+        {
+          "x": 405.53495022473413,
+          "z": 186.51869306597644
+        },
+        {
+          "x": 429.552782389596,
+          "z": 196.15584443564236
+        },
+        {
+          "x": 430.5651195716288,
+          "z": 196.5610570054971
+        },
+        {
+          "x": 431.5085542218794,
+          "z": 196.92396718099187
+        },
+        {
+          "x": 483.91952925030364,
+          "z": 217.035449692839
+        },
+        {
+          "x": 484.3135103883031,
+          "z": 217.18684817367486
+        },
+        {
+          "x": 491.22054741678403,
+          "z": 220.16361003951164
+        },
+        {
+          "x": 510.3498333564208,
+          "z": 227.88493897481345
+        },
+        {
+          "x": 512.1978345677933,
+          "z": 228.62857368749738
+        },
+        {
+          "x": 527.9765141109041,
+          "z": 234.9806417566692
+        },
+        {
+          "x": 530.3819191284757,
+          "z": 236.05824509326106
+        },
+        {
+          "x": 587.4393981521011,
+          "z": 261.6246478455217
+        },
+        {
+          "x": 630.0617969846319,
+          "z": 279.99073800495825
+        },
+        {
+          "x": 631.139503235127,
+          "z": 280.4549559881233
+        },
+        {
+          "x": 656.0954698567377,
+          "z": 291.2076766408237
+        },
+        {
+          "x": 675.1355358564151,
+          "z": 299.408875863598
+        },
+        {
+          "x": 675.8590124268255,
+          "z": 299.72058170776256
+        },
+        {
+          "x": 711.8464508946843,
+          "z": 314.475413878235
+        },
+        {
+          "x": 723.6332004841782,
+          "z": 319.30797777432525
+        },
+        {
+          "x": 725.2241422508515,
+          "z": 319.95922191449154
+        },
+        {
+          "x": 752.1685652404549,
+          "z": 331.00700206515114
+        },
+        {
+          "x": 773.4453133900901,
+          "z": 339.7303503314793
         }
       ],
-      "width_m": 5.5,
-      "source_type": "osm",
+      "width_m": 16.0,
+      "source_type": "official",
       "confidence": "medium"
     },
     {
-      "id": "osm-road-278199769",
-      "name": "사당로10길",
+      "id": "vworld-road-2-1",
+      "name": "사당로14길",
       "centerline": [
         {
-          "x": -18.850641655004374,
-          "z": -70.07594000025392
+          "x": -108.87897727576227,
+          "z": 130.5094423559437
         },
         {
-          "x": -52.5680264690507,
-          "z": -90.55881999995307
+          "x": -102.5355276172464,
+          "z": 138.1627820380437
         },
         {
-          "x": -82.15134366819606,
-          "z": -123.26463600011493
+          "x": -101.7625825618352,
+          "z": 142.27610714205946
         },
         {
-          "x": -119.13711527383938,
-          "z": -164.16360400031465
+          "x": -101.14510988215375,
+          "z": 145.35303150494516
         },
         {
-          "x": -173.86934380679892,
-          "z": -211.7862999999909
+          "x": -100.67074245806043,
+          "z": 145.53559868889056
         },
         {
-          "x": -185.47653365404375,
-          "z": -218.6658760004977
-        },
-        {
-          "x": -198.98292123145606,
-          "z": -223.87565200047447
-        },
-        {
-          "x": -204.19467314092213,
-          "z": -223.39697600041745
-        },
-        {
-          "x": -219.5914249712127,
-          "z": -216.52853200004074
-        },
-        {
-          "x": -223.15131652967412,
-          "z": -217.71965600051374
-        },
-        {
-          "x": -241.8694560165525,
-          "z": -235.2525559997511
-        },
-        {
-          "x": -262.9549675575457,
-          "z": -248.27699600008856
-        },
-        {
-          "x": -271.9562814500575,
-          "z": -250.41433999975453
-        },
-        {
-          "x": -283.4574695635547,
-          "z": -247.8651120000211
+          "x": -90.23819260906426,
+          "z": 146.99279665295953
         }
       ],
-      "width_m": 5.5,
-      "source_type": "osm",
+      "width_m": 7.0,
+      "source_type": "official",
       "confidence": "medium"
     },
     {
-      "id": "osm-road-278199939",
-      "name": "사당로8길",
+      "id": "vworld-road-3-1",
+      "name": "동작대로15길",
       "centerline": [
         {
-          "x": -259.52757816595494,
-          "z": -148.7012559999627
+          "x": 755.0554046043253,
+          "z": -12.321178370096547
         },
         {
-          "x": -230.0237622686894,
-          "z": -174.1156120003413
+          "x": 691.4036000382946,
+          "z": -9.50368535823456
         },
         {
-          "x": -223.85799475423966,
-          "z": -176.25295600000726
+          "x": 661.3718136517621,
+          "z": -8.174531863342022
         },
         {
-          "x": -193.31182847533196,
-          "z": -141.14262800022118
+          "x": 648.6213120008841,
+          "z": -7.610142502791842
         },
         {
-          "x": -101.70866354651066,
-          "z": -35.822776000202055
+          "x": 643.7831176279678,
+          "z": -7.390843273543265
         },
         {
-          "x": -82.19551105715294,
-          "z": -13.39179599988455
+          "x": 637.6348918060527,
+          "z": -7.111431554733423
         },
         {
-          "x": -79.53663423491845,
-          "z": -8.838808000464269
+          "x": 631.143036699925,
+          "z": -7.1125447473011825
         },
         {
-          "x": -37.57761462042733,
-          "z": 44.47234000003675
+          "x": 625.3172393867372,
+          "z": -6.848717739959872
         },
         {
-          "x": 9.169149969794791,
-          "z": 105.58701999997737
+          "x": 620.1566165050936,
+          "z": -6.613833770420102
+        },
+        {
+          "x": 617.160239784218,
+          "z": -6.614946965944032
+        },
+        {
+          "x": 612.1974908381432,
+          "z": -6.377836602400231
+        },
+        {
+          "x": 606.6738046225493,
+          "z": -6.11512276249923
+        },
+        {
+          "x": 600.1810661461574,
+          "z": -5.865767249670283
+        },
+        {
+          "x": 588.9587872909804,
+          "z": -5.3225284215312465
+        },
+        {
+          "x": 584.7009642387986,
+          "z": -5.117700660189499
+        },
+        {
+          "x": 541.6200985656361,
+          "z": -3.2731373672276893
+        },
+        {
+          "x": 421.77474670448856,
+          "z": 1.8085976527726677
+        },
+        {
+          "x": 396.9336176363409,
+          "z": 2.861680478731558
+        },
+        {
+          "x": 392.7800317447063,
+          "z": 2.860567284685713
+        },
+        {
+          "x": 387.44538580490337,
+          "z": 2.8594540884227406
+        },
+        {
+          "x": 371.465298864382,
+          "z": 4.35892849315265
+        },
+        {
+          "x": 367.1359231814501,
+          "z": 4.406795906593988
+        },
+        {
+          "x": 361.65728861875095,
+          "z": 4.465795274535586
+        },
+        {
+          "x": 353.6460443707879,
+          "z": 4.553737731272666
+        },
+        {
+          "x": 348.9924734474687,
+          "z": 4.603831539457079
+        },
+        {
+          "x": 339.0051399531327,
+          "z": 5.10365641173546
+        },
+        {
+          "x": 334.2641158170798,
+          "z": 5.339653914541642
+        },
+        {
+          "x": 329.0178064558405,
+          "z": 5.602368123963958
+        },
+        {
+          "x": 311.5395311534033,
+          "z": 6.098853469533001
+        },
+        {
+          "x": 302.43644680314355,
+          "z": 8.255114173443939
+        },
+        {
+          "x": 293.5603874549295,
+          "z": 10.356828804404586
+        },
+        {
+          "x": 275.58124375645576,
+          "z": 16.87125698249682
+        },
+        {
+          "x": 272.3057234495657,
+          "z": 18.187056322951985
+        },
+        {
+          "x": 268.09030195278876,
+          "z": 19.879116693513947
+        },
+        {
+          "x": 261.5975634778749,
+          "z": 22.133342392602298
+        },
+        {
+          "x": 255.85303581661094,
+          "z": 26.394665529982582
+        },
+        {
+          "x": 248.11033476322453,
+          "z": 36.17189455551076
+        },
+        {
+          "x": 244.12370500310948,
+          "z": 38.26693704162322
+        },
+        {
+          "x": 237.622132872852,
+          "z": 41.685575515176154
+        },
+        {
+          "x": 236.12394451093616,
+          "z": 41.685575515176154
+        },
+        {
+          "x": 232.80602264420708,
+          "z": 41.76349956176502
+        },
+        {
+          "x": 225.63662598195933,
+          "z": 41.93270606035334
+        },
+        {
+          "x": 211.15472740335383,
+          "z": 42.43030678014399
+        },
+        {
+          "x": 199.66920554710197,
+          "z": 42.95239794261824
+        },
+        {
+          "x": 189.18188701812517,
+          "z": 43.42773470315347
+        },
+        {
+          "x": 174.69998843951964,
+          "z": 43.17281170949216
+        },
+        {
+          "x": 161.71627821987383,
+          "z": 43.67041249949185
+        },
+        {
+          "x": 106.4043299728214,
+          "z": 45.14763023562188
         }
       ],
-      "width_m": 5.5,
-      "source_type": "osm",
+      "width_m": 6.0,
+      "source_type": "official",
       "confidence": "medium"
     },
     {
-      "id": "osm-road-278199957",
-      "name": "사당로12길",
-      "centerline": [
-        {
-          "x": 115.22388460121223,
-          "z": 27.17321199957638
-        },
-        {
-          "x": 62.8325276879891,
-          "z": -39.540864000148304
-        },
-        {
-          "x": 35.00707257485131,
-          "z": -72.46932000053903
-        },
-        {
-          "x": 15.387918350490686,
-          "z": -95.92444400016916
-        },
-        {
-          "x": -9.469488216459077,
-          "z": -126.32593600029566
-        }
-      ],
-      "width_m": 5.5,
-      "source_type": "osm",
-      "confidence": "medium"
-    },
-    {
-      "id": "osm-road-419513781",
-      "name": "사당로12길",
-      "centerline": [
-        {
-          "x": 115.22388460121223,
-          "z": 27.17321199957638
-        },
-        {
-          "x": 92.44234532025753,
-          "z": 46.94364399965053
-        },
-        {
-          "x": 85.84373739352813,
-          "z": 57.73055199994218
-        },
-        {
-          "x": 84.43038094314174,
-          "z": 67.93859599979697
-        }
-      ],
-      "width_m": 5.5,
-      "source_type": "osm",
-      "confidence": "medium"
-    },
-    {
-      "id": "osm-road-419513789",
+      "id": "vworld-road-4-1",
       "name": "사당로16가길",
       "centerline": [
         {
-          "x": -138.1644264846713,
-          "z": 137.45793599987422
+          "x": -164.55663895573292,
+          "z": 111.05830253096084
         },
         {
-          "x": -116.15139977307285,
-          "z": 117.96580399988841
-        },
-        {
-          "x": -89.99547196677355,
-          "z": 94.80011199968573
-        },
-        {
-          "x": -54.467224199218194,
-          "z": 60.69166399974307
-        },
-        {
-          "x": -37.57761462042733,
-          "z": 44.47234000003675
-        },
-        {
-          "x": -20.431834183929073,
-          "z": 28.00811199984139
-        },
-        {
-          "x": -0.909848214771483,
-          "z": 9.272956000000931
-        },
-        {
-          "x": 62.8325276879891,
-          "z": -39.540864000148304
-        },
-        {
-          "x": 130.11712819463258,
-          "z": -80.76266000016574
-        },
-        {
-          "x": 171.87297782017308,
-          "z": -105.05268400006088
-        },
-        {
-          "x": 195.28169402632412,
-          "z": -114.41469600031155
-        },
-        {
-          "x": 208.54074422457361,
-          "z": -119.39069999992938
-        },
-        {
-          "x": 268.25505424492553,
-          "z": -138.58226800035766
-        },
-        {
-          "x": 311.1327555527327,
-          "z": -156.81648399988092
-        },
-        {
-          "x": 319.9043990219155,
-          "z": -158.0076080003539
-        },
-        {
-          "x": 326.0348326246976,
-          "z": -158.07440000034347
+          "x": -160.6424451877638,
+          "z": 157.99247875271027
         }
       ],
-      "width_m": 5.5,
-      "source_type": "osm",
+      "width_m": 8.0,
+      "source_type": "official",
       "confidence": "medium"
     },
     {
-      "id": "osm-road-419513791",
-      "name": "사당로",
+      "id": "vworld-road-5-1",
+      "name": "사당로22나길",
       "centerline": [
         {
-          "x": -54.467224199218194,
-          "z": 60.69166399974307
+          "x": -82.95130829881971,
+          "z": -191.38865679264578
         },
         {
-          "x": -37.69244983146418,
-          "z": 80.01681600015047
-        },
-        {
-          "x": -34.45939695153482,
-          "z": 102.28081600009858
-        },
-        {
-          "x": -30.652168013910583,
-          "z": 140.57489599991442
+          "x": -96.77333264086093,
+          "z": -208.38451059402442
         }
       ],
-      "width_m": 5.5,
-      "source_type": "osm",
+      "width_m": 7.0,
+      "source_type": "official",
       "confidence": "medium"
     },
     {
-      "id": "osm-road-481020927",
-      "name": "사당로",
+      "id": "vworld-road-6-1",
+      "name": "사당로16길",
       "centerline": [
         {
-          "x": 419.85520048367385,
-          "z": -109.37189999991318
+          "x": -143.30550841368898,
+          "z": -196.44021822674156
         },
         {
-          "x": 412.77075127716336,
-          "z": -108.57039600003844
+          "x": -140.10065736580682,
+          "z": -204.3181099087045
         },
         {
-          "x": 405.84530467190194,
-          "z": -107.79115600042388
+          "x": -133.19362034176018,
+          "z": -213.79561447356082
         },
         {
-          "x": 395.76630648608034,
-          "z": -106.65569199981036
+          "x": -122.74251981033443,
+          "z": -226.76288035913066
         },
         {
-          "x": 371.52724336578234,
-          "z": -102.71496400042622
+          "x": -115.30634668221381,
+          "z": -236.49972642959824
         },
         {
-          "x": 347.4648498013119,
-          "z": -95.49029599984152
+          "x": -111.73136537669781,
+          "z": -240.08411184711676
         },
         {
-          "x": 322.7222784441437,
-          "z": -84.56980400036173
+          "x": -107.99737822917596,
+          "z": -242.43845111789292
         },
         {
-          "x": 275.3483369299806,
-          "z": -57.85300399979121
+          "x": -101.15129344148552,
+          "z": -247.86400394670724
         },
         {
-          "x": 266.9918669184989,
-          "z": -52.40945600024645
-        },
-        {
-          "x": 259.24490687512446,
-          "z": -46.53176000037405
-        },
-        {
-          "x": 250.94143773114425,
-          "z": -39.39614800003909
-        },
-        {
-          "x": 246.16252623395783,
-          "z": -34.27542800031205
-        },
-        {
-          "x": 244.0159911246275,
-          "z": -31.971104000276682
-        },
-        {
-          "x": 237.80605622122087,
-          "z": -23.97832800020751
-        },
-        {
-          "x": 232.38230084425962,
-          "z": -15.952156000539048
-        },
-        {
-          "x": 226.04869725127153,
-          "z": -8.90560000045383
-        },
-        {
-          "x": 219.15858455642243,
-          "z": -2.393380000285106
-        },
-        {
-          "x": 211.72079623825684,
-          "z": 3.406391999467644
-        },
-        {
-          "x": 203.04632102427706,
-          "z": 8.905599999662854
-        },
-        {
-          "x": 186.50121707985207,
-          "z": 18.49025200014239
-        },
-        {
-          "x": 181.27179821455218,
-          "z": 21.028347999745733
-        },
-        {
-          "x": 84.43038094314174,
-          "z": 67.93859599979697
-        },
-        {
-          "x": 44.882900770466954,
-          "z": 87.08563599970489
-        },
-        {
-          "x": 25.131244379235664,
-          "z": 96.65915600005434
-        },
-        {
-          "x": 18.797640787502917,
-          "z": 100.05441600018287
-        },
-        {
-          "x": 11.775025925783137,
-          "z": 103.80589999972841
-        },
-        {
-          "x": 9.169149969794791,
-          "z": 105.58701999997737
-        },
-        {
-          "x": -0.644843881030147,
-          "z": 112.29961600011478
-        },
-        {
-          "x": -13.603555833870669,
-          "z": 123.06426000014625
-        },
-        {
-          "x": -30.652168013910583,
-          "z": 140.57489599991442
-        },
-        {
-          "x": -84.49221528793244,
-          "z": 195.8786719999722
+          "x": -93.10383119744948,
+          "z": -255.71735738840454
         }
       ],
-      "width_m": 5.5,
-      "source_type": "osm",
+      "width_m": 11.0,
+      "source_type": "official",
+      "confidence": "medium"
+    },
+    {
+      "id": "vworld-road-7-1",
+      "name": "사당로20길",
+      "centerline": [
+        {
+          "x": 199.54906779865905,
+          "z": 16.24341371816116
+        },
+        {
+          "x": 194.83454463750556,
+          "z": 16.30463956731382
+        },
+        {
+          "x": 184.31100811245577,
+          "z": 16.528392215712863
+        },
+        {
+          "x": 169.91567938075397,
+          "z": 16.543976981131507
+        },
+        {
+          "x": 165.32129396213105,
+          "z": 16.7621636467376
+        },
+        {
+          "x": 153.2598176172506,
+          "z": 16.95474678647064
+        },
+        {
+          "x": 150.7943437276747,
+          "z": 16.993708692626818
+        },
+        {
+          "x": 142.07287339527278,
+          "z": 16.991482295666618
+        }
+      ],
+      "width_m": 6.0,
+      "source_type": "official",
+      "confidence": "medium"
+    },
+    {
+      "id": "vworld-road-8-1",
+      "name": "사당로16가길",
+      "centerline": [
+        {
+          "x": -53.37003845897106,
+          "z": 68.08962349269504
+        },
+        {
+          "x": -60.572119655449946,
+          "z": 94.68634022507939
+        },
+        {
+          "x": -66.24421132161179,
+          "z": 116.53975002810765
+        },
+        {
+          "x": -73.64416645365942,
+          "z": 128.52235822456788
+        }
+      ],
+      "width_m": 8.0,
+      "source_type": "official",
       "confidence": "medium"
     }
   ],
   "pois": [],
   "parcel": {
-    "id": "approx-parcel-boundary",
-    "name": "필지 경계 추정",
+    "id": "vworld-parcel-lp_pa_cbnd_bubun.713586",
+    "name": "서울특별시 동작구 사당동 317-6",
     "boundary": [
       {
-        "x": -12.5,
-        "z": -10.3
+        "x": -1.5588687951068132,
+        "z": 7.766421067948989
       },
       {
-        "x": 12.7,
-        "z": -8.4
+        "x": 2.681286944909527,
+        "z": 4.913299943886481
       },
       {
-        "x": 11.2,
-        "z": 10.6
+        "x": 7.6246018427248785,
+        "z": 1.7395795443308066
       },
       {
-        "x": -13.6,
-        "z": 8.9
+        "x": 7.764173634993089,
+        "z": 1.6505239231095863
       },
       {
-        "x": -12.5,
-        "z": -10.3
+        "x": 8.982335043586385,
+        "z": 0.4282355888795011
+      },
+      {
+        "x": 4.604374245917963,
+        "z": -4.729195812552376
+      },
+      {
+        "x": -0.12869959766509398,
+        "z": -10.309637624974446
+      },
+      {
+        "x": -1.4510981697616856,
+        "z": -9.026125207903586
+      },
+      {
+        "x": -6.4447649184077695,
+        "z": -4.6724228947820485
+      },
+      {
+        "x": -9.661983084953462,
+        "z": -1.8449085402506973
+      },
+      {
+        "x": -8.475622844761334,
+        "z": -0.49460311689549097
+      },
+      {
+        "x": -2.376865506368872,
+        "z": 6.812412061254292
+      },
+      {
+        "x": -1.5588687951068132,
+        "z": 7.766421067948989
       }
     ],
-    "source_type": "procedural",
-    "confidence": "low"
+    "source_type": "official",
+    "confidence": "high",
+    "source_ref": {
+      "provider": "VWorld WFS",
+      "feature_id": "lp_pa_cbnd_bubun.713586",
+      "pnu": "1159010700103170006",
+      "layer_hint": "lp_pa_cbnd_bubun/lp_pa_cbnd_bonbun"
+    }
   },
   "basemap": {
-    "default_source": "procedural",
-    "attribution": "Default ground is procedural/offline. Optional VWorld WMTS, ArcGIS World Imagery, or custom tiles require visible attribution and no local caching.",
+    "default_source": "VWorld WMTS",
+    "attribution": "Default ground is procedural/offline. VWorld WMTS or ArcGIS World Imagery satellite tiles are requested live; no local tile caching.",
+    "tile_template": "/api/vworld/wmts/Satellite/{z}/{y}/{x}.jpeg",
     "offline_fallback": "procedural_grid"
   },
   "viewer": {
@@ -730,6 +2254,6 @@
         0
       ]
     },
-    "warning": "프리뷰 전용입니다. 현재 좌표·필지·건물 형상은 근사치이며 공식 데이터 연결이 필요합니다."
+    "warning": "프리뷰 전용입니다. Juso/VWorld/WFS 데이터가 연결되었으며, 최종 납품 전 공식 원천 대조와 현장 검증이 필요합니다."
   }
 }

@@ -19,12 +19,25 @@ export interface Heightfield {
   maxElevation: number;
 }
 
-function loadImage(url: string): Promise<HTMLImageElement | null> {
+function loadImage(url: string, timeoutMs = 4500): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const image = new Image();
+    let settled = false;
+    const finish = (value: HTMLImageElement | null) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeout);
+      image.onload = null;
+      image.onerror = null;
+      resolve(value);
+    };
+    const timeout = window.setTimeout(() => {
+      image.src = "";
+      finish(null);
+    }, timeoutMs);
     image.crossOrigin = "anonymous";
-    image.onload = () => resolve(image);
-    image.onerror = () => resolve(null);
+    image.onload = () => finish(image);
+    image.onerror = () => finish(null);
     image.src = url;
   });
 }
