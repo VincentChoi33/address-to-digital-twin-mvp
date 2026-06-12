@@ -1,0 +1,93 @@
+{
+  "generated_at": "2026-06-12T20:17:42.152123Z",
+  "status": "blocked",
+  "passed": false,
+  "host": "train1",
+  "remote_dir": "/tmp/address-to-digital-twin-mvp-remote-finish-check",
+  "branch": "main",
+  "dry_run": false,
+  "secret_handling": "Remote script reports only credential presence/absence and never prints NVIDIA_API_KEY values.",
+  "copied_evidence": {
+    "finish_json": "docs/evidence/nvidia-finish-sadang-2026-06-13.json",
+    "finish_md": "docs/evidence/nvidia-finish-sadang-2026-06-13.md"
+  },
+  "remote_payload": {
+    "preflight": {
+      "docker_ready": true,
+      "env": {
+        "CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL": "absent",
+        "CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL": "absent",
+        "MATERIAL_AGENT_BASE_URL": "absent",
+        "NVIDIA_API_KEY": "absent",
+        "NVIDIA_API_KEY_FILE": "absent",
+        "PHYSICS_AGENT_BASE_URL": "absent"
+      },
+      "gpu_count": 8,
+      "health": {
+        "http://127.0.0.1:8100/health": 0,
+        "http://127.0.0.1:8101/health": 0,
+        "http://127.0.0.1:8200/health": 0,
+        "http://127.0.0.1:8201/health": 0
+      },
+      "host": "gpu1",
+      "nvidia_smi": true
+    },
+    "blockers": [
+      "Content Agents endpoints are not ready and NVIDIA_API_KEY/NVIDIA_API_KEY_FILE is not present for automatic deployment.",
+      "Content Agents endpoints are not ready; skipping Material→Physics assignment instead of calling dead generated endpoints.",
+      "status=blocked, blockers=['NVIDIA_API_KEY or NVIDIA_API_KEY_FILE is required before deploying NVIDIA-only Material/Physics Content Agents.'], gpu_assignment={'policy': 'auto_multi_gpu_split', 'detected_gpu_count': 8, 'material_ovrtx_visible_devices': '0', 'physics_ovrtx_visible_devices': '1'}, endpoint_env=.tmp/nvidia-content-agents/endpoints.env",
+      "status=blocked, blockers=['Missing Material Agent endpoint: set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL or MATERIAL_AGENT_BASE_URL.', 'Missing Physics Agent endpoint: set CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL or PHYSICS_AGENT_BASE_URL.', 'Missing NVIDIA_API_KEY for deploying missing Content Agents services from NVIDIA build/upstream deployment skills.']"
+    ],
+    "finish_json": "/tmp/address-to-digital-twin-mvp-remote-finish-check/docs/evidence/nvidia-finish-sadang-2026-06-13.json",
+    "finish_md": "/tmp/address-to-digital-twin-mvp-remote-finish-check/docs/evidence/nvidia-finish-sadang-2026-06-13.md",
+    "finish_status": "blocked"
+  },
+  "steps": [
+    {
+      "name": "remote-nvidia-finish",
+      "status": "passed",
+      "exit_code": 0,
+      "command": [
+        "ssh",
+        "train1",
+        "<redacted remote finish script>"
+      ],
+      "stdout_tail": "M\tdocs/evidence/nvidia-finish-sadang-2026-06-13.json\nM\tdocs/evidence/nvidia-finish-sadang-2026-06-13.md\nM\tdocs/evidence/nvidia-only-acceptance-sadang-2026-06-13.json\nM\tdocs/evidence/nvidia-only-acceptance-sadang-2026-06-13.md\nYour branch is up to date with 'origin/main'.\nHEAD is now at 0177bc7 feat: add NVIDIA one-shot finish runner\n\nadded 60 packages, and audited 61 packages in 2s\n\n20 packages are looking for funding\n  run `npm fund` for details\n\nfound 0 vulnerabilities\nREMOTE_PREFLIGHT_JSON={\"docker_ready\": true, \"env\": {\"CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL\": \"absent\", \"CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL\": \"absent\", \"MATERIAL_AGENT_BASE_URL\": \"absent\", \"NVIDIA_API_KEY\": \"absent\", \"NVIDIA_API_KEY_FILE\": \"absent\", \"PHYSICS_AGENT_BASE_URL\": \"absent\"}, \"gpu_count\": 8, \"health\": {\"http://127.0.0.1:8100/health\": 0, \"http://127.0.0.1:8101/health\": 0, \"http://127.0.0.1:8200/health\": 0, \"http://127.0.0.1:8201/health\": 0}, \"host\": \"gpu1\", \"nvidia_smi\": true}\n\n> address-to-digital-twin-preview-mvp@0.1.0 nvidia:finish\n> python3 scripts/nvidia_finish.py --persist-intermediate --allow-blocked --wait-seconds 0\n\n{\n  \"status\": \"blocked\",\n  \"output_json\": \"docs/evidence/nvidia-finish-sadang-2026-06-13.json\",\n  \"output_md\": \"docs/evidence/nvidia-finish-sadang-2026-06-13.md\",\n  \"blockers\": [\n    \"Content Agents endpoints are not ready and NVIDIA_API_KEY/NVIDIA_API_KEY_FILE is not present for automatic deployment.\",\n    \"Content Agents endpoints are not ready; skipping Material\\u2192Physics assignment instead of calling dead generated endpoints.\",\n    \"status=blocked, blockers=['NVIDIA_API_KEY or NVIDIA_API_KEY_FILE is required before deploying NVIDIA-only Material/Physics Content Agents.'], gpu_assignment={'policy': 'auto_multi_gpu_split', 'detected_gpu_count': 8, 'material_ovrtx_visible_devices': '0', 'physics_ovrtx_visible_devices': '1'}, endpoint_env=.tmp/nvidia-content-agents/endpoints.env\",\n    \"status=blocked, blockers=['Missing Material Agent endpoint: set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL or MATERIAL_AGENT_BASE_URL.', 'Missing Physics Agent endpoint: set CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL or PHYSICS_AGENT_BASE_URL.', 'Missing NVIDIA_API_KEY for deploying missing Content Agents services from NVIDIA build/upstream deployment skills.']\"\n  ]\n}\nREMOTE_FINISH_RESULT_JSON={\"blockers\": [\"Content Agents endpoints are not ready and NVIDIA_API_KEY/NVIDIA_API_KEY_FILE is not present for automatic deployment.\", \"Content Agents endpoints are not ready; skipping Material\\u2192Physics assignment instead of calling dead generated endpoints.\", \"status=blocked, blockers=['NVIDIA_API_KEY or NVIDIA_API_KEY_FILE is required before deploying NVIDIA-only Material/Physics Content Agents.'], gpu_assignment={'policy': 'auto_multi_gpu_split', 'detected_gpu_count': 8, 'material_ovrtx_visible_devices': '0', 'physics_ovrtx_visible_devices': '1'}, endpoint_env=.tmp/nvidia-content-agents/endpoints.env\", \"status=blocked, blockers=['Missing Material Agent endpoint: set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL or MATERIAL_AGENT_BASE_URL.', 'Missing Physics Agent endpoint: set CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL or PHYSICS_AGENT_BASE_URL.', 'Missing NVIDIA_API_KEY for deploying missing Content Agents services from NVIDIA build/upstream deployment skills.']\"], \"finish_json\": \"/tmp/address-to-digital-twin-mvp-remote-finish-check/docs/evidence/nvidia-finish-sadang-2026-06-13.json\", \"finish_md\": \"/tmp/address-to-digital-twin-mvp-remote-finish-check/docs/evidence/nvidia-finish-sadang-2026-06-13.md\", \"finish_status\": \"blocked\"}\n",
+      "stderr_tail": "From https://github.com/VincentChoi33/address-to-digital-twin-mvp\n * branch            main       -> FETCH_HEAD\nAlready on 'main'\n"
+    },
+    {
+      "name": "copy-finish-json",
+      "status": "passed",
+      "exit_code": 0,
+      "command": [
+        "scp",
+        "train1:<remote finish json>",
+        "docs/evidence/nvidia-finish-sadang-2026-06-13.json"
+      ],
+      "stdout_tail": "",
+      "stderr_tail": ""
+    },
+    {
+      "name": "copy-finish-md",
+      "status": "passed",
+      "exit_code": 0,
+      "command": [
+        "scp",
+        "train1:<remote finish md>",
+        "docs/evidence/nvidia-finish-sadang-2026-06-13.md"
+      ],
+      "stdout_tail": "",
+      "stderr_tail": ""
+    }
+  ],
+  "blockers": [
+    "Content Agents endpoints are not ready and NVIDIA_API_KEY/NVIDIA_API_KEY_FILE is not present for automatic deployment.",
+    "Content Agents endpoints are not ready; skipping Material→Physics assignment instead of calling dead generated endpoints.",
+    "status=blocked, blockers=['NVIDIA_API_KEY or NVIDIA_API_KEY_FILE is required before deploying NVIDIA-only Material/Physics Content Agents.'], gpu_assignment={'policy': 'auto_multi_gpu_split', 'detected_gpu_count': 8, 'material_ovrtx_visible_devices': '0', 'physics_ovrtx_visible_devices': '1'}, endpoint_env=.tmp/nvidia-content-agents/endpoints.env",
+    "status=blocked, blockers=['Missing Material Agent endpoint: set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL or MATERIAL_AGENT_BASE_URL.', 'Missing Physics Agent endpoint: set CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL or PHYSICS_AGENT_BASE_URL.', 'Missing NVIDIA_API_KEY for deploying missing Content Agents services from NVIDIA build/upstream deployment skills.']"
+  ],
+  "next_commands": [
+    "npm run nvidia:finish:remote -- --host train1 --remote-nvidia-api-key-file /secure/path/nvidia_api_key",
+    "npm run nvidia:finish:remote -- --host train1 --allow-blocked"
+  ]
+}

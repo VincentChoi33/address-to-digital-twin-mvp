@@ -82,6 +82,18 @@ jobs:
           grep -q 'video_stream_only' src/samples/sadang_317_6/omniverse/ovstream_viewer_contract.json
           grep -q 'Three.js' src/samples/sadang_317_6/omniverse/ovstream_viewer_contract.json
 
+
+      - name: NVIDIA Python runner syntax
+        run: |
+          python3 -m py_compile \
+            scripts/nvidia_acceptance.py \
+            scripts/nvidia_content_agents.py \
+            scripts/nvidia_content_agents_deploy.py \
+            scripts/nvidia_finish.py \
+            scripts/nvidia_remote_finish.py \
+            scripts/nvidia_simready_validate.py \
+            scripts/nvidia_warp_flood_smoke.py
+
       - name: NVIDIA Warp flood blocked-gate audit
         run: |
           python3 src/samples/sadang_317_6/omniverse/nvidia_warp_flood_smoke.py --allow-missing --output-json "$RUNNER_TEMP/warp-flood.json" --output-pgm "$RUNNER_TEMP/warp-flood.pgm"

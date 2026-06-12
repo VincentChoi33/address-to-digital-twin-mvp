@@ -4,7 +4,7 @@ Status: **blocked**
 
 - Project: `sadang_317_6`
 - Scratch dir: `.tmp/nvidia-finish`
-- Persist intermediate evidence: `False`
+- Persist intermediate evidence: `True`
 - Secret handling: No secret values are printed; child commands receive environment only.
 
 ## Steps

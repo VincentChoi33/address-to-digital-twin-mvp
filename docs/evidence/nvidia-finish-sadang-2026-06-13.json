@@ -1,10 +1,10 @@
 {
   "project_id": "sadang_317_6",
-  "generated_at": "2026-06-12T20:07:25.706247Z",
+  "generated_at": "2026-06-12T20:17:45.479627Z",
   "status": "blocked",
   "passed": false,
   "secret_handling": "No secret values are printed; child commands receive environment only.",
-  "persist_intermediate": false,
+  "persist_intermediate": true,
   "scratch_dir": ".tmp/nvidia-finish",
   "steps": [
     {
@@ -17,12 +17,11 @@
         "plan",
         "--allow-blocked",
         "--output-json",
-        "/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/deploy-plan.json",
+        "/tmp/address-to-digital-twin-mvp-remote-finish-check/.tmp/nvidia-finish/deploy-plan.json",
         "--output-md",
-        "/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/deploy-plan.md",
-        "--skip-docker-gpu-smoke"
+        "/tmp/address-to-digital-twin-mvp-remote-finish-check/.tmp/nvidia-finish/deploy-plan.md"
       ],
-      "stdout_tail": "{\n  \"status\": \"blocked\",\n  \"output_json\": \"/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/deploy-plan.json\",\n  \"output_md\": \"/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/deploy-plan.md\",\n  \"blockers\": [\n    \"NVIDIA GPU/driver is not visible via nvidia-smi.\",\n    \"Docker daemon is not reachable.\",\n    \"NVIDIA_API_KEY or NVIDIA_API_KEY_FILE is required before deploying NVIDIA-only Material/Physics Content Agents.\"\n  ]\n}\n",
+      "stdout_tail": "{\n  \"status\": \"blocked\",\n  \"output_json\": \"/tmp/address-to-digital-twin-mvp-remote-finish-check/.tmp/nvidia-finish/deploy-plan.json\",\n  \"output_md\": \"/tmp/address-to-digital-twin-mvp-remote-finish-check/.tmp/nvidia-finish/deploy-plan.md\",\n  \"blockers\": [\n    \"NVIDIA_API_KEY or NVIDIA_API_KEY_FILE is required before deploying NVIDIA-only Material/Physics Content Agents.\"\n  ]\n}\n",
       "stderr_tail": ""
     },
     {
@@ -37,11 +36,11 @@
         "--wait-seconds",
         "0",
         "--output-json",
-        "/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/deploy-status.json",
+        "/tmp/address-to-digital-twin-mvp-remote-finish-check/.tmp/nvidia-finish/deploy-status.json",
         "--output-md",
-        "/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/deploy-status.md"
+        "/tmp/address-to-digital-twin-mvp-remote-finish-check/.tmp/nvidia-finish/deploy-status.md"
       ],
-      "stdout_tail": "{\n  \"status\": \"blocked\",\n  \"output_json\": \"/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/deploy-status.json\",\n  \"output_md\": \"/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/deploy-status.md\",\n  \"blockers\": [\n    \"material endpoint is not healthy at http://127.0.0.1:8100/health.\",\n    \"physics endpoint is not healthy at http://127.0.0.1:8200/health.\"\n  ]\n}\n",
+      "stdout_tail": "{\n  \"status\": \"blocked\",\n  \"output_json\": \"/tmp/address-to-digital-twin-mvp-remote-finish-check/.tmp/nvidia-finish/deploy-status.json\",\n  \"output_md\": \"/tmp/address-to-digital-twin-mvp-remote-finish-check/.tmp/nvidia-finish/deploy-status.md\",\n  \"blockers\": [\n    \"material endpoint is not healthy at http://127.0.0.1:8100/health.\",\n    \"physics endpoint is not healthy at http://127.0.0.1:8200/health.\"\n  ]\n}\n",
       "stderr_tail": ""
     },
     {
@@ -63,11 +62,11 @@
         "scripts/nvidia_acceptance.py",
         "--allow-blocked",
         "--output-json",
-        "/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/acceptance.json",
+        "docs/evidence/nvidia-only-acceptance-sadang-2026-06-13.json",
         "--output-md",
-        "/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/acceptance.md"
+        "docs/evidence/nvidia-only-acceptance-sadang-2026-06-13.md"
       ],
-      "stdout_tail": "{\n  \"status\": \"blocked\",\n  \"output_json\": \"/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/acceptance.json\",\n  \"output_md\": \"/Users/handy_choi/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-finish/acceptance.md\",\n  \"blockers\": [\n    \"status=blocked, blockers=['NVIDIA_API_KEY or NVIDIA_API_KEY_FILE is required before deploying NVIDIA-only Material/Physics Content Agents.'], gpu_assignment={'policy': 'auto_multi_gpu_split', 'detected_gpu_count': 8, 'material_ovrtx_visible_devices': '0', 'physics_ovrtx_visible_devices': '1'}, endpoint_env=.tmp/nvidia-content-agents/endpoints.env\",\n    \"status=blocked, blockers=['Missing Material Agent endpoint: set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL or MATERIAL_AGENT_BASE_URL.', 'Missing Physics Agent endpoint: set CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL or PHYSICS_AGENT_BASE_URL.', 'Missing NVIDIA_API_KEY for deploying missing Content Agents services from NVIDIA build/upstream deployment skills.']\"\n  ]\n}\n",
+      "stdout_tail": "{\n  \"status\": \"blocked\",\n  \"output_json\": \"docs/evidence/nvidia-only-acceptance-sadang-2026-06-13.json\",\n  \"output_md\": \"docs/evidence/nvidia-only-acceptance-sadang-2026-06-13.md\",\n  \"blockers\": [\n    \"status=blocked, blockers=['NVIDIA_API_KEY or NVIDIA_API_KEY_FILE is required before deploying NVIDIA-only Material/Physics Content Agents.'], gpu_assignment={'policy': 'auto_multi_gpu_split', 'detected_gpu_count': 8, 'material_ovrtx_visible_devices': '0', 'physics_ovrtx_visible_devices': '1'}, endpoint_env=.tmp/nvidia-content-agents/endpoints.env\",\n    \"status=blocked, blockers=['Missing Material Agent endpoint: set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL or MATERIAL_AGENT_BASE_URL.', 'Missing Physics Agent endpoint: set CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL or PHYSICS_AGENT_BASE_URL.', 'Missing NVIDIA_API_KEY for deploying missing Content Agents services from NVIDIA build/upstream deployment skills.']\"\n  ]\n}\n",
       "stderr_tail": ""
     }
   ],
