@@ -85,5 +85,16 @@
     "command": "usdchecker sadang_317_6.usda",
     "status": "passed",
     "report": "usdchecker_report.txt"
+  },
+  "ovrtx_viewer_session": {
+    "composite_stage": "sadang_317_6.ovrtx_viewer.usda",
+    "render_product_path": "/Render/OVServer/ViewportTexture0",
+    "camera_path": "/OVCamera",
+    "resolution": [
+      1280,
+      720
+    ],
+    "first_frame_smoke_script": "nvidia_ovrtx_first_frame.py",
+    "first_frame_command": "python3 nvidia_ovrtx_first_frame.py --stage sadang_317_6.ovrtx_viewer.usda --output-json ovrtx_first_frame_report.json --output-ppm ovrtx_first_frame.ppm"
   }
 }

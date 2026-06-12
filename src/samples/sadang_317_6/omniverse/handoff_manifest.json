@@ -20,11 +20,25 @@
       "sha256": "440c02c87437b9b5b53100367a2208eeca992e15efd721f1147e7cb1b8d72909"
     },
     {
+      "path": "sadang_317_6.ovrtx_viewer.usda",
+      "role": "ovrtx viewer/session wrapper with Camera, RenderProduct, RenderVar, and RenderSettings",
+      "required": true,
+      "size_bytes": 2324,
+      "sha256": "6009a7b50d6cda22e990a82c022309d80fd4c85872789bcfd823483fd8f15473"
+    },
+    {
+      "path": "nvidia_ovrtx_first_frame.py",
+      "role": "NVIDIA ovrtx first-frame smoke script for GPU-host evidence capture",
+      "required": true,
+      "size_bytes": 8274,
+      "sha256": "b491bdec9406e4b8ba8cb698e2f47771ac6940677db1916ca5c875ae05286711"
+    },
+    {
       "path": "nvidia_stack_manifest.json",
       "role": "NVIDIA product mapping and current local gate status",
       "required": true,
-      "size_bytes": 3320,
-      "sha256": "decb2148186be30e00fc0c8e2b35372435afdf581849ef32e8b8448274d00e95"
+      "size_bytes": 3801,
+      "sha256": "0bdb0b78d15c3d27cb9f7bf44803b0e481841a5bf2118e40be9bbab0820914c7"
     },
     {
       "path": "nvidia_runtime_preflight.json",
@@ -58,15 +72,15 @@
       "path": "README.md",
       "role": "package overview",
       "required": true,
-      "size_bytes": 2144,
-      "sha256": "c3e40f37da5cedf4c03e6a0de1f5aacbf445d578c9c40bb543a2327562277ca7"
+      "size_bytes": 2798,
+      "sha256": "d2b9d2a824a66c09033400b2a1574d65ca992d5bb5e56dee3368addbff392798"
     },
     {
       "path": "NVIDIA_GPU_HOST_RUNBOOK.md",
       "role": "GPU host validation runbook",
       "required": true,
-      "size_bytes": 2800,
-      "sha256": "b3b6ed15488f51fb3e3a6a0808433af80e0c432ba741fa1c30dd992133a98fe4"
+      "size_bytes": 3200,
+      "sha256": "fa8cd9f785851c80a4ea48448f7b9e8b391dabfc6885a08334cda5bf37a702f7"
     },
     {
       "path": "ovstream_viewer_contract.json",
@@ -79,8 +93,8 @@
       "path": "OVSTREAM_VIEWER_RUNBOOK.md",
       "role": "NVIDIA ovstream/WebRTC viewer runbook",
       "required": true,
-      "size_bytes": 1795,
-      "sha256": "8211daa70b27c1d5730c8459478b234bb7fddf90bc44a3d9a276235fcfb15ed3"
+      "size_bytes": 2012,
+      "sha256": "4bddd7931305cd85db5f8c18a257900633e9483b12c1b7a5a46b1fde864f3c21"
     },
     {
       "path": "../twin.json",
@@ -106,7 +120,7 @@
     {
       "id": "OMNIVERSE.VIEWER.001",
       "required_status": "passed",
-      "evidence_to_attach": "Omniverse/Kit/ovrtx load evidence for the OpenUSD stage; screenshot or stream URL is acceptable."
+      "evidence_to_attach": "ovrtx first-frame report/image from sadang_317_6.ovrtx_viewer.usda, or Omniverse/Kit load evidence for the OpenUSD stage."
     },
     {
       "id": "OMNIVERSE.OVSTREAM.001",
@@ -127,6 +141,7 @@
   "gpu_host_commands": [
     "nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader",
     "usdchecker sadang_317_6.usda",
+    "python3 nvidia_ovrtx_first_frame.py --stage sadang_317_6.ovrtx_viewer.usda --output-json ovrtx_first_frame_report.json --output-ppm ovrtx_first_frame.ppm",
     "npm run nvidia:preflight",
     "Open the stage in NVIDIA Omniverse / Kit / ovrtx and capture render evidence.",
     "Expose an ovstream/WebRTC browser viewer and attach first-frame stream evidence.",

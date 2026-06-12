@@ -1,0 +1,80 @@
+#usda 1.0
+(
+    defaultPrim = "sadang_317_6"
+    metersPerUnit = 1
+    upAxis = "Y"
+    subLayers = [
+        @sadang_317_6.usda@
+    ]
+)
+
+def Camera "OVCamera"
+{
+    float2 clippingRange = (0.1, 10000000)
+    float focalLength = 18.15
+    float horizontalAperture = 20.955
+    float verticalAperture = 11.787187
+    token projection = "perspective"
+    double3 xformOp:translate = (1.155714, 108.644012, 185.86432)
+    double3 xformOp:rotateXYZ = (-29.376483, 0, 0)
+    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ"]
+}
+
+def Scope "ViewerLighting"
+{
+    def DistantLight "OVSunKey"
+    {
+        float intensity = 650
+        float angle = 0.8
+        double3 xformOp:rotateXYZ = (-48, 0, -32)
+        uniform token[] xformOpOrder = ["xformOp:rotateXYZ"]
+    }
+}
+
+def "Render"
+{
+    def "OVServer"
+    {
+        def RenderProduct "ViewportTexture0" (
+            prepend apiSchemas = ["OmniRtxSettingsCommonAdvancedAPI_1", "OmniRtxSettingsPtAdvancedAPI_1", "OmniRtxSettingsRtAdvancedAPI_1"]
+        )
+        {
+            token omni:rtx:rendermode = "RealTimePathTracing"
+            bool omni:rtx:pt:diAOV = 1
+            bool omni:rtx:pt:giAOV = 1
+            bool omni:rtx:pt:diffuseFilterAOV = 1
+            bool omni:rtx:pt:reflectionsAOV = 1
+            bool omni:rtx:pt:refractionFilterAOV = 1
+            bool omni:rtx:pt:refractionsAOV = 1
+            bool omni:rtx:pt:selfIllumAOV = 1
+            bool omni:rtx:pt:volumesAOV = 1
+            bool omni:rtx:pt:worldNormalsAOV = 1
+            bool omni:rtx:pt:worldPosAOV = 1
+            bool omni:rtx:pt:zDepthAOV = 1
+            bool omni:rtx:pt:denoising:optix:denoiseAOVs = 1
+            float omni:rtx:pt:zDepthMin = 0.1
+            float omni:rtx:pt:zDepthMax = 10000
+            int omni:rtx:pt:maxSamplesPerLaunch = 921600
+            float omni:rtx:rtpt:modulatingRoughnessThreshold = 0.08
+            rel camera = </OVCamera>
+            rel orderedVars = [
+                </Render/Vars/LdrColor>
+            ]
+            uniform int2 resolution = (1280, 720)
+        }
+    }
+
+    def "Vars"
+    {
+        def RenderVar "LdrColor"
+        {
+            uniform string sourceName = "LdrColor"
+        }
+    }
+
+    def RenderSettings "OVRenderSettings"
+    {
+        rel products = [</Render/OVServer/ViewportTexture0>]
+    }
+}
+

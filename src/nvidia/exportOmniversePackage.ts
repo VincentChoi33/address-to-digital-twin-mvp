@@ -1,9 +1,10 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, writeFile } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import sadangManifest from "../samples/sadang_317_6/source_manifest.json";
 import sadangTwin from "../samples/sadang_317_6/twin.json";
 import type { SourceManifest, TwinProject } from "../types/twin";
+import { buildOvrtxCompositeStage } from "./ovrtxComposite";
 import { exportTwinToOmniversePackage, type LocalRuntimeProbe } from "./usd";
 
 function hasCommand(command: string, args: string[] = ["--version"]): boolean {
@@ -35,9 +36,13 @@ async function main(): Promise<void> {
   const runtimeProbe = probeRuntime();
   const exported = exportTwinToOmniversePackage(twin, manifest, runtimeProbe);
   const usdPath = join(outDir, `${twin.project_id}.usda`);
+  const composite = buildOvrtxCompositeStage(twin, { sceneFileName: `${twin.project_id}.usda` });
+  const compositePath = join(outDir, composite.fileName);
 
   await mkdir(outDir, { recursive: true });
   await writeFile(usdPath, exported.usda, "utf8");
+  await writeFile(compositePath, composite.usda, "utf8");
+  await copyFile(join(process.cwd(), "scripts/nvidia_ovrtx_first_frame.py"), join(outDir, "nvidia_ovrtx_first_frame.py"));
 
   const checkerResult = runtimeProbe.usdChecker === "available" ? spawnSync("usdchecker", [usdPath], { encoding: "utf8" }) : null;
   const checkerStatus = checkerResult ? (checkerResult.status === 0 ? "passed" : "failed") : "not_run";
@@ -52,6 +57,16 @@ async function main(): Promise<void> {
     status: checkerStatus,
     report: "usdchecker_report.txt"
   };
+  Object.assign(stackManifest, {
+    ovrtx_viewer_session: {
+      composite_stage: composite.fileName,
+      render_product_path: composite.renderProductPath,
+      camera_path: composite.cameraPath,
+      resolution: [composite.width, composite.height],
+      first_frame_smoke_script: "nvidia_ovrtx_first_frame.py",
+      first_frame_command: `python3 nvidia_ovrtx_first_frame.py --stage ${composite.fileName} --output-json ovrtx_first_frame_report.json --output-ppm ovrtx_first_frame.ppm`
+    }
+  });
   const report = exported.simreadyReport as {
     checks?: Array<{ id: string; status: string; evidence: string }>;
   };

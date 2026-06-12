@@ -6,6 +6,7 @@ This file defines the browser viewer replacement for the Three.js MVP. It is a r
 
 - Contract JSON: `ovstream_viewer_contract.json`
 - Stage: `sadang_317_6.usda`
+- ovrtx wrapper: `sadang_317_6.ovrtx_viewer.usda`
 - Contract status: `contract_authored_runtime_gated`
 - Current preflight status: `openusd_ready`
 - Browser render surface: `HTML video element displaying the ovstream WebRTC media track with object-fit: contain`
@@ -19,9 +20,10 @@ nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader
 python3 -c "import ovstream; ovstream.initialize(); print('ovstream OK', ovstream.get_version()); ovstream.shutdown()"
 export OVRTX_SKIP_USD_CHECK=1
 usdchecker sadang_317_6.usda
+python3 nvidia_ovrtx_first_frame.py --stage sadang_317_6.ovrtx_viewer.usda --output-json ovrtx_first_frame_report.json --output-ppm ovrtx_first_frame.ppm
 ```
 
-Then start the ovrtx/Omniverse server for `sadang_317_6.usda`, register ovstream callbacks before serving clients, and expose a readiness endpoint only after the first valid RTX frame has been copied into the stream buffer.
+Then start the ovrtx/Omniverse server for `sadang_317_6.ovrtx_viewer.usda`, register ovstream callbacks before serving clients, and expose a readiness endpoint only after the first valid RTX frame has been copied into the stream buffer.
 
 ## Browser client rules
 

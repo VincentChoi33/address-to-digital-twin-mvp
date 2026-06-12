@@ -134,6 +134,7 @@ This file defines the browser viewer replacement for the Three.js MVP. It is a r
 
 - Contract JSON: \`ovstream_viewer_contract.json\`
 - Stage: \`${contract.usd_stage}\`
+- ovrtx wrapper: \`${input.twin.project_id}.ovrtx_viewer.usda\`
 - Contract status: \`${contract.status}\`
 - Current preflight status: \`${input.preflight.status}\`
 - Browser render surface: \`${contract.browser_client_contract.allowed_render_surface}\`
@@ -147,9 +148,10 @@ nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader
 python3 -c "import ovstream; ovstream.initialize(); print('ovstream OK', ovstream.get_version()); ovstream.shutdown()"
 export OVRTX_SKIP_USD_CHECK=1
 usdchecker ${contract.usd_stage}
+python3 nvidia_ovrtx_first_frame.py --stage ${input.twin.project_id}.ovrtx_viewer.usda --output-json ovrtx_first_frame_report.json --output-ppm ovrtx_first_frame.ppm
 \`\`\`
 
-Then start the ovrtx/Omniverse server for \`${contract.usd_stage}\`, register ovstream callbacks before serving clients, and expose a readiness endpoint only after the first valid RTX frame has been copied into the stream buffer.
+Then start the ovrtx/Omniverse server for \`${input.twin.project_id}.ovrtx_viewer.usda\`, register ovstream callbacks before serving clients, and expose a readiness endpoint only after the first valid RTX frame has been copied into the stream buffer.
 
 ## Browser client rules
 

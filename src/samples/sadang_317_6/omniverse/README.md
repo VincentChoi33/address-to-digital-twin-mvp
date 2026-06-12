@@ -5,6 +5,8 @@ This folder is the NVIDIA-targeted export of the address digital twin. It is aut
 ## Files
 
 - `sadang_317_6.usda` — OpenUSD ASCII stage with official building, road, parcel, terrain-reference, and flood-water layer prims.
+- `sadang_317_6.ovrtx_viewer.usda` — viewer/session wrapper that sublayers the source stage and adds NVIDIA ovrtx Camera → RenderProduct → RenderVar → RenderSettings wiring.
+- `nvidia_ovrtx_first_frame.py` — GPU-host ovrtx smoke script that renders the wrapper through NVIDIA RTX and saves first-frame evidence.
 - `nvidia_stack_manifest.json` — product mapping and runtime gate status.
 - `nvidia_runtime_preflight.json` / `.md` — local NVIDIA/Omniverse/SimReady runtime gate probe.
 - `simready_minimum_report.json` — minimum SimReady-candidate checks and blocked external gates.
@@ -25,9 +27,16 @@ No local NVIDIA GPU was detected. This Mac can author OpenUSD deterministically,
 
 ## Intended NVIDIA flow
 
-1. Open `sadang_317_6.usda` with NVIDIA Omniverse / ovrtx. The stage already includes a USD PhysicsScene and conservative static collision APIs for terrain/buildings/roads/parcel geometry.
+1. Open `sadang_317_6.ovrtx_viewer.usda` with NVIDIA Omniverse / ovrtx for first-frame validation, or open `sadang_317_6.usda` directly in Omniverse tools. The source stage already includes a USD PhysicsScene and conservative static collision APIs for terrain/buildings/roads/parcel geometry.
 2. Expose browser delivery through ovstream/WebRTC only; browser WebGL/Three.js is not NVIDIA-only acceptance evidence.
 3. Run Omniverse Asset Validator and SimReady validation.
 4. Run Omniverse Content Agents for material and physics assignment when a GPU/Docker/NVIDIA_API_KEY runtime is available.
 5. Use Omniverse USD Performance Tuning for large scene profiling and optimization.
 6. Add cuOpt only for operational routing/dispatch optimization; add NuRec only when camera/LiDAR captures exist.
+
+## GPU-host first-frame smoke
+
+```bash
+export OVRTX_SKIP_USD_CHECK=1
+python3 nvidia_ovrtx_first_frame.py --stage sadang_317_6.ovrtx_viewer.usda --output-json ovrtx_first_frame_report.json --output-ppm ovrtx_first_frame.ppm
+```
