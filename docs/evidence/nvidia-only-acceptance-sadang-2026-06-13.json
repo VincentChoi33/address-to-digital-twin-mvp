@@ -1,0 +1,109 @@
+{
+  "project_id": "sadang_317_6",
+  "generated_at": "2026-06-12T19:52:10.062766Z",
+  "status": "blocked",
+  "passed": false,
+  "package_dir": "src/samples/sadang_317_6/omniverse",
+  "gates": [
+    {
+      "id": "OPENUSD.PACKAGE.001",
+      "requirement": "OpenUSD package, physics/material semantics, and package validation",
+      "status": "passed",
+      "evidence": "handoff=ready_for_gpu_host, train1_package_validation=passed, markers_ok=True",
+      "sources": [
+        "src/samples/sadang_317_6/omniverse/handoff_manifest.json",
+        "docs/evidence/nvidia-train1-package-validation-2026-06-12.json"
+      ]
+    },
+    {
+      "id": "VIEWER.NO_WEBGL.001",
+      "requirement": "Browser viewer is NVIDIA ovstream/WebRTC video-only, not client WebGL USD rendering",
+      "status": "passed",
+      "evidence": "browser_surface=video_stream_only, forbidden_has_webgl=True, nvidia_client=True",
+      "sources": [
+        "src/samples/sadang_317_6/omniverse/ovstream_viewer_contract.json",
+        "src/samples/sadang_317_6/omniverse/ovstream_browser_client/package.json",
+        "src/samples/sadang_317_6/omniverse/ovstream_browser_client/src/main.ts"
+      ]
+    },
+    {
+      "id": "OMNIVERSE.OVRTX_FIRST_FRAME.001",
+      "requirement": "NVIDIA ovrtx produced a real RTX LdrColor first frame on train1",
+      "status": "passed",
+      "evidence": "status=passed, reason=LdrColor frame produced, image=True",
+      "sources": [
+        "docs/evidence/nvidia-train1-ovrtx-first-frame-2026-06-12.json",
+        "docs/evidence/nvidia-train1-ovrtx-first-frame-2026-06-12.png"
+      ]
+    },
+    {
+      "id": "OMNIVERSE.OVSTREAM_SERVER.001",
+      "requirement": "NVIDIA ovrtx frame was converted to CUDA BGRA and served via ovstream/WebRTC",
+      "status": "passed",
+      "evidence": "status=passed, reason=ovrtx LdrColor converted to persistent BGRA CUDA buffer; ovstream WebRTC server started; /healthz returned 200 only after the converted frame.",
+      "sources": [
+        "docs/evidence/nvidia-train1-ovstream-smoke-2026-06-12.json"
+      ]
+    },
+    {
+      "id": "OMNIVERSE.OVSTREAM_BROWSER.001",
+      "requirement": "Browser decoded an NVIDIA ov-web-rtc Direct video first frame",
+      "status": "passed",
+      "evidence": "status=passed, firstVideoFrame=true, size=1280x720, screenshot=True",
+      "sources": [
+        "docs/evidence/nvidia-train1-ovstream-browser-first-frame-2026-06-12.json",
+        "docs/evidence/nvidia-train1-ovstream-browser-first-frame-2026-06-12.png"
+      ]
+    },
+    {
+      "id": "NVIDIA.WARP_FLOOD.001",
+      "requirement": "NVIDIA Warp/CUDA shallow-water flood smoke passed on train1",
+      "status": "passed",
+      "evidence": "status=passed, acceptance={'nonzero_water': True, 'max_depth_positive': True, 'flooded_area_gt_10cm': True, 'cuda_device': True}, preview=True",
+      "sources": [
+        "docs/evidence/nvidia-train1-warp-flood-smoke-2026-06-13.json",
+        "docs/evidence/nvidia-train1-warp-flood-depth-2026-06-13.png"
+      ]
+    },
+    {
+      "id": "SIMREADY.VALIDATOR.001",
+      "requirement": "NVIDIA SimReady validator passed the self-contained asset-source copy",
+      "status": "passed",
+      "evidence": "status=passed, profile=Prop-Robotics-Neutral@1.0.0, validator=2026.4.9",
+      "sources": [
+        "docs/evidence/nvidia-simready-validate-sadang-2026-06-12.json"
+      ]
+    },
+    {
+      "id": "CONTENT_AGENTS.DEPLOY_READY.001",
+      "requirement": "Official NVIDIA Content Agents deployment path is ready except for deployment credential",
+      "status": "blocked",
+      "evidence": "status=blocked, blockers=['NVIDIA_API_KEY or NVIDIA_API_KEY_FILE is required before deploying NVIDIA-only Material/Physics Content Agents.'], gpu_assignment={'policy': 'auto_multi_gpu_split', 'detected_gpu_count': 8, 'material_ovrtx_visible_devices': '0', 'physics_ovrtx_visible_devices': '1'}, endpoint_env=.tmp/nvidia-content-agents/endpoints.env",
+      "sources": [
+        "docs/evidence/nvidia-train1-content-agents-deploy-plan-2026-06-13.json"
+      ]
+    },
+    {
+      "id": "CONTENT_AGENTS.RUNTIME.001",
+      "requirement": "NVIDIA Content Agents Material→Physics assignment has actually run",
+      "status": "blocked",
+      "evidence": "status=blocked, blockers=['Missing Material Agent endpoint: set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL or MATERIAL_AGENT_BASE_URL.', 'Missing Physics Agent endpoint: set CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL or PHYSICS_AGENT_BASE_URL.', 'Missing NVIDIA_API_KEY for deploying missing Content Agents services from NVIDIA build/upstream deployment skills.']",
+      "sources": [
+        "docs/evidence/nvidia-content-agents-run-sadang-2026-06-12.json"
+      ]
+    }
+  ],
+  "blockers": [
+    "status=blocked, blockers=['NVIDIA_API_KEY or NVIDIA_API_KEY_FILE is required before deploying NVIDIA-only Material/Physics Content Agents.'], gpu_assignment={'policy': 'auto_multi_gpu_split', 'detected_gpu_count': 8, 'material_ovrtx_visible_devices': '0', 'physics_ovrtx_visible_devices': '1'}, endpoint_env=.tmp/nvidia-content-agents/endpoints.env",
+    "status=blocked, blockers=['Missing Material Agent endpoint: set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL or MATERIAL_AGENT_BASE_URL.', 'Missing Physics Agent endpoint: set CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL or PHYSICS_AGENT_BASE_URL.', 'Missing NVIDIA_API_KEY for deploying missing Content Agents services from NVIDIA build/upstream deployment skills.']"
+  ],
+  "failures": [],
+  "next_commands": [
+    "NVIDIA_API_KEY_FILE=/secure/path/nvidia_api_key npm run nvidia:content-agents:deploy -- up",
+    "npm run nvidia:content-agents:deploy:status -- --wait-seconds 900",
+    "source .tmp/nvidia-content-agents/endpoints.env",
+    "npm run nvidia:content-agents",
+    "npm run nvidia:simready",
+    "npm run nvidia:acceptance"
+  ]
+}

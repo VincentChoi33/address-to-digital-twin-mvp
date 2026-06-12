@@ -120,3 +120,15 @@ jobs:
           grep -q '"status": "blocked"' "$RUNNER_TEMP/nvidia-content-agents.json"
           grep -q 'Missing Material Agent endpoint' "$RUNNER_TEMP/nvidia-content-agents.json"
           grep -q 'Missing NVIDIA_API_KEY for deploying missing Content Agents services' "$RUNNER_TEMP/nvidia-content-agents.json"
+
+      - name: NVIDIA-only acceptance certificate
+        run: |
+          npm run nvidia:acceptance:check -- \
+            --output-json "$RUNNER_TEMP/nvidia-acceptance.json" \
+            --output-md "$RUNNER_TEMP/nvidia-acceptance.md"
+          grep -q '"status": "blocked"' "$RUNNER_TEMP/nvidia-acceptance.json"
+          grep -q 'VIEWER.NO_WEBGL.001' "$RUNNER_TEMP/nvidia-acceptance.json"
+          grep -q 'OMNIVERSE.OVSTREAM_BROWSER.001' "$RUNNER_TEMP/nvidia-acceptance.json"
+          grep -q 'NVIDIA.WARP_FLOOD.001' "$RUNNER_TEMP/nvidia-acceptance.json"
+          grep -q 'SIMREADY.VALIDATOR.001' "$RUNNER_TEMP/nvidia-acceptance.json"
+          grep -q 'CONTENT_AGENTS.RUNTIME.001' "$RUNNER_TEMP/nvidia-acceptance.json"
