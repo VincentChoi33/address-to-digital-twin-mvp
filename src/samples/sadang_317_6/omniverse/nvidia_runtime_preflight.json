@@ -1,0 +1,181 @@
+{
+  "project_id": "sadang_317_6",
+  "generated_at": "2026-06-12T04:12:45Z",
+  "status": "openusd_ready",
+  "summary": {
+    "openusd_authoring_ready": true,
+    "omniverse_rtx_ready": false,
+    "simready_automation_ready": false,
+    "content_agents_ready": false
+  },
+  "commands": {
+    "nvidia_smi": {
+      "ok": false,
+      "code": null,
+      "stdout": "",
+      "stderr": ""
+    },
+    "docker_version": {
+      "ok": true,
+      "code": 0,
+      "stdout": "Docker version 29.5.3, build d1c06ef6b4",
+      "stderr": ""
+    },
+    "docker_info": {
+      "ok": true,
+      "code": 0,
+      "stdout": "{\"io.containerd.runc.v2\":{\"path\":\"runc\",\"status\":{\"org.opencontainers.runtime-spec.features\":\"{\\\"ociVersionMin\\\":\\\"1.0.0\\\",\\\"ociVersionMax\\\":\\\"1.2.1\\\",\\\"hooks\\\":[\\\"prestart\\\",\\\"createRuntime\\\",\\\"createContainer\\\",\\\"startContainer\\\",\\\"poststart\\\",\\\"poststop\\\"],\\\"mountOptions\\\":[\\\"async\\\",\\\"atime\\\",\\\"bind\\\",\\\"defaults\\\",\\\"dev\\\",\\\"diratime\\\",\\\"dirsync\\\",\\\"exec\\\",\\\"iversion\\\",\\\"lazytime\\\",\\\"loud\\\",\\\"mand\\\",\\\"noatime\\\",\\\"nodev\\\",\\\"nodiratime\\\",\\\"noexec\\\",\\\"noiversion\\\",\\\"nolazytime\\\",\\\"nomand\\\",\\\"norelatime\\\",\\\"nostrictatime\\\",\\\"nosuid\\\",\\\"nosymfollow\\\",\\\"private\\\",\\\"ratime\\\",\\\"rbind\\\",\\\"rdev\\\",\\\"r",
+      "stderr": ""
+    },
+    "python_pxr": {
+      "ok": false,
+      "code": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last): File \"<string>\", line 1, in <module> from pxr import Usd; print('pxr-usd-ok') ^^^^^^^^^^^^^^^^^^^ ModuleNotFoundError: No module named 'pxr'"
+    },
+    "usdchecker": {
+      "ok": true,
+      "code": 0,
+      "stdout": "Utility for checking the compliance of a given USD stage or a USDZ package. Only the first sample of any relevant time-sampled attribute is checked, currently. General USD checks are always performed, and more restrictive checks targeted at distributable consumer content are also applied when the \"--arkit\" option is specified. Usage: usdchecker [OPTIONS] [inputFile] Positionals: inputFile FILE Name of the input file to inspect. Options: -h,--help Print this help message and exit -s,--skipVariants If specified, only the prims that are present in the default (i.e. selected) variants are checked.",
+      "stderr": ""
+    },
+    "ovrtx": {
+      "ok": false,
+      "code": null,
+      "stdout": "",
+      "stderr": ""
+    },
+    "kit": {
+      "ok": false,
+      "code": null,
+      "stdout": "",
+      "stderr": ""
+    },
+    "usdview": {
+      "ok": false,
+      "code": null,
+      "stdout": "",
+      "stderr": ""
+    }
+  },
+  "gates": [
+    {
+      "id": "OPENUSD.AUTHORING.001",
+      "product": "OpenUSD",
+      "status": "passed",
+      "required_for": [
+        "static USD package generation"
+      ],
+      "evidence": "The repository authors a meter-based Y-up .usda package from twin.json/source_manifest.json."
+    },
+    {
+      "id": "OPENUSD.RUNTIME.001",
+      "product": "OpenUSD / USD Python / usdchecker",
+      "status": "passed",
+      "required_for": [
+        "local USD validation",
+        "Omniverse preflight"
+      ],
+      "evidence": "Utility for checking the compliance of a given USD stage or a USDZ package.  Only the first sample of any relevant time-sampled attribute is checked, currently.  General USD checks are always performed, and more restrictive checks targeted at distributable consumer content are also applied when the \"--arkit\" option is specified."
+    },
+    {
+      "id": "OPENUSD.CHECKER.001",
+      "product": "usdchecker",
+      "status": "passed",
+      "required_for": [
+        "CI-grade USD syntax/validator smoke"
+      ],
+      "evidence": "usdchecker is available on PATH."
+    },
+    {
+      "id": "NVIDIA.GPU.001",
+      "product": "NVIDIA GPU / Driver",
+      "status": "blocked",
+      "required_for": [
+        "RTX rendering",
+        "ovrtx",
+        "local Content Agents",
+        "GPU simulation services"
+      ],
+      "evidence": "nvidia-smi is not available or returned non-zero.",
+      "remediation": "Run this package on an NVIDIA workstation, cloud GPU VM, or container host with NVIDIA drivers."
+    },
+    {
+      "id": "DOCKER.001",
+      "product": "Docker",
+      "status": "passed",
+      "required_for": [
+        "local Omniverse Content Agents",
+        "containerized ovrtx services"
+      ],
+      "evidence": "Docker version 29.5.3, build d1c06ef6b4"
+    },
+    {
+      "id": "DOCKER.DAEMON.001",
+      "product": "Docker daemon",
+      "status": "passed",
+      "required_for": [
+        "local Omniverse Content Agents"
+      ],
+      "evidence": "docker info returned runtime metadata."
+    },
+    {
+      "id": "DOCKER.NVIDIA_RUNTIME.001",
+      "product": "NVIDIA Container Toolkit",
+      "status": "not_run",
+      "required_for": [
+        "GPU-enabled Content Agents containers"
+      ],
+      "evidence": "Docker runtime metadata did not expose an nvidia runtime.",
+      "remediation": "Install/configure NVIDIA Container Toolkit on the GPU host."
+    },
+    {
+      "id": "OMNIVERSE.VIEWER.001",
+      "product": "NVIDIA Omniverse / ovrtx / Kit viewer",
+      "status": "blocked",
+      "required_for": [
+        "NVIDIA-only visual runtime",
+        "RTX/ovrtx render verification"
+      ],
+      "evidence": "No ovrtx, kit, usdview, or known Omniverse app path was found.",
+      "remediation": "Install/use an Omniverse Kit or ovrtx runtime on an NVIDIA GPU machine."
+    },
+    {
+      "id": "CONTENT_AGENTS.AUTH.001",
+      "product": "NVIDIA API / NGC / NVCF credentials",
+      "status": "blocked",
+      "required_for": [
+        "Omniverse Content Agents material/physics assignment"
+      ],
+      "evidence": "No NVIDIA_API_KEY, NGC_API_KEY, NVCF_API_KEY, or complete provided Content Agents endpoint set was found.",
+      "remediation": "Provide NVIDIA_API_KEY for local deployment or set provided Content Agents endpoint URLs/tokens."
+    },
+    {
+      "id": "CONTENT_AGENTS.RUNTIME.001",
+      "product": "Omniverse Content Agents",
+      "status": "blocked",
+      "required_for": [
+        "full SimReady material/physics assignment"
+      ],
+      "evidence": "Content Agents prerequisites are incomplete.",
+      "remediation": "Satisfy NVIDIA GPU + Docker daemon + NVIDIA runtime + auth, or provide healthy service endpoints."
+    }
+  ],
+  "redacted_environment": {
+    "NVIDIA_API_KEY": "missing",
+    "NGC_API_KEY": "missing",
+    "NVCF_API_KEY": "missing",
+    "CONTENT_AGENTS_TOKEN": "missing",
+    "CONTENT_AGENTS_MATERIAL_BASE_URL": "missing",
+    "CONTENT_AGENTS_PHYSICS_BASE_URL": "missing",
+    "CONTENT_AGENTS_TEXTURE_BASE_URL": "missing",
+    "CONTENT_AGENTS_OVRTX_BASE_URL": "missing"
+  },
+  "next_actions": [
+    "Move the package to an NVIDIA GPU workstation/cloud VM for RTX/ovrtx rendering.",
+    "Install or expose NVIDIA Omniverse Kit/ovrtx/usdview runtime for the USD stage.",
+    "Configure Content Agents prerequisites: NVIDIA API/NGC/NVCF auth plus GPU Docker runtime, or provided service endpoints.",
+    "Run usdchecker on every exported .usda in CI and keep validator reports with the package.",
+    "After runtime gates pass, run SimReady/Asset Validator and USD Performance Tuning baseline profiling."
+  ]
+}

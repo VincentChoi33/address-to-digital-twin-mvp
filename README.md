@@ -71,6 +71,7 @@ Generate the committed NVIDIA Omniverse package for the Sadang sample:
 
 ```bash
 npm run export:omniverse
+npm run nvidia:preflight
 usdchecker src/samples/sadang_317_6/omniverse/sadang_317_6.usda
 ```
 
@@ -84,6 +85,7 @@ usdchecker src/samples/sadang_317_6/omniverse/sadang_317_6.usda
 | `npm run lint` | TypeScript check |
 | `npm run sample:sadang` | regenerate Sadang sample artifacts |
 | `npm run export:omniverse` | generate OpenUSD + NVIDIA stack/SimReady reports for the Sadang sample |
+| `npm run nvidia:preflight` | probe local NVIDIA/Omniverse/SimReady runtime gates and write preflight reports |
 | `npm run prepare:deploy` | build `dist/` + copy samples for deployment |
 
 ## Project structure
@@ -152,6 +154,8 @@ Current implemented package:
 src/samples/sadang_317_6/omniverse/
   sadang_317_6.usda
   nvidia_stack_manifest.json
+  nvidia_runtime_preflight.json
+  nvidia_runtime_preflight.md
   simready_minimum_report.json
   usdchecker_report.txt
   README.md

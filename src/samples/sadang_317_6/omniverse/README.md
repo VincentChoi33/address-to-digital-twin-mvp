@@ -6,6 +6,7 @@ This folder is the NVIDIA-targeted export of the address digital twin. It is aut
 
 - `sadang_317_6.usda` — OpenUSD ASCII stage with official building, road, parcel, terrain-reference, and flood-water layer prims.
 - `nvidia_stack_manifest.json` — product mapping and runtime gate status.
+- `nvidia_runtime_preflight.json` / `.md` — local NVIDIA/Omniverse/SimReady runtime gate probe.
 - `simready_minimum_report.json` — minimum SimReady-candidate checks and blocked external gates.
 - `usdchecker_report.txt` — local USD checker output when `usdchecker` is available.
 

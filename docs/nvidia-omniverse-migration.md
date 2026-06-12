@@ -21,6 +21,9 @@ Juso/VWorld/WFS twin.json
   - Writes a deterministic package under `src/samples/sadang_317_6/omniverse/`.
   - Probes local NVIDIA/USD runtime gates.
   - Runs `usdchecker` when available and writes `usdchecker_report.txt`.
+- `src/nvidia/preflight.ts` and `src/nvidia/runPreflight.ts`
+  - Probes the true NVIDIA-only runtime gates: `nvidia-smi`, Docker daemon, NVIDIA Container Toolkit, USD Python/usdchecker, Omniverse/ovrtx/Kit viewer, and Content Agents credentials/endpoints.
+  - Writes `nvidia_runtime_preflight.json` and `.md` with redacted environment state and remediation.
 - Web app artifact links
   - Every generated twin now exposes `omniverse.usda`, `nvidia_stack_manifest.json`, and `simready_minimum_report.json` as downloadable blobs.
 
@@ -30,6 +33,8 @@ Juso/VWorld/WFS twin.json
 src/samples/sadang_317_6/omniverse/
   sadang_317_6.usda
   nvidia_stack_manifest.json
+  nvidia_runtime_preflight.json
+  nvidia_runtime_preflight.md
   simready_minimum_report.json
   usdchecker_report.txt
   README.md
@@ -42,7 +47,8 @@ Current generated evidence:
 - Official parcel boundary ribbon.
 - Meter-based Y-up OpenUSD stage.
 - Local `usdchecker` exit code 0 (`Validation Result ... Success!`).
-- Local NVIDIA GPU/ovrtx runtime is not present on this Mac, so RTX rendering and full SimReady validation remain external runtime gates.
+- Runtime preflight status is `openusd_ready`: local OpenUSD/usdchecker and Docker are present, but local NVIDIA GPU, Omniverse/ovrtx/Kit viewer, Content Agents auth/endpoints, and NVIDIA Container Toolkit gates are not ready on this Mac.
+- Therefore RTX rendering and full SimReady validation remain external NVIDIA GPU/runtime gates.
 
 ## NVIDIA product mapping
 
@@ -60,9 +66,10 @@ Current generated evidence:
 ## Next hard gates for a true NVIDIA-only runtime
 
 1. Run the generated `.usda` on an NVIDIA workstation/container with Omniverse or `ovrtx`.
-2. Replace the browser-side 3D viewport with an Omniverse/ovstream viewer path. NVIDIA viewer guidance explicitly forbids substituting browser-side WebGL as the final USD renderer.
-3. Run Content Agents material and physics assignment.
-4. Run SimReady/Asset Validator gates and persist their reports.
-5. Run USD Performance Tuning baseline/after profiling when scene complexity grows.
-6. Add cuOpt only when there is real routing/dispatch optimization data.
-7. Add NuRec only when camera/LiDAR/radar captures exist.
+2. Re-run `npm run nvidia:preflight` on that NVIDIA host until `omniverse_rtx_ready` and `content_agents_ready` become true.
+3. Replace the browser-side 3D viewport with an Omniverse/ovstream viewer path. NVIDIA viewer guidance explicitly forbids substituting browser-side WebGL as the final USD renderer.
+4. Run Content Agents material and physics assignment.
+5. Run SimReady/Asset Validator gates and persist their reports.
+6. Run USD Performance Tuning baseline/after profiling when scene complexity grows.
+7. Add cuOpt only when there is real routing/dispatch optimization data.
+8. Add NuRec only when camera/LiDAR/radar captures exist.
