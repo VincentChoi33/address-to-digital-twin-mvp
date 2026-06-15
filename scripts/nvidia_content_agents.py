@@ -648,7 +648,10 @@ def render_markdown(report: dict[str, Any]) -> str:
     for name, state in sorted((report.get("redacted_environment") or {}).items()):
         lines.append(f"| `{name}` | `{state}` |")
     lines.append("")
-    lines.append("This report is blocked until real NVIDIA Content Agents endpoints or deployment prerequisites are provided; it does not substitute browser or mock material/physics assignment.")
+    if report.get("status") == "passed":
+        lines.append("This report was produced by real NVIDIA Content Agents Material→Physics services; it does not use browser-side or mock material/physics assignment.")
+    else:
+        lines.append("This report is blocked until real NVIDIA Content Agents endpoints or deployment prerequisites are provided; it does not substitute browser or mock material/physics assignment.")
     lines.append("")
     return "\n".join(lines)
 

@@ -135,16 +135,19 @@ def run_finish(context: FinishContext) -> dict[str, Any]:
 
     should_run_content_agents = external_endpoints_present or deploy_status.get("status") == "ready"
     if should_run_content_agents and has_endpoint_environment(env):
+        content_agents_timeout = max(7200, context.args.wait_seconds + 5400)
         content_agents_args = [
             "python3",
             "scripts/nvidia_content_agents.py",
             "--allow-blocked",
+            "--timeout",
+            str(content_agents_timeout),
             "--output-json",
             context.report_path("content-agents", "json"),
             "--output-md",
             context.report_path("content-agents", "md"),
         ]
-        steps.append(run_step("content-agents-run", content_agents_args, env=env, timeout=2400))
+        steps.append(run_step("content-agents-run", content_agents_args, env=env, timeout=content_agents_timeout + 300))
         content_agents = load_json(Path(context.report_path("content-agents", "json")))
         if content_agents.get("status") != "passed":
             blockers.extend(content_agents.get("blockers") or content_agents.get("errors") or ["Content Agents Material→Physics assignment did not pass."])

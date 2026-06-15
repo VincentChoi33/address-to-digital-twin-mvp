@@ -100,7 +100,7 @@ def run_remote_finish(context: RemoteContext) -> dict[str, Any]:
     blockers: list[str] = []
 
     remote_script = build_remote_script(context)
-    remote = context.ssh(remote_script, timeout=max(2400, context.args.wait_seconds + 1500))
+    remote = context.ssh(remote_script, timeout=max(9000, context.args.wait_seconds + 7800))
     steps.append({
         "name": "remote-nvidia-finish",
         "status": "passed" if remote.returncode == 0 else "failed",

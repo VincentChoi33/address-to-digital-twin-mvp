@@ -85,6 +85,14 @@ class Evidence:
     def evidence_json(self, name: str) -> dict[str, Any]:
         return load_json(self.repo_root / "docs/evidence" / name)
 
+    def first_json(self, names: list[str]) -> tuple[dict[str, Any], str]:
+        for name in names:
+            path = self.repo_root / name
+            data = load_json(path)
+            if data:
+                return data, name
+        return {}, names[-1] if names else ""
+
     def exists(self, path: str) -> bool:
         return (self.repo_root / path).is_file()
 
@@ -229,7 +237,14 @@ def gate_simready_validator(e: Evidence) -> dict[str, Any]:
 
 
 def gate_content_agents_deploy(e: Evidence) -> dict[str, Any]:
-    data = e.evidence_json("nvidia-train1-content-agents-deploy-plan-2026-06-13.json")
+    data, source = e.first_json(
+        [
+            ".tmp/nvidia-finish/deploy-up.json",
+            ".tmp/nvidia-finish/deploy-status.json",
+            ".tmp/nvidia-finish/deploy-plan.json",
+            "docs/evidence/nvidia-train1-content-agents-deploy-plan-2026-06-13.json",
+        ]
+    )
     blockers = data.get("blockers", [])
     gpu = data.get("gpu_assignment", {})
     deploy_prereqs_ready = (
@@ -237,16 +252,18 @@ def gate_content_agents_deploy(e: Evidence) -> dict[str, Any]:
         and data.get("checks", {}).get("docker_gpu_smoke", {}).get("ok") is True
         and gpu.get("policy") == "auto_multi_gpu_split"
     )
-    if data.get("status") == "ready_to_deploy" or deploy_prereqs_ready:
+    if data.get("status") == "ready":
+        status = "passed"
+    elif data.get("status") == "ready_to_deploy" or deploy_prereqs_ready:
         status = "blocked" if blockers else "passed"
     else:
         status = "failed"
     return gate(
         "CONTENT_AGENTS.DEPLOY_READY.001",
-        "Official NVIDIA Content Agents deployment path is ready except for deployment credential",
+        "Official NVIDIA Content Agents deployment path is ready and/or already healthy",
         status,
-        f"status={data.get('status')}, blockers={blockers}, gpu_assignment={gpu}, endpoint_env={data.get('endpoint_env_path')}",
-        ["docs/evidence/nvidia-train1-content-agents-deploy-plan-2026-06-13.json"],
+        f"status={data.get('status')}, blockers={blockers}, gpu_assignment={gpu}, endpoint_env={data.get('endpoint_env_path')}, source={source}",
+        [source],
     )
 
 

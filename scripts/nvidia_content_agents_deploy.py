@@ -278,10 +278,15 @@ def render_runtime_files(
         {
             '"8000:8000"': f'"{ports["material"]}:8000"',
             '"8001:8000"': f'"{ports["material_ovrtx"]}:8000"',
+            "- RENDER_ENDPOINT=http://ovrtx-rendering-api:8000": f"- RENDER_ENDPOINT=http://127.0.0.1:{ports['material_ovrtx']}",
             "container_name: material-agent-service": "container_name: address-twin-material-agent-service",
             "container_name: ovrtx-rendering-api": "container_name: address-twin-material-ovrtx-rendering-api",
         },
         gpu_assignment.get("material_ovrtx_visible_devices"),
+        {
+            "material-agent-service": ("python", ports["material"]),
+            "ovrtx-rendering-api": ("ovrtx", ports["material_ovrtx"]),
+        },
     )
     render_compose(
         upstream / UPSTREAM_COMPOSE["physics"],
@@ -291,10 +296,15 @@ def render_runtime_files(
         {
             '"8000:8000"': f'"{ports["physics"]}:8000"',
             '"8001:8000"': f'"{ports["physics_ovrtx"]}:8000"',
+            "- RENDER_ENDPOINT=http://ovrtx-rendering-api:8000": f"- RENDER_ENDPOINT=http://127.0.0.1:{ports['physics_ovrtx']}",
             "container_name: physics-agent-service": "container_name: address-twin-physics-agent-service",
             "container_name: physics-ovrtx-rendering-api": "container_name: address-twin-physics-ovrtx-rendering-api",
         },
         gpu_assignment.get("physics_ovrtx_visible_devices"),
+        {
+            "physics-agent-service": ("python", ports["physics"]),
+            "ovrtx-rendering-api": ("ovrtx", ports["physics_ovrtx"]),
+        },
     )
 
 
@@ -331,13 +341,22 @@ def write_endpoint_env(path: Path, ports: dict[str, int]) -> None:
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def render_compose(source: Path, dest: Path, upstream: Path, env_file: Path, replacements: dict[str, str], gpu_device: str | None) -> None:
+def render_compose(
+    source: Path,
+    dest: Path,
+    upstream: Path,
+    env_file: Path,
+    replacements: dict[str, str],
+    gpu_device: str | None,
+    service_ports: dict[str, tuple[str, int]],
+) -> None:
     text = source.read_text(encoding="utf-8")
     text = text.replace("context: ../..", f"context: {upstream.as_posix()}")
     text = text.replace("- path: ../../.env", f"- path: {env_file.as_posix()}")
     text = add_host_network_to_builds(text)
     for old, new in replacements.items():
         text = text.replace(old, new)
+    text = add_host_network_runtime(text, service_ports)
     if gpu_device:
         text = text.replace(
             "- OVRTX_RENDER_MODE=${OVRTX_RENDER_MODE:-pt}",
@@ -358,6 +377,79 @@ def add_host_network_to_builds(text: str) -> str:
     if "      network: host\n" in text:
         return text
     return text.replace(marker, replacement)
+
+
+def add_host_network_runtime(text: str, service_ports: dict[str, tuple[str, int]]) -> str:
+    """Use host networking at runtime so Content Agents can reach NVIDIA NIM.
+
+    On train1, Docker bridge containers can fail DNS/egress to public NVIDIA
+    endpoints while the host network path succeeds.  Host networking removes
+    port publishing, so every service gets an explicit uvicorn port and the
+    generated RENDER_ENDPOINT values target 127.0.0.1.
+    """
+    lines = text.splitlines()
+    for service_name, (kind, port) in service_ports.items():
+        lines = transform_service_for_host_network(lines, service_name, kind, port)
+    return "\n".join(lines) + ("\n" if text.endswith("\n") else "")
+
+
+def transform_service_for_host_network(lines: list[str], service_name: str, kind: str, port: int) -> list[str]:
+    header = f"  {service_name}:"
+    try:
+        start = lines.index(header)
+    except ValueError:
+        return lines
+    end = service_section_end(lines, start + 1)
+    section = lines[start:end]
+    section = remove_service_key(section, "network_mode")
+    section = remove_service_key(section, "command")
+    section = remove_service_key(section, "ports")
+    section = [
+        section[0],
+        "    network_mode: host",
+        f"    command: {service_command(kind, port)}",
+        *section[1:],
+    ]
+    rendered = "\n".join(section)
+    rendered = rendered.replace("http://localhost:8000/health", f"http://localhost:{port}/health")
+    if kind == "ovrtx" and "OVRTX_PARENT_PORT=" not in rendered:
+        rendered = rendered.replace(
+            "- OVRTX_RENDER_MODE=${OVRTX_RENDER_MODE:-pt}",
+            f"- OVRTX_RENDER_MODE=${{OVRTX_RENDER_MODE:-pt}}\n      - OVRTX_PARENT_PORT={port}",
+        )
+    return lines[:start] + rendered.splitlines() + lines[end:]
+
+
+def service_section_end(lines: list[str], start: int) -> int:
+    for index in range(start, len(lines)):
+        line = lines[index]
+        if line and not line.startswith(" "):
+            return index
+        if line.startswith("  ") and not line.startswith("    ") and line.endswith(":"):
+            return index
+    return len(lines)
+
+
+def remove_service_key(section: list[str], key: str) -> list[str]:
+    prefix = f"    {key}:"
+    result: list[str] = []
+    index = 0
+    while index < len(section):
+        line = section[index]
+        if line == prefix or line.startswith(prefix + " "):
+            index += 1
+            while index < len(section) and not (section[index].startswith("    ") and not section[index].startswith("      ")):
+                index += 1
+            continue
+        result.append(line)
+        index += 1
+    return result
+
+
+def service_command(kind: str, port: int) -> str:
+    if kind == "ovrtx":
+        return f'["ovrtx-entrypoint", "python", "-m", "uvicorn", "service.main:app", "--host", "0.0.0.0", "--port", "{port}"]'
+    return f'["python", "-m", "uvicorn", "service.main:app", "--host", "0.0.0.0", "--port", "{port}"]'
 
 
 def run_up(runtime_dir: Path, skip_build: bool) -> dict[str, Any]:
