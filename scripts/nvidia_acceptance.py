@@ -239,6 +239,9 @@ def gate_simready_validator(e: Evidence) -> dict[str, Any]:
 def gate_content_agents_deploy(e: Evidence) -> dict[str, Any]:
     data, source = e.first_json(
         [
+            "docs/evidence/nvidia-content-agents-deploy-up-sadang-2026-06-13.json",
+            "docs/evidence/nvidia-content-agents-deploy-status-sadang-2026-06-13.json",
+            "docs/evidence/nvidia-content-agents-deploy-plan-sadang-2026-06-13.json",
             ".tmp/nvidia-finish/deploy-up.json",
             ".tmp/nvidia-finish/deploy-status.json",
             ".tmp/nvidia-finish/deploy-plan.json",

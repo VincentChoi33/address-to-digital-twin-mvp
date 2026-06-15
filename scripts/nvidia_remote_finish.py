@@ -24,6 +24,20 @@ DEFAULT_OUTPUT_JSON = "docs/evidence/nvidia-remote-finish-train1-2026-06-13.json
 DEFAULT_OUTPUT_MD = "docs/evidence/nvidia-remote-finish-train1-2026-06-13.md"
 REMOTE_FINISH_JSON = "docs/evidence/nvidia-finish-sadang-2026-06-13.json"
 REMOTE_FINISH_MD = "docs/evidence/nvidia-finish-sadang-2026-06-13.md"
+REMOTE_EVIDENCE_FILES = [
+    "docs/evidence/nvidia-content-agents-deploy-plan-sadang-2026-06-13.json",
+    "docs/evidence/nvidia-content-agents-deploy-plan-sadang-2026-06-13.md",
+    "docs/evidence/nvidia-content-agents-deploy-status-sadang-2026-06-13.json",
+    "docs/evidence/nvidia-content-agents-deploy-status-sadang-2026-06-13.md",
+    "docs/evidence/nvidia-content-agents-deploy-up-sadang-2026-06-13.json",
+    "docs/evidence/nvidia-content-agents-deploy-up-sadang-2026-06-13.md",
+    "docs/evidence/nvidia-content-agents-run-sadang-2026-06-12.json",
+    "docs/evidence/nvidia-content-agents-run-sadang-2026-06-12.md",
+    "docs/evidence/nvidia-simready-validate-sadang-2026-06-12.json",
+    "docs/evidence/nvidia-simready-validate-sadang-2026-06-12.md",
+    "docs/evidence/nvidia-only-acceptance-sadang-2026-06-13.json",
+    "docs/evidence/nvidia-only-acceptance-sadang-2026-06-13.md",
+]
 
 
 def main() -> int:
@@ -129,6 +143,12 @@ def run_remote_finish(context: RemoteContext) -> dict[str, Any]:
         steps.append(step_from_completed("copy-finish-md", scp_md, ["scp", context.args.host + ":<remote finish md>", REMOTE_FINISH_MD]))
         if scp_md.returncode == 0:
             copied["finish_md"] = REMOTE_FINISH_MD
+    for rel_path, remote_path in sorted((remote_payload.get("evidence_files") or {}).items()):
+        local_path = context.repo_root / rel_path
+        scp_evidence = context.scp_from(str(remote_path), local_path)
+        steps.append(step_from_completed(f"copy-{Path(rel_path).name}", scp_evidence, ["scp", context.args.host + ":<remote evidence>", rel_path]))
+        if scp_evidence.returncode == 0:
+            copied[rel_path] = rel_path
 
     blockers.extend(remote_payload.get("blockers") or [])
     if remote.returncode != 0 and not blockers:
@@ -252,10 +272,16 @@ if p.exists():
         blockers = doc.get('blockers') or []
     except Exception as exc:
         blockers = [f'failed to parse finish report: {{exc}}']
+evidence_files = {{}}
+for rel in {REMOTE_EVIDENCE_FILES!r}:
+    path = pathlib.Path(rel)
+    if path.exists():
+        evidence_files[rel] = str(path.resolve())
 payload = {{
     'finish_status': status,
     'finish_json': str(p.resolve()) if p.exists() else None,
     'finish_md': str(pathlib.Path('docs/evidence/nvidia-finish-sadang-2026-06-13.md').resolve()) if pathlib.Path('docs/evidence/nvidia-finish-sadang-2026-06-13.md').exists() else None,
+    'evidence_files': evidence_files,
     'blockers': blockers,
 }}
 print('REMOTE_FINISH_RESULT_JSON=' + json.dumps(payload, sort_keys=True))

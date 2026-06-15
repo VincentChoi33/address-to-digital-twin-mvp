@@ -57,6 +57,12 @@ class FinishContext:
     def report_path(self, name: str, suffix: str) -> str:
         if self.args.persist_intermediate:
             mapping = {
+                ("deploy-plan", "json"): "docs/evidence/nvidia-content-agents-deploy-plan-sadang-2026-06-13.json",
+                ("deploy-plan", "md"): "docs/evidence/nvidia-content-agents-deploy-plan-sadang-2026-06-13.md",
+                ("deploy-status", "json"): "docs/evidence/nvidia-content-agents-deploy-status-sadang-2026-06-13.json",
+                ("deploy-status", "md"): "docs/evidence/nvidia-content-agents-deploy-status-sadang-2026-06-13.md",
+                ("deploy-up", "json"): "docs/evidence/nvidia-content-agents-deploy-up-sadang-2026-06-13.json",
+                ("deploy-up", "md"): "docs/evidence/nvidia-content-agents-deploy-up-sadang-2026-06-13.md",
                 ("content-agents", "json"): "docs/evidence/nvidia-content-agents-run-sadang-2026-06-12.json",
                 ("content-agents", "md"): "docs/evidence/nvidia-content-agents-run-sadang-2026-06-12.md",
                 ("simready", "json"): "docs/evidence/nvidia-simready-validate-sadang-2026-06-12.json",
@@ -82,14 +88,14 @@ def run_finish(context: FinishContext) -> dict[str, Any]:
         "plan",
         "--allow-blocked",
         "--output-json",
-        str(context.scratch_dir / "deploy-plan.json"),
+        context.report_path("deploy-plan", "json"),
         "--output-md",
-        str(context.scratch_dir / "deploy-plan.md"),
+        context.report_path("deploy-plan", "md"),
     ]
     if context.args.skip_docker_gpu_smoke:
         deploy_plan_args.append("--skip-docker-gpu-smoke")
     steps.append(run_step("content-agents-deploy-plan", deploy_plan_args, env=env))
-    deploy_plan = load_json(context.scratch_dir / "deploy-plan.json")
+    deploy_plan = load_json(Path(context.report_path("deploy-plan", "json")))
 
     endpoints_env = endpoint_env_path(deploy_plan)
 
@@ -101,12 +107,12 @@ def run_finish(context: FinishContext) -> dict[str, Any]:
         "--wait-seconds",
         str(context.args.wait_seconds if has_endpoint_environment(env) else 0),
         "--output-json",
-        str(context.scratch_dir / "deploy-status.json"),
+        context.report_path("deploy-status", "json"),
         "--output-md",
-        str(context.scratch_dir / "deploy-status.md"),
+        context.report_path("deploy-status", "md"),
     ]
     steps.append(run_step("content-agents-deploy-status", deploy_status_args, env=env))
-    deploy_status = load_json(context.scratch_dir / "deploy-status.json")
+    deploy_status = load_json(Path(context.report_path("deploy-status", "json")))
     if deploy_status.get("status") == "ready" and endpoints_env:
         env.update(load_endpoint_env(endpoints_env))
 
@@ -118,14 +124,14 @@ def run_finish(context: FinishContext) -> dict[str, Any]:
             "--wait-seconds",
             str(context.args.wait_seconds),
             "--output-json",
-            str(context.scratch_dir / "deploy-up.json"),
+            context.report_path("deploy-up", "json"),
             "--output-md",
-            str(context.scratch_dir / "deploy-up.md"),
+            context.report_path("deploy-up", "md"),
         ]
         if context.args.skip_docker_gpu_smoke:
             deploy_up_args.append("--skip-docker-gpu-smoke")
         steps.append(run_step("content-agents-deploy-up", deploy_up_args, env=env, timeout=max(1800, context.args.wait_seconds + 1200)))
-        deploy_up = load_json(context.scratch_dir / "deploy-up.json")
+        deploy_up = load_json(Path(context.report_path("deploy-up", "json")))
         endpoints_env = endpoint_env_path(deploy_up) or endpoints_env
         if deploy_up.get("status") == "ready" and endpoints_env:
             env.update(load_endpoint_env(endpoints_env))
@@ -157,15 +163,24 @@ def run_finish(context: FinishContext) -> dict[str, Any]:
         blockers.extend(content_agents["blockers"])
 
     if content_agents.get("status") == "passed":
+        content_output = content_agents.get("output_usd_path") or content_agents.get("physics_usd_path") or content_agents.get("materialized_usd_path")
         simready_args = [
             "python3",
             "scripts/nvidia_simready_validate.py",
+            "--asset",
+            str(content_output),
             "--output-json",
             context.report_path("simready", "json"),
             "--output-md",
             context.report_path("simready", "md"),
         ]
-        steps.append(run_step("simready-validate", simready_args, env=env, timeout=1800))
+        simready_env = env.copy()
+        simready_env.setdefault("NVIDIA_SIMREADY_AUTO_CLONE", "1")
+        simready_env.setdefault("NVIDIA_SIMREADY_AUTO_INSTALL", "1")
+        steps.append(run_step("simready-validate", simready_args, env=simready_env, timeout=1800))
+        simready = load_json(Path(context.report_path("simready", "json")))
+        if simready.get("status") != "passed":
+            blockers.append("NVIDIA SimReady validation on Content Agents output did not pass.")
     else:
         steps.append(skipped_step("simready-validate", "Skipped until Content Agents Material→Physics assignment passes."))
 

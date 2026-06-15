@@ -28,6 +28,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Validate the NVIDIA SimReady asset-source copy.")
     parser.add_argument("--package-dir", default=f"src/samples/{DEFAULT_PROJECT_ID}/omniverse")
     parser.add_argument("--project-id", default=DEFAULT_PROJECT_ID)
+    parser.add_argument("--asset", default=None, help="USD/USDa asset to validate. Defaults to the authored self-contained SimReady asset source.")
     parser.add_argument("--profile", default=DEFAULT_PROFILE)
     parser.add_argument("--version", default=DEFAULT_PROFILE_VERSION)
     parser.add_argument("--output-json", default="docs/evidence/nvidia-simready-validate-sadang-2026-06-12.json")
@@ -39,7 +40,7 @@ def main() -> int:
 
     repo_root = Path.cwd()
     package_dir = (repo_root / args.package_dir).resolve()
-    asset_path = package_dir / "simready_asset" / args.project_id / "simready_usd" / f"{args.project_id}.usda"
+    asset_path = Path(args.asset).expanduser().resolve() if args.asset else package_dir / "simready_asset" / args.project_id / "simready_usd" / f"{args.project_id}.usda"
     if not asset_path.is_file():
         raise SystemExit(f"SimReady asset source is missing: {asset_path}")
 
