@@ -2,10 +2,10 @@
 
 Status: **passed**
 
-- Validator: `simready-validate 2026.4.9`
-- Foundation checkout: `~/.physical-ai-skill-hub/upstreams/simready-foundation` @ `a1e9dd6`
+- Validator: `simready-validate available`
+- Foundation checkout: `/tmp/simready-foundation` @ `a1e9dd6`
 - Profile: `Prop-Robotics-Neutral@1.0.0`
-- Asset: `src/samples/sadang_317_6/omniverse/simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda`
+- Asset: `src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.usd`
 - Failing requirements: None
 
 ## Feature results

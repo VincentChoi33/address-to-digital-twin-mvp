@@ -1,78 +1,7 @@
 {
-  "project_id": "sadang_317_6",
-  "generated_at": "2026-06-15T02:50:45.254958Z",
-  "skill": "content-agents",
-  "status": "passed",
+  "client": "direct-rest-client",
   "passed": true,
-  "input_usd_path": "src/samples/sadang_317_6/omniverse/simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda",
-  "output_dir": "src/samples/sadang_317_6/omniverse/content_agents_run",
-  "selected_calls": [
-    "material",
-    "physics"
-  ],
-  "blockers": [],
-  "materialized_usd_path": "/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/material/materialized.usd",
-  "physics_usd_path": "/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.usd",
-  "output_usd_path": "/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.usd",
-  "next_step": "rerun-simready-validation-on-content-agents-output",
-  "redacted_environment": {
-    "CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL": "present",
-    "MATERIAL_AGENT_BASE_URL": "missing",
-    "CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL": "present",
-    "PHYSICS_AGENT_BASE_URL": "missing",
-    "CONTENT_AGENTS_OVRTX_BASE_URL": "present",
-    "OVRTX_RENDER_ENDPOINT": "missing",
-    "RENDER_ENDPOINT": "present",
-    "CONTENT_AGENTS_TOKEN": "missing",
-    "CONTENT_AGENTS_MATERIAL_AGENT_TOKEN": "missing",
-    "CONTENT_AGENTS_PHYSICS_AGENT_TOKEN": "missing",
-    "NGC_API_KEY": "missing",
-    "NVCF_API_KEY": "missing",
-    "NVIDIA_API_KEY": "missing",
-    "CONTENT_AGENTS_TOKEN_FILE": "missing",
-    "CONTENT_AGENTS_MATERIAL_AGENT_TOKEN_FILE": "missing",
-    "CONTENT_AGENTS_PHYSICS_AGENT_TOKEN_FILE": "missing",
-    "NGC_API_KEY_FILE": "missing",
-    "NVCF_API_KEY_FILE": "missing",
-    "NVIDIA_API_KEY_FILE": "present"
-  },
-  "provided_endpoints": {
-    "material": "CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL",
-    "physics": "CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL",
-    "ovrtx_render": "CONTENT_AGENTS_OVRTX_BASE_URL",
-    "usage_auth": null,
-    "deployment_auth": "NVIDIA_API_KEY_FILE"
-  },
-  "auth_policy": {
-    "usage_token_required": false,
-    "render_endpoint_required": false,
-    "usage_auth_present": false,
-    "deployment_auth_present": true,
-    "note": "Provided local/service endpoints may manage auth themselves; deployment of missing services requires NVIDIA_API_KEY."
-  },
-  "deployment_handoffs": [],
-  "content_agents_upstream": {
-    "available": true,
-    "path": "~/.physical-ai-skill-hub/upstreams/content-agents",
-    "commit": "5be4f88",
-    "branch": "main",
-    "deployment_skill_paths": {
-      "ovrtx": "~/.physical-ai-skill-hub/upstreams/content-agents/.agents/skills/deploy-ovrtx-docker/SKILL.md",
-      "material": "~/.physical-ai-skill-hub/upstreams/content-agents/.agents/skills/deploy-material-agent-docker/SKILL.md",
-      "physics": "~/.physical-ai-skill-hub/upstreams/content-agents/.agents/skills/deploy-physics-agent-docker/SKILL.md"
-    }
-  },
-  "router": {
-    "path": null,
-    "available": false,
-    "source": null,
-    "fallback": "direct-rest-client"
-  },
-  "router_report": "/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/content-agents-rest-client.json",
-  "router_markdown_report": "/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/content-agents-rest-client.md",
-  "router_exit_status": 0,
-  "router_stdout_tail": "",
-  "router_stderr_tail": "",
+  "status": "passed",
   "steps": [
     {
       "name": "material",
@@ -480,9 +409,7 @@
   ],
   "errors": [],
   "warnings": [],
-  "command": [
-    "direct-rest-client",
-    "CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL",
-    "CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL"
-  ]
+  "materialized_usd_path": "/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/material/materialized.usd",
+  "physics_usd_path": "/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.usd",
+  "output_usd_path": "/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.usd"
 }

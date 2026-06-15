@@ -1,0 +1,189 @@
+{
+  "project_id": "sadang_317_6",
+  "generated_at": "2026-06-15T02:50:45.036441Z",
+  "action": "status",
+  "status": "ready",
+  "passed": true,
+  "secret_handling": "secret values are never printed; up mode writes an ignored 0600 runtime env file under .tmp",
+  "runtime_dir": ".tmp/nvidia-content-agents",
+  "endpoint_env_path": ".tmp/nvidia-content-agents/endpoints.env",
+  "redacted_environment": {
+    "NVIDIA_API_KEY": "missing",
+    "NVIDIA_API_KEY_FILE": "present",
+    "INFERENCE_NVIDIA_API_KEY": "missing"
+  },
+  "content_agents_upstream": {
+    "available": true,
+    "path": "~/.physical-ai-skill-hub/upstreams/content-agents",
+    "branch": "main",
+    "commit": "5be4f88",
+    "compose_files": {
+      "material": "~/.physical-ai-skill-hub/upstreams/content-agents/apps/material_agent_service/docker-compose.yml",
+      "physics": "~/.physical-ai-skill-hub/upstreams/content-agents/apps/physics_agent_service/docker-compose.yml"
+    }
+  },
+  "ports": {
+    "material": 8100,
+    "material_ovrtx": 8101,
+    "physics": 8200,
+    "physics_ovrtx": 8201
+  },
+  "gpu_assignment": {
+    "policy": "auto_multi_gpu_split",
+    "detected_gpu_count": 8,
+    "material_ovrtx_visible_devices": "0",
+    "physics_ovrtx_visible_devices": "1"
+  },
+  "endpoints_after_up": {
+    "material": "http://127.0.0.1:8100",
+    "physics": "http://127.0.0.1:8200",
+    "material_ovrtx": "http://127.0.0.1:8101",
+    "physics_ovrtx": "http://127.0.0.1:8201"
+  },
+  "nvidia_only_provider_policy": {
+    "required_provider": "NVIDIA build.nvidia.com / NIM via NVIDIA_API_KEY",
+    "material_overrides": {
+      "MA_VLM_BACKEND": "nim",
+      "MA_LLM_BACKEND": "nim",
+      "MA_IMAGE_GEN_BACKEND": "nvidia_inference"
+    },
+    "physics_overrides": {
+      "PA_VLM_BACKEND": "nim"
+    }
+  },
+  "checks": {
+    "nvidia_smi": {
+      "ok": true,
+      "code": 0,
+      "stdout": "GPU 0: NVIDIA GeForce RTX 3090 (UUID: GPU-a03d4057-66e6-b56e-dce0-19aaee2e070d)\nGPU 1: NVIDIA GeForce RTX 3090 (UUID: GPU-a7f2805b-1eb3-ef8b-25ab-d45214640c05)\nGPU 2: NVIDIA GeForce RTX 3090 (UUID: GPU-4a838dd1-8eee-74a9-89c6-bfe9d579be20)\nGPU 3: NVIDIA GeForce RTX 3090 (UUID: GPU-82eb28c4-e688-b716-9c0b-c377a1d8fcaa)\nGPU 4: NVIDIA GeForce RTX 3090 (UUID: GPU-8aa713e8-f405-a72e-64e2-21e8476cfebf)\nGPU 5: NVIDIA GeForce RTX 3090 (UUID: GPU-233bad5d-21b0-96ef-22ac-60d194bf7b9d)\nGPU 6: NVIDIA GeForce RTX 3090 (UUID: GPU-d39016c2-15ef-bd7a-4df5-76f60cef990f)\nGPU 7: NVIDIA GeForce RTX 3090 (UUID: GPU-24f77cc8-a30a-8ad3-3888-da8207f304eb)\n",
+      "stderr": "",
+      "command": [
+        "nvidia-smi",
+        "-L"
+      ]
+    },
+    "docker_version": {
+      "ok": true,
+      "code": 0,
+      "stdout": "Docker version 29.0.4, build 3247a5a\n",
+      "stderr": "",
+      "command": [
+        "docker",
+        "--version"
+      ]
+    },
+    "docker_compose_version": {
+      "ok": true,
+      "code": 0,
+      "stdout": "Docker Compose version v2.40.3\n",
+      "stderr": "",
+      "command": [
+        "docker",
+        "compose",
+        "version"
+      ]
+    },
+    "docker_info": {
+      "ok": true,
+      "code": 0,
+      "stdout": "Client: Docker Engine - Community\n Version:    29.0.4\n Context:    default\n Debug Mode: false\n Plugins:\n  buildx: Docker Buildx (Docker Inc.)\n    Version:  v0.30.1\n    Path:     /usr/libexec/docker/cli-plugins/docker-buildx\n  compose: Docker Compose (Docker Inc.)\n    Version:  v2.40.3\n    Path:     /usr/libexec/docker/cli-plugins/docker-compose\n\nServer:\n Containers: 6\n  Running: 6\n  Paused: 0\n  Stopped: 0\n Images: 13\n Server Version: 29.0.4\n Storage Driver: overlay2\n  Backing Filesystem: extfs\n  Supports d_type: true\n  Using metacopy: false\n  Native Overlay Diff: true\n  userxattr: false\n Logging Driver: json-file\n Cgroup Driver: systemd\n Cgroup Version: 2\n Plugins:\n  Volume: local\n  Network: bridge host ipvlan macvlan null overlay\n  Log: awslogs fluentd gcplogs gelf journald json-file local splunk syslog\n CDI spec directories:\n  /etc/cdi\n  /var/run/cdi\n Swarm: inactive\n Runtimes: io.containerd.runc.v2 nvidia runc\n Default Runtime: runc\n Init Binary: docker-init\n containerd version: fcd43222d6b07379a4be9786bda52438f0dd16a1\n runc version: v1.3.3-0-gd842d771\n init version: de40ad0\n Security Options:\n  apparmor\n  seccomp\n   Profile: builtin\n  cgroupns\n Kernel Version: 6.17.0-19-generic\n Operating System: Ubuntu 24.04.3 LTS\n OSType: linux\n Architecture: x86_64\n CPUs: 96\n Total Memory: 251.5GiB\n Name: gpu1\n ID: dbdac884-5f59-438d-8fe1-91b84f9bb386\n Docker Root Dir: /var/lib/docker\n Debug Mode: false\n Experimental: false\n Insecure Registries:\n  ::1/128\n  127.0.0.0/8\n Live Restore Enabled: false\n Firewall Backend: iptables\n\n",
+      "stderr": "",
+      "command": [
+        "docker",
+        "info"
+      ]
+    },
+    "docker_gpu_smoke": {
+      "ok": true,
+      "code": 0,
+      "stdout": "\n==========\n== CUDA ==\n==========\n\nCUDA Version 12.4.1\n\nContainer image Copyright (c) 2016-2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.\n\nThis container image and its contents are governed by the NVIDIA Deep Learning Container License.\nBy pulling and using the container, you accept the terms and conditions of this license:\nhttps://developer.nvidia.com/ngc/nvidia-deep-learning-container-license\n\nA copy of this license is made available in this container at /NGC-DL-CONTAINER-LICENSE for your convenience.\n\nGPU 0: NVIDIA GeForce RTX 3090 (UUID: GPU-a03d4057-66e6-b56e-dce0-19aaee2e070d)\nGPU 1: NVIDIA GeForce RTX 3090 (UUID: GPU-a7f2805b-1eb3-ef8b-25ab-d45214640c05)\nGPU 2: NVIDIA GeForce RTX 3090 (UUID: GPU-4a838dd1-8eee-74a9-89c6-bfe9d579be20)\nGPU 3: NVIDIA GeForce RTX 3090 (UUID: GPU-82eb28c4-e688-b716-9c0b-c377a1d8fcaa)\nGPU 4: NVIDIA GeForce RTX 3090 (UUID: GPU-8aa713e8-f405-a72e-64e2-21e8476cfebf)\nGPU 5: NVIDIA GeForce RTX 3090 (UUID: GPU-233bad5d-21b0-96ef-22ac-60d194bf7b9d)\nGPU 6: NVIDIA GeForce RTX 3090 (UUID: GPU-d39016c2-15ef-bd7a-4df5-76f60cef990f)\nGPU 7: NVIDIA GeForce RTX 3090 (UUID: GPU-24f77cc8-a30a-8ad3-3888-da8207f304eb)\n",
+      "stderr": "",
+      "command": [
+        "docker",
+        "run",
+        "--rm",
+        "--gpus",
+        "all",
+        "nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04",
+        "nvidia-smi",
+        "-L"
+      ]
+    },
+    "upstream_compose": {
+      "ok": true,
+      "required": {
+        "material": "apps/material_agent_service/docker-compose.yml",
+        "physics": "apps/physics_agent_service/docker-compose.yml"
+      }
+    },
+    "ports_available": {
+      "material": {
+        "ok": false,
+        "port": 8100
+      },
+      "material_ovrtx": {
+        "ok": false,
+        "port": 8101
+      },
+      "physics": {
+        "ok": false,
+        "port": 8200
+      },
+      "physics_ovrtx": {
+        "ok": false,
+        "port": 8201
+      }
+    }
+  },
+  "service_health": {
+    "material": {
+      "url": "http://127.0.0.1:8100/health",
+      "reachable": true,
+      "status": 200,
+      "healthy": true,
+      "body_tail": "{\"status\":\"healthy\",\"service\":\"Material Agent Service\",\"version\":\"0.0.0\",\"api_keys_configured\":true,\"image_gen_configured\":false,\"max_active_sessions\":1}"
+    },
+    "material_ovrtx": {
+      "url": "http://127.0.0.1:8101/health",
+      "reachable": true,
+      "status": 200,
+      "healthy": true,
+      "body_tail": "{\"status\":\"healthy\",\"service\":\"ovrtx-rendering-api\",\"version\":\"0.1.0\",\"renderer\":\"ovrtx\",\"gpu_initialized\":true,\"renderer_initialized\":true,\"daemon_running\":true,\"ready_workers\":null,\"total_workers\":null,\"workers\":null}"
+    },
+    "physics": {
+      "url": "http://127.0.0.1:8200/health",
+      "reachable": true,
+      "status": 200,
+      "healthy": true,
+      "body_tail": "{\"status\":\"healthy\",\"service\":\"Physics Agent Service\",\"version\":\"0.1.0\",\"api_keys_configured\":true,\"max_active_sessions\":1}"
+    },
+    "physics_ovrtx": {
+      "url": "http://127.0.0.1:8201/health",
+      "reachable": true,
+      "status": 200,
+      "healthy": true,
+      "body_tail": "{\"status\":\"healthy\",\"service\":\"ovrtx-rendering-api\",\"version\":\"0.1.0\",\"renderer\":\"ovrtx\",\"gpu_initialized\":true,\"renderer_initialized\":true,\"daemon_running\":true,\"ready_workers\":null,\"total_workers\":null,\"workers\":null}"
+    }
+  },
+  "commands": {
+    "up": [
+      "docker compose -p address-twin-material -f /home/choihy/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-content-agents/material/docker-compose.yml up -d --build",
+      "docker compose -p address-twin-physics -f /home/choihy/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-content-agents/physics/docker-compose.yml up -d --build"
+    ],
+    "status": [
+      "npm run nvidia:content-agents:deploy -- status"
+    ],
+    "down": [
+      "docker compose -p address-twin-physics -f /home/choihy/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-content-agents/physics/docker-compose.yml down",
+      "docker compose -p address-twin-material -f /home/choihy/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-content-agents/material/docker-compose.yml down"
+    ],
+    "run_assignment_after_ready": [
+      "source /home/choihy/workspace/personal/address-to-digital-twin-mvp/.tmp/nvidia-content-agents/endpoints.env",
+      "export CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL=http://127.0.0.1:8100",
+      "export CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL=http://127.0.0.1:8200",
+      "npm run nvidia:content-agents",
+      "npm run nvidia:simready"
+    ]
+  },
+  "blockers": []
+}
