@@ -15,15 +15,60 @@
           <span id="status">idle</span>
         </div>
         <div class="overlay bottom-left" id="metrics">waiting for video</div>
+        <div class="overlay interaction-hint">
+          <b>Interactive NVIDIA path</b>
+          <span>Drag / wheel / preset buttons → AppStreamer data channel → ovrtx camera mutation → RTX frame stream</span>
+        </div>
       </section>
       <aside class="panel">
-        <h1>Address Twin NVIDIA Viewer</h1>
-        <p>This client displays only the <code>ovstream</code> WebRTC video track produced by an NVIDIA ovrtx server.</p>
-        <label>Server <input id="server" /></label>
-        <label>Signaling port <input id="signaling-port" type="number" min="1" max="65535" /></label>
-        <button id="connect">Connect</button>
-        <button id="disconnect">Disconnect</button>
-        <pre id="events"></pre>
+        <h1>Address Twin NVIDIA Live Viewer</h1>
+        <p>This client displays only the <code>ovstream</code> WebRTC track produced by an NVIDIA <code>ovrtx</code> server and sends camera/layer commands through <code>@nvidia/ov-web-rtc</code>.</p>
+
+        <div class="connection-grid">
+          <label>Server <input id="server" /></label>
+          <label>Signaling port <input id="signaling-port" type="number" min="1" max="65535" /></label>
+          <label>Stream port <input id="stream-port" type="number" min="1" max="65535" /></label>
+          <label>Health port <input id="health-port" type="number" min="1" max="65535" /></label>
+        </div>
+        <div class="button-row">
+          <button id="connect">Connect</button>
+          <button id="disconnect" class="secondary">Disconnect</button>
+          <button id="health-check" class="secondary">Health</button>
+        </div>
+
+        <section class="control-card">
+          <div class="section-label">Camera presets</div>
+          <div class="control-grid">
+            <button data-preset="home" type="button">Home</button>
+            <button data-preset="top" type="button">Top</button>
+            <button data-preset="north" type="button">North</button>
+            <button data-preset="east" type="button">East</button>
+            <button data-preset="close" type="button">Close</button>
+          </div>
+        </section>
+
+        <section class="control-card">
+          <div class="section-label">Live controls</div>
+          <div class="control-grid two-col">
+            <button id="orbit-left" type="button">↺ Orbit left</button>
+            <button id="orbit-right" type="button">Orbit right ↻</button>
+            <button id="zoom-in" type="button">＋ Zoom in</button>
+            <button id="zoom-out" type="button">－ Zoom out</button>
+            <button id="toggle-flood" type="button">Toggle flood layer</button>
+            <button id="fit-720" type="button">Resize 1280×720</button>
+          </div>
+          <p class="hint">Shortcuts: H/R home · T top · A/D orbit · W/S zoom. Native drag/wheel events are also forwarded to the server.</p>
+        </section>
+
+        <section class="control-card telemetry-card">
+          <div class="section-label">Server telemetry</div>
+          <pre id="telemetry">health not checked yet</pre>
+        </section>
+
+        <section class="control-card event-card">
+          <div class="section-label">Stream / data-channel events</div>
+          <pre id="events"></pre>
+        </section>
       </aside>
     </main>
     <script type="module" src="/src/main.ts"></script>

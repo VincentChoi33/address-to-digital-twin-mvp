@@ -234,6 +234,34 @@ export function heightAt(field: Heightfield, worldX: number, worldZ: number): nu
   );
 }
 
+
+export interface MosaicSample {
+  px: number;
+  py: number;
+}
+
+export interface MosaicUv {
+  u: number;
+  v: number;
+}
+
+/** Convert local scene meters to source mosaic pixels. Local +x=east, +z=north; map image y decreases northward. */
+export function worldToMosaicPixel(mosaic: BasemapMosaic, worldX: number, worldZ: number): MosaicSample {
+  return {
+    px: mosaic.centerPx + worldX * mosaic.pxPerMeter,
+    py: mosaic.centerPy - worldZ * mosaic.pxPerMeter
+  };
+}
+
+/** Three.js CanvasTexture default flipY expects v=1 at the source image top. */
+export function worldToMosaicUv(mosaic: BasemapMosaic, worldX: number, worldZ: number): MosaicUv {
+  const sample = worldToMosaicPixel(mosaic, worldX, worldZ);
+  return {
+    u: sample.px / mosaic.canvas.width,
+    v: 1 - sample.py / mosaic.canvas.height
+  };
+}
+
 /** Terrain mesh: real DEM relief with the satellite mosaic draped at full resolution. */
 export function buildTerrainMesh(field: Heightfield, mosaic: BasemapMosaic | null, maxAnisotropy = 8): THREE.Mesh {
   const grid = field.size - 1;
@@ -247,9 +275,8 @@ export function buildTerrainMesh(field: Heightfield, mosaic: BasemapMosaic | nul
     positions.setY(i, heightAt(field, worldX, worldZ));
     if (mosaic) {
       // map each vertex to its exact mosaic pixel (+z = north = image up)
-      const px = mosaic.centerPx + worldX * mosaic.pxPerMeter;
-      const py = mosaic.centerPy - worldZ * mosaic.pxPerMeter;
-      uvs.setXY(i, px / mosaic.canvas.width, 1 - py / mosaic.canvas.height);
+      const uv = worldToMosaicUv(mosaic, worldX, worldZ);
+      uvs.setXY(i, uv.u, uv.v);
     }
   }
   positions.needsUpdate = true;
