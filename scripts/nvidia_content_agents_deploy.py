@@ -415,7 +415,7 @@ def transform_service_for_host_network(lines: list[str], service_name: str, kind
     if kind == "ovrtx" and "OVRTX_PARENT_PORT=" not in rendered:
         rendered = rendered.replace(
             "- OVRTX_RENDER_MODE=${OVRTX_RENDER_MODE:-pt}",
-            f"- OVRTX_RENDER_MODE=${{OVRTX_RENDER_MODE:-pt}}\n      - OVRTX_PARENT_PORT={port}",
+            f"- OVRTX_RENDER_MODE=${{OVRTX_RENDER_MODE:-pt}}\n      - OVRTX_PARENT_PORT={port}\n      - OVRTX_XVFB_DISPLAY={ovrtx_display(port)}",
         )
     return lines[:start] + rendered.splitlines() + lines[end:]
 
@@ -450,6 +450,16 @@ def service_command(kind: str, port: int) -> str:
     if kind == "ovrtx":
         return f'["ovrtx-entrypoint", "python", "-m", "uvicorn", "service.main:app", "--host", "0.0.0.0", "--port", "{port}"]'
     return f'["python", "-m", "uvicorn", "service.main:app", "--host", "0.0.0.0", "--port", "{port}"]'
+
+
+def ovrtx_display(port: int) -> int:
+    # Host-networked OVRTX containers share the abstract X socket namespace.
+    # Keep displays distinct so the second renderer does not crash on :99.
+    if port == DEFAULT_PORTS["physics_ovrtx"]:
+        return 100
+    if port == DEFAULT_PORTS["material_ovrtx"]:
+        return 99
+    return 99 + max(0, port % 100)
 
 
 def run_up(runtime_dir: Path, skip_build: bool) -> dict[str, Any]:
