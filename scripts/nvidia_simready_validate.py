@@ -149,6 +149,9 @@ def resolve_validator(auto_install: bool) -> Path:
     found = shutil.which("simready-validate")
     if found:
         return Path(found).resolve()
+    user_bin = Path.home() / ".local/bin/simready-validate"
+    if user_bin.is_file():
+        return user_bin.resolve()
 
     tmp_candidates = sorted(
         {
@@ -168,10 +171,16 @@ def resolve_validator(auto_install: bool) -> Path:
         venv_dir = Path(os.environ.get("RUNNER_TEMP") or tempfile.gettempdir()) / "nvidia-simready-validate-venv"
         validator = venv_dir / "bin/simready-validate"
         if not validator.is_file():
-            subprocess.run([str(python), "-m", "venv", str(venv_dir)], check=True)
-            pip = venv_dir / "bin/pip"
-            subprocess.run([str(pip), "install", "--upgrade", "pip"], check=True)
-            subprocess.run([str(pip), "install", "simready-validate>=2026.4.8", "numpy>=1.24,<3"], check=True)
+            try:
+                subprocess.run([str(python), "-m", "venv", str(venv_dir)], check=True, capture_output=True, text=True)
+                pip = venv_dir / "bin/pip"
+                subprocess.run([str(pip), "install", "--upgrade", "pip"], check=True)
+                subprocess.run([str(pip), "install", "simready-validate>=2026.4.8", "numpy>=1.24,<3"], check=True)
+            except subprocess.CalledProcessError:
+                subprocess.run([str(python), "-m", "pip", "install", "--user", "simready-validate>=2026.4.8", "numpy>=1.24,<3"], check=True)
+                user_validator = Path.home() / ".local/bin/simready-validate"
+                if user_validator.is_file():
+                    return user_validator.resolve()
         return validator.resolve()
 
     raise SystemExit("simready-validate not found. Set SIMREADY_VALIDATE_BIN or run with NVIDIA_SIMREADY_AUTO_INSTALL=1.")
