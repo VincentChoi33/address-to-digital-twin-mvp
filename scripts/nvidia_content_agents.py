@@ -234,6 +234,12 @@ def run_direct_rest(args: argparse.Namespace, asset: Path, output_dir: Path) -> 
     if not material["passed"]:
         errors.extend(material.get("errors", []))
         return direct_report(False, steps, errors, materialized_usd_path=None, physics_usd_path=None)
+    if material.get("output_path"):
+        material["simready_sidecar"] = write_simready_sidecar(
+            source_asset=asset,
+            output_usd=Path(material["output_path"]),
+            workflow_stage="content_agents_material",
+        )
 
     materialized = Path(material["output_path"]) if material.get("output_path") else asset
     physics = run_service_pipeline(
@@ -254,6 +260,12 @@ def run_direct_rest(args: argparse.Namespace, asset: Path, output_dir: Path) -> 
     steps.append(physics)
     if not physics["passed"]:
         errors.extend(physics.get("errors", []))
+    elif physics.get("output_path"):
+        physics["simready_sidecar"] = write_simready_sidecar(
+            source_asset=asset,
+            output_usd=Path(physics["output_path"]),
+            workflow_stage="content_agents_physics",
+        )
     return direct_report(
         bool(material["passed"] and physics["passed"]),
         steps,
@@ -395,6 +407,28 @@ def download_first_artifact(base_url: str, session_id: str, candidates: tuple[st
         except Exception as exc:
             errors.append(f"{artifact}: {type(exc).__name__}: {exc}")
     return {"ok": False, "errors": errors}
+
+
+def write_simready_sidecar(source_asset: Path, output_usd: Path, workflow_stage: str) -> dict[str, Any]:
+    source_sidecar = source_asset.with_suffix(".json")
+    try:
+        data = json.loads(source_sidecar.read_text(encoding="utf-8")) if source_sidecar.is_file() else {}
+    except json.JSONDecodeError:
+        data = {}
+    if not isinstance(data, dict):
+        data = {}
+    data.update(
+        {
+            "identifier": f"{data.get('identifier') or output_usd.stem}_{workflow_stage}",
+            "source_asset": output_usd.name,
+            "generated_at": dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z"),
+            "nvidia_workflow": "OpenUSD -> Omniverse RTX/ovrtx -> NVIDIA Content Agents Material Agent -> NVIDIA Content Agents Physics Agent -> SimReady validation",
+            "content_agents_stage": workflow_stage,
+        }
+    )
+    output_sidecar = output_usd.with_suffix(".json")
+    output_sidecar.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return {"path": str(output_sidecar), "bytes": output_sidecar.stat().st_size}
 
 
 def direct_report(

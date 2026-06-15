@@ -37,6 +37,12 @@ REMOTE_EVIDENCE_FILES = [
     "docs/evidence/nvidia-simready-validate-sadang-2026-06-12.md",
     "docs/evidence/nvidia-only-acceptance-sadang-2026-06-13.json",
     "docs/evidence/nvidia-only-acceptance-sadang-2026-06-13.md",
+    "src/samples/sadang_317_6/omniverse/content_agents_run/content-agents-rest-client.json",
+    "src/samples/sadang_317_6/omniverse/content_agents_run/content-agents-rest-client.md",
+    "src/samples/sadang_317_6/omniverse/content_agents_run/material/materialized.usd",
+    "src/samples/sadang_317_6/omniverse/content_agents_run/material/materialized.json",
+    "src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.usd",
+    "src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.json",
 ]
 
 
