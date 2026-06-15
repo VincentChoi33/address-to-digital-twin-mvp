@@ -90,6 +90,7 @@ jobs:
             scripts/nvidia_content_agents.py \
             scripts/nvidia_content_agents_deploy.py \
             scripts/nvidia_finish.py \
+            scripts/nvidia_register_key.py \
             scripts/nvidia_remote_finish.py \
             scripts/nvidia_simready_validate.py \
             scripts/nvidia_warp_flood_smoke.py

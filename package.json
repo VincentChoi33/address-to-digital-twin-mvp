@@ -34,7 +34,9 @@
     "nvidia:finish": "python3 scripts/nvidia_finish.py --persist-intermediate",
     "nvidia:finish:check": "python3 scripts/nvidia_finish.py --allow-blocked --skip-docker-gpu-smoke --wait-seconds 0",
     "nvidia:finish:remote": "python3 scripts/nvidia_remote_finish.py",
-    "nvidia:finish:remote:check": "python3 scripts/nvidia_remote_finish.py --dry-run --allow-blocked"
+    "nvidia:finish:remote:check": "python3 scripts/nvidia_remote_finish.py --dry-run --allow-blocked",
+    "nvidia:key:register": "python3 scripts/nvidia_register_key.py",
+    "nvidia:key:register-and-finish": "python3 scripts/nvidia_register_key.py --run-finish"
   },
   "dependencies": {
     "three": "^0.160.0"
