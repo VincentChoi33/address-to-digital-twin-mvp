@@ -14,7 +14,11 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import time
 from typing import Any
+from urllib.error import HTTPError, URLError
+from urllib.parse import urljoin
+from urllib.request import Request, urlopen
 
 DEFAULT_PROJECT_ID = "sadang_317_6"
 MATERIAL_ENDPOINT_ENVS = ("CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL", "MATERIAL_AGENT_BASE_URL")
@@ -98,7 +102,7 @@ def main() -> int:
     if report["deployment_handoffs"] and not upstream:
         blockers.append("NVIDIA Content Agents upstream checkout not found; set CONTENT_AGENTS_UPSTREAM_ROOT or PHYSICAL_AI_SKILL_HUB_UPSTREAM_ROOT for deployment handoff docs.")
     if not router or not router.is_file():
-        blockers.append("NVIDIA Content Agents reference router not found; set NVIDIA_CONTENT_AGENTS_ROUTER to the official router run.py.")
+        report["router"]["fallback"] = "direct-rest-client"
 
     if blockers:
         report.update({"status": "blocked", "passed": False, "blockers": blockers, "next_step": "provide-content-agents-endpoints-and-auth"})
@@ -107,32 +111,20 @@ def main() -> int:
         return 0 if args.allow_blocked else 2
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    router_report = output_dir / "content-agents-router.json"
-    router_md = output_dir / "content-agents-router.md"
-    command = [
-        sys.executable,
-        str(router),
-        str(asset),
-        "--output-dir",
-        str(output_dir),
-        "--material",
-        "--physics",
-        "--report",
-        str(router_report),
-        "--markdown-report",
-        str(router_md),
-        "--timeout",
-        str(args.timeout),
-        "--request-timeout",
-        str(args.request_timeout),
-        "--poll-interval",
-        str(args.poll_interval),
-    ]
-    if args.convert_physics_output_to_usd:
-        command.append("--convert-physics-output-to-usd")
-    completed = subprocess.run(command, text=True, capture_output=True)
-    child_report = load_json(router_report)
-    passed = completed.returncode == 0 and bool(child_report.get("passed"))
+    if router and router.is_file():
+        child_report, completed, command = run_reference_router(args, router, asset, output_dir, repo_root)
+        passed = completed.returncode == 0 and bool(child_report.get("passed"))
+        router_report = output_dir / "content-agents-router.json"
+        router_md = output_dir / "content-agents-router.md"
+    else:
+        child_report = run_direct_rest(args, asset, output_dir)
+        completed = subprocess.CompletedProcess(args=["direct-rest-client"], returncode=0 if child_report.get("passed") else 1, stdout="", stderr="")
+        command = ["direct-rest-client", endpoint_state["provided_endpoints"].get("material") or "material", endpoint_state["provided_endpoints"].get("physics") or "physics"]
+        passed = bool(child_report.get("passed"))
+        router_report = output_dir / "content-agents-rest-client.json"
+        router_md = output_dir / "content-agents-rest-client.md"
+        router_report.write_text(json.dumps(child_report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        router_md.write_text(render_child_markdown(child_report), encoding="utf-8")
     report.update(
         {
             "status": "passed" if passed else "failed",
@@ -176,6 +168,266 @@ def base_report(project_id: str, asset: Path, output_dir: Path, router: Path | N
     }
 
 
+def run_reference_router(
+    args: argparse.Namespace,
+    router: Path,
+    asset: Path,
+    output_dir: Path,
+    repo_root: Path,
+) -> tuple[dict[str, Any], subprocess.CompletedProcess[str], list[str]]:
+    router_report = output_dir / "content-agents-router.json"
+    router_md = output_dir / "content-agents-router.md"
+    command = [
+        sys.executable,
+        str(router),
+        str(asset),
+        "--output-dir",
+        str(output_dir),
+        "--material",
+        "--physics",
+        "--report",
+        str(router_report),
+        "--markdown-report",
+        str(router_md),
+        "--timeout",
+        str(args.timeout),
+        "--request-timeout",
+        str(args.request_timeout),
+        "--poll-interval",
+        str(args.poll_interval),
+    ]
+    if args.convert_physics_output_to_usd:
+        command.append("--convert-physics-output-to-usd")
+    completed = subprocess.run(command, text=True, capture_output=True)
+    return load_json(router_report), completed, command
+
+
+def run_direct_rest(args: argparse.Namespace, asset: Path, output_dir: Path) -> dict[str, Any]:
+    material_base = first_env(MATERIAL_ENDPOINT_ENVS)
+    physics_base = first_env(PHYSICS_ENDPOINT_ENVS)
+    assert material_base and physics_base
+    steps: list[dict[str, Any]] = []
+    errors: list[str] = []
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    material_dir = output_dir / "material"
+    physics_dir = output_dir / "physics"
+    material_dir.mkdir(parents=True, exist_ok=True)
+    physics_dir.mkdir(parents=True, exist_ok=True)
+
+    material = run_service_pipeline(
+        name="material",
+        base_url=material_base,
+        usd_path=asset,
+        output_dir=material_dir,
+        fields={
+            "user_email": "address-twin@example.invalid",
+            "render_num_workers": "1",
+        },
+        artifact_candidates=("output",),
+        artifact_name="materialized.usd",
+        timeout=args.timeout,
+        poll_interval=args.poll_interval,
+        request_timeout=args.request_timeout,
+    )
+    steps.append(material)
+    if not material["passed"]:
+        errors.extend(material.get("errors", []))
+        return direct_report(False, steps, errors, materialized_usd_path=None, physics_usd_path=None)
+
+    materialized = Path(material["output_path"]) if material.get("output_path") else asset
+    physics = run_service_pipeline(
+        name="physics",
+        base_url=physics_base,
+        usd_path=materialized,
+        output_dir=physics_dir,
+        fields={
+            "render_backend": "remote",
+            "optimize_usd": "false",
+        },
+        artifact_candidates=("output-usd", "output"),
+        artifact_name="physics.usd",
+        timeout=args.timeout,
+        poll_interval=args.poll_interval,
+        request_timeout=args.request_timeout,
+    )
+    steps.append(physics)
+    if not physics["passed"]:
+        errors.extend(physics.get("errors", []))
+    return direct_report(
+        bool(material["passed"] and physics["passed"]),
+        steps,
+        errors,
+        materialized_usd_path=material.get("output_path"),
+        physics_usd_path=physics.get("output_path"),
+    )
+
+
+def run_service_pipeline(
+    name: str,
+    base_url: str,
+    usd_path: Path,
+    output_dir: Path,
+    fields: dict[str, str],
+    artifact_candidates: tuple[str, ...],
+    artifact_name: str,
+    timeout: int,
+    poll_interval: float,
+    request_timeout: int,
+) -> dict[str, Any]:
+    started = time.monotonic()
+    step: dict[str, Any] = {
+        "name": name,
+        "base_url": base_url,
+        "input_usd": str(usd_path),
+        "status": "not_started",
+        "passed": False,
+        "errors": [],
+    }
+    try:
+        health = get_json(urljoin(base_url.rstrip("/") + "/", "health"), request_timeout)
+        step["health"] = health
+        response = post_multipart(
+            urljoin(base_url.rstrip("/") + "/", "pipeline"),
+            fields=fields,
+            file_field="usd_file",
+            file_path=usd_path,
+            timeout=request_timeout,
+        )
+        session_id = response.get("session_id")
+        if not session_id:
+            raise RuntimeError(f"{name} pipeline response did not include session_id: {response}")
+        step["session_id"] = session_id
+        step["create_response"] = response
+        status = poll_pipeline_status(base_url, session_id, timeout, poll_interval, request_timeout)
+        step["final_status"] = status
+        if status.get("status") != "completed":
+            step["status"] = "failed"
+            step["errors"].append(f"{name} pipeline did not complete: {status}")
+            return step
+        output_path = output_dir / artifact_name
+        downloaded = download_first_artifact(base_url, session_id, artifact_candidates, output_path, request_timeout)
+        step["artifact"] = downloaded
+        if not downloaded.get("ok"):
+            step["status"] = "failed"
+            step["errors"].append(f"{name} output artifact was not downloadable: {downloaded}")
+            return step
+        step["status"] = "passed"
+        step["passed"] = True
+        step["output_path"] = str(output_path)
+        step["elapsed_seconds"] = round(time.monotonic() - started, 3)
+        return step
+    except Exception as exc:
+        step["status"] = "failed"
+        step["errors"].append(f"{type(exc).__name__}: {exc}")
+        step["elapsed_seconds"] = round(time.monotonic() - started, 3)
+        return step
+
+
+def poll_pipeline_status(base_url: str, session_id: str, timeout: int, poll_interval: float, request_timeout: int) -> dict[str, Any]:
+    deadline = time.monotonic() + timeout
+    status: dict[str, Any] = {}
+    while time.monotonic() < deadline:
+        status = get_json(urljoin(base_url.rstrip("/") + "/", f"pipeline/{session_id}/status"), request_timeout)
+        if status.get("status") in {"completed", "failed", "cancelled"}:
+            return status
+        time.sleep(max(0.5, poll_interval))
+    status["status"] = status.get("status", "timeout")
+    status["timeout_seconds"] = timeout
+    return status
+
+
+def post_multipart(url: str, fields: dict[str, str], file_field: str, file_path: Path, timeout: int) -> dict[str, Any]:
+    boundary = f"----address-twin-{int(time.time() * 1000)}"
+    chunks: list[bytes] = []
+    for name, value in fields.items():
+        chunks.extend(
+            [
+                f"--{boundary}\r\n".encode(),
+                f'Content-Disposition: form-data; name="{name}"\r\n\r\n'.encode(),
+                str(value).encode(),
+                b"\r\n",
+            ]
+        )
+    chunks.extend(
+        [
+            f"--{boundary}\r\n".encode(),
+            f'Content-Disposition: form-data; name="{file_field}"; filename="{file_path.name}"\r\n'.encode(),
+            b"Content-Type: application/octet-stream\r\n\r\n",
+            file_path.read_bytes(),
+            b"\r\n",
+            f"--{boundary}--\r\n".encode(),
+        ]
+    )
+    body = b"".join(chunks)
+    request = Request(url, data=body, headers={"Content-Type": f"multipart/form-data; boundary={boundary}"}, method="POST")
+    return json_request(request, timeout)
+
+
+def get_json(url: str, timeout: int) -> dict[str, Any]:
+    return json_request(Request(url, method="GET"), timeout)
+
+
+def json_request(request: Request, timeout: int) -> dict[str, Any]:
+    try:
+        with urlopen(request, timeout=timeout) as response:
+            body = response.read().decode("utf-8", errors="replace")
+    except HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="replace")
+        raise RuntimeError(f"HTTP {exc.code} for {request.full_url}: {tail(body, 1000)}") from exc
+    except URLError as exc:
+        raise RuntimeError(f"URL error for {request.full_url}: {exc.reason}") from exc
+    try:
+        parsed = json.loads(body)
+        return parsed if isinstance(parsed, dict) else {"value": parsed}
+    except json.JSONDecodeError:
+        return {"body": body}
+
+
+def download_first_artifact(base_url: str, session_id: str, candidates: tuple[str, ...], output_path: Path, timeout: int) -> dict[str, Any]:
+    errors: list[str] = []
+    for artifact in candidates:
+        url = urljoin(base_url.rstrip("/") + "/", f"artifacts/{session_id}/{artifact}")
+        try:
+            with urlopen(Request(url, method="GET"), timeout=timeout) as response:
+                output_path.write_bytes(response.read())
+            return {"ok": True, "url": url, "path": str(output_path), "bytes": output_path.stat().st_size}
+        except Exception as exc:
+            errors.append(f"{artifact}: {type(exc).__name__}: {exc}")
+    return {"ok": False, "errors": errors}
+
+
+def direct_report(
+    passed: bool,
+    steps: list[dict[str, Any]],
+    errors: list[str],
+    materialized_usd_path: str | None,
+    physics_usd_path: str | None,
+) -> dict[str, Any]:
+    return {
+        "client": "direct-rest-client",
+        "passed": passed,
+        "status": "passed" if passed else "failed",
+        "steps": steps,
+        "errors": errors,
+        "warnings": [],
+        "materialized_usd_path": materialized_usd_path,
+        "physics_usd_path": physics_usd_path,
+        "output_usd_path": physics_usd_path or materialized_usd_path,
+    }
+
+
+def render_child_markdown(report: dict[str, Any]) -> str:
+    lines = ["# NVIDIA Content Agents direct REST client", "", f"Status: **{report.get('status')}**", "", "## Steps", ""]
+    for step in report.get("steps", []):
+        lines.append(f"- `{step.get('name')}`: `{step.get('status')}` session=`{step.get('session_id')}`")
+    if report.get("errors"):
+        lines.extend(["", "## Errors", ""])
+        lines.extend(f"- {error}" for error in report["errors"])
+    lines.append("")
+    return "\n".join(lines)
+
+
 def endpoint_status() -> dict[str, Any]:
     envs = [*MATERIAL_ENDPOINT_ENVS, *PHYSICS_ENDPOINT_ENVS, *OVRTX_ENDPOINT_ENVS, *TOKEN_ENVS, *DEPLOYMENT_AUTH_ENVS]
     file_envs = [f"{name}_FILE" for name in [*TOKEN_ENVS, *DEPLOYMENT_AUTH_ENVS]]
@@ -202,6 +454,14 @@ def present_name(names: tuple[str, ...]) -> str | None:
     for name in names:
         if os.environ.get(name):
             return name
+    return None
+
+
+def first_env(names: tuple[str, ...]) -> str | None:
+    for name in names:
+        value = os.environ.get(name)
+        if value:
+            return value
     return None
 
 
