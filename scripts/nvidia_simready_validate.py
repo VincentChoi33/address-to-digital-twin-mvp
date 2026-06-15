@@ -177,7 +177,11 @@ def resolve_validator(auto_install: bool) -> Path:
                 subprocess.run([str(pip), "install", "--upgrade", "pip"], check=True)
                 subprocess.run([str(pip), "install", "simready-validate>=2026.4.8", "numpy>=1.24,<3"], check=True)
             except subprocess.CalledProcessError:
-                subprocess.run([str(python), "-m", "pip", "install", "--user", "simready-validate>=2026.4.8", "numpy>=1.24,<3"], check=True)
+                user_install = [str(python), "-m", "pip", "install", "--user", "simready-validate>=2026.4.8", "numpy>=1.24,<3"]
+                try:
+                    subprocess.run(user_install, check=True)
+                except subprocess.CalledProcessError:
+                    subprocess.run([*user_install, "--break-system-packages"], check=True)
                 user_validator = Path.home() / ".local/bin/simready-validate"
                 if user_validator.is_file():
                     return user_validator.resolve()
