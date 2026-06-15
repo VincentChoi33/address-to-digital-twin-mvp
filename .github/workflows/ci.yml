@@ -145,7 +145,7 @@ jobs:
           grep -q 'NVIDIA.WARP_FLOOD.001' "$RUNNER_TEMP/nvidia-acceptance.json"
           grep -q 'SIMREADY.VALIDATOR.001' "$RUNNER_TEMP/nvidia-acceptance.json"
           grep -q 'CONTENT_AGENTS.RUNTIME.001' "$RUNNER_TEMP/nvidia-acceptance.json"
-          grep -q '"failures": \\[\\]' "$RUNNER_TEMP/nvidia-acceptance.json"
+          jq -e '.status == "passed" and (.blockers | length) == 0 and (.failures | length) == 0 and all(.gates[]; .status == "passed")' "$RUNNER_TEMP/nvidia-acceptance.json"
 
       - name: NVIDIA one-shot finish gate
         run: |
