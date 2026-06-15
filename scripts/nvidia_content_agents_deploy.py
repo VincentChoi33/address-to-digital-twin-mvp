@@ -335,6 +335,7 @@ def render_compose(source: Path, dest: Path, upstream: Path, env_file: Path, rep
     text = source.read_text(encoding="utf-8")
     text = text.replace("context: ../..", f"context: {upstream.as_posix()}")
     text = text.replace("- path: ../../.env", f"- path: {env_file.as_posix()}")
+    text = add_host_network_to_builds(text)
     for old, new in replacements.items():
         text = text.replace(old, new)
     if gpu_device:
@@ -343,6 +344,20 @@ def render_compose(source: Path, dest: Path, upstream: Path, env_file: Path, rep
             f"- OVRTX_RENDER_MODE=${{OVRTX_RENDER_MODE:-pt}}\n      - NVIDIA_VISIBLE_DEVICES={gpu_device}",
         )
     dest.write_text(text, encoding="utf-8")
+
+
+def add_host_network_to_builds(text: str) -> str:
+    """Use host networking for Docker builds so apt/pip use the host resolver.
+
+    train1's Docker bridge resolver currently points at public DNS servers that
+    are unreachable from build containers, while `--network host` resolves via
+    systemd-resolved correctly. Compose supports this as `build.network`.
+    """
+    marker = "    build:\n"
+    replacement = "    build:\n      network: host\n"
+    if "      network: host\n" in text:
+        return text
+    return text.replace(marker, replacement)
 
 
 def run_up(runtime_dir: Path, skip_build: bool) -> dict[str, Any]:

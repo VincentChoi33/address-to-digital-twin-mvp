@@ -61,7 +61,7 @@ def install_remote_key(args: argparse.Namespace, key: str) -> dict[str, Any]:
 set -euo pipefail
 REMOTE_KEY_FILE="$1"
 case "$REMOTE_KEY_FILE" in
-  ~/*) REMOTE_KEY_FILE="$HOME/${REMOTE_KEY_FILE#~/}" ;;
+  \~/*) REMOTE_KEY_FILE="$HOME/${REMOTE_KEY_FILE#~/}" ;;
 esac
 REMOTE_DIR=$(dirname "$REMOTE_KEY_FILE")
 mkdir -p "$REMOTE_DIR"
