@@ -1,4 +1,5 @@
 import { escapeHtml } from "../lib/html";
+import { getNvidiaVisualArtifacts, nvidiaEvidenceHtml } from "./nvidiaEvidence";
 import type { SourceManifest, TwinProject } from "../types/twin";
 
 export interface UiControls {
@@ -55,6 +56,23 @@ export interface UiControls {
   logFeed: HTMLElement;
   basemapAttribution: HTMLElement;
   soundToggle: HTMLButtonElement;
+
+  nvidiaResultViewer: HTMLElement;
+  nvidiaResultTitle: HTMLElement;
+  nvidiaResultProduct: HTMLElement;
+  nvidiaResultStatus: HTMLElement;
+  nvidiaStaticFrame: HTMLElement;
+  nvidiaLiveFrame: HTMLIFrameElement;
+  nvidiaLiveButton: HTMLButtonElement;
+  nvidiaLiveOpenLink: HTMLAnchorElement;
+  nvidiaResultImage: HTMLImageElement;
+  nvidiaResultWarpOverlay: HTMLImageElement;
+  nvidiaResultLayerNote: HTMLElement;
+  nvidiaResultCaption: HTMLElement;
+  nvidiaResultEvidence: HTMLElement;
+  nvidiaResultSource: HTMLElement;
+  nvidiaResultClose: HTMLButtonElement;
+  nvidiaVisualButtons: HTMLButtonElement[];
 }
 
 export function confidenceKo(value: string): string {
@@ -245,7 +263,7 @@ function missionSteps(): string {
     ["02", "레이어 신뢰도", "공식·OSM·절차적 fallback을 분리 표시"],
     ["03", "트윈 생성", "건물/도로/지형을 시뮬레이션 도메인에 배치"],
     ["04", "강우 시나리오", "관거 포화와 맨홀 역류를 라이브 통계로 추적"],
-    ["05", "QA 산출물", "JSON·manifest·QA report로 검토 흔적 보존"]
+    ["05", "NVIDIA 산출물", "OpenUSD·ovrtx·Warp·Content Agents·SimReady 증거 표시"]
   ];
   return steps
     .map(
@@ -261,13 +279,14 @@ function missionSteps(): string {
 
 export function createUi(app: HTMLElement, twin: TwinProject, manifest: SourceManifest): UiControls {
   const readiness = dataReadinessSummary(manifest);
+  const defaultNvidiaVisual = getNvidiaVisualArtifacts()[0];
   app.innerHTML = `
     <div class="app-shell">
       <header class="command-bar">
         <div class="brand-lockup">
-          <span class="eyebrow">Preview-grade flood twin</span>
+          <span class="eyebrow">NVIDIA OpenUSD evidence + local preview</span>
           <h1>주소 기반 침수 리스크 트윈</h1>
-          <p>주소 입력부터 데이터 신뢰도, 강우 시나리오, QA 산출물까지 한 화면에서 검토합니다.</p>
+          <p>주소 입력부터 데이터 신뢰도, 강우 시나리오, NVIDIA 산출물 증거까지 한 화면에서 검토합니다.</p>
         </div>
         <div class="topbar-stats" aria-label="실시간 침수 통계">
           <div class="stat"><span>지표 수량</span><b id="statVolume" class="accent">0 ㎥</b></div>
@@ -339,7 +358,7 @@ export function createUi(app: HTMLElement, twin: TwinProject, manifest: SourceMa
         </section>
       </aside>
 
-      <main class="stage" aria-label="3D 디지털 트윈 장면">
+      <main class="stage" aria-label="NVIDIA-only 융합 디지털 트윈 결과">
         <div id="sceneHost" class="scene-host"></div>
         <div id="webglFallback" class="webgl-fallback" hidden>
           <b>3D 미리보기를 사용할 수 없습니다</b>
@@ -350,7 +369,7 @@ export function createUi(app: HTMLElement, twin: TwinProject, manifest: SourceMa
         <div class="stage-hud">
           <span>현재 분석 주소</span>
           <b id="stageAddress">${escapeHtml(twin.addresses.parcel_address)}</b>
-          <small>3D는 판단 보조입니다. 법적/측량급 geometry가 아닐 수 있습니다.</small>
+          <small>로컬 Three.js 비교 레이어입니다. 기본 메인은 NVIDIA-only 융합 결과입니다.</small>
         </div>
         <div class="legend">
           <div><span class="chip target"></span>대상 건물</div>
@@ -358,7 +377,39 @@ export function createUi(app: HTMLElement, twin: TwinProject, manifest: SourceMa
           <div><span class="chip drain"></span>빗물받이</div>
           <div><span class="chip water"></span>침수 깊이</div>
         </div>
+        <div class="orientation-overlay" aria-label="지도 방향 기준">
+          <b>지도 기준</b>
+          <span><strong>N</strong> = 로컬 +Z · 위성 타일 북쪽</span>
+          <span><strong>E</strong> = 로컬 +X · 경도 증가</span>
+          <small>WFS/필지 좌표가 정렬 기준, 위성은 드레이프 텍스처</small>
+        </div>
         <div id="warningBanner" class="stage-warning">트윈을 생성하는 중입니다…</div>
+        <div id="nvidiaResultViewer" class="nvidia-result-viewer" aria-label="NVIDIA-only 융합 결과 메인 뷰어">
+          <div class="nvidia-result-top">
+            <div>
+              <span id="nvidiaResultProduct">${escapeHtml(defaultNvidiaVisual.product)}</span>
+              <b id="nvidiaResultTitle">${escapeHtml(defaultNvidiaVisual.title)}</b>
+            </div>
+            <span id="nvidiaResultStatus" class="nvidia-result-status">${escapeHtml(defaultNvidiaVisual.status)}</span>
+            <button id="nvidiaLiveButton" type="button">Live ovstream 조작</button>
+            <a id="nvidiaLiveOpenLink" class="nvidia-result-link" href="#" target="_blank" rel="noreferrer">새 탭</a>
+            <button id="nvidiaResultClose" type="button">로컬 Three.js 비교 보기</button>
+          </div>
+          <div id="nvidiaStaticFrame" class="nvidia-result-frame">
+            <img id="nvidiaResultImage" src="${escapeHtml(defaultNvidiaVisual.imageUrl)}" alt="${escapeHtml(defaultNvidiaVisual.title)}" />
+            <img id="nvidiaResultWarpOverlay" class="nvidia-warp-overlay" src="${escapeHtml(defaultNvidiaVisual.warpOverlayUrl ?? "")}" alt="NVIDIA Warp/CUDA flood depth overlay" />
+            <div class="nvidia-fusion-badge">
+              <b>NVIDIA-only fused main</b>
+              <span id="nvidiaResultLayerNote">RTX frame + Warp depth + Content Agents material/physics + SimReady validator</span>
+            </div>
+          </div>
+          <iframe id="nvidiaLiveFrame" class="nvidia-live-frame" title="NVIDIA ovstream live interactive viewer" hidden></iframe>
+          <div class="nvidia-result-copy">
+            <p id="nvidiaResultCaption">${escapeHtml(defaultNvidiaVisual.caption)}</p>
+            <small id="nvidiaResultEvidence">${escapeHtml(defaultNvidiaVisual.evidence)}</small>
+            <code id="nvidiaResultSource">${escapeHtml(defaultNvidiaVisual.sourcePath)}</code>
+          </div>
+        </div>
       </main>
 
       <aside class="panel intelligence-panel" aria-label="위험도와 산출물">
@@ -369,6 +420,11 @@ export function createUi(app: HTMLElement, twin: TwinProject, manifest: SourceMa
           </div>
           <p id="riskReason">시뮬레이션 통계가 들어오면 침수 위험 판정이 갱신됩니다.</p>
           <div class="risk-meter"><div id="riskBar"></div></div>
+        </section>
+
+        <section class="panel-section nvidia-card">
+          <div class="section-title">NVIDIA로 실제 만든 것</div>
+          ${nvidiaEvidenceHtml()}
         </section>
 
         <section class="panel-section">
@@ -483,6 +539,22 @@ export function createUi(app: HTMLElement, twin: TwinProject, manifest: SourceMa
     chartCanvas: query("#chartCanvas"),
     logFeed: query("#logFeed"),
     basemapAttribution: query("#basemapAttribution"),
-    soundToggle: query("#soundToggle")
+    soundToggle: query("#soundToggle"),
+    nvidiaResultViewer: query("#nvidiaResultViewer"),
+    nvidiaResultTitle: query("#nvidiaResultTitle"),
+    nvidiaResultProduct: query("#nvidiaResultProduct"),
+    nvidiaResultStatus: query("#nvidiaResultStatus"),
+    nvidiaStaticFrame: query("#nvidiaStaticFrame"),
+    nvidiaLiveFrame: query("#nvidiaLiveFrame"),
+    nvidiaLiveButton: query("#nvidiaLiveButton"),
+    nvidiaLiveOpenLink: query("#nvidiaLiveOpenLink"),
+    nvidiaResultImage: query("#nvidiaResultImage"),
+    nvidiaResultWarpOverlay: query("#nvidiaResultWarpOverlay"),
+    nvidiaResultLayerNote: query("#nvidiaResultLayerNote"),
+    nvidiaResultCaption: query("#nvidiaResultCaption"),
+    nvidiaResultEvidence: query("#nvidiaResultEvidence"),
+    nvidiaResultSource: query("#nvidiaResultSource"),
+    nvidiaResultClose: query("#nvidiaResultClose"),
+    nvidiaVisualButtons: Array.from(app.querySelectorAll<HTMLButtonElement>("[data-nvidia-visual]"))
   };
 }

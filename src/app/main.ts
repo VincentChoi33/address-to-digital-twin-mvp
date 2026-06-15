@@ -1,8 +1,13 @@
 import sadangTwin from "../samples/sadang_317_6/twin.json";
 import sadangManifest from "../samples/sadang_317_6/source_manifest.json";
+import nvidiaAcceptanceReport from "../../docs/evidence/nvidia-only-acceptance-sadang-2026-06-13.json";
+import materializedUsd from "../samples/sadang_317_6/omniverse/content_agents_run/material/materialized.usd?raw";
+import physicsUsd from "../samples/sadang_317_6/omniverse/content_agents_run/physics/physics.usd?raw";
+import ovrtxViewerUsda from "../samples/sadang_317_6/omniverse/sadang_317_6.ovrtx_viewer.usda?raw";
 import { generateQaReport } from "../core/qa";
 import { escapeHtml } from "../lib/html";
 import { exportTwinToOmniversePackage } from "../nvidia/usd";
+import { getNvidiaVisualArtifacts } from "./nvidiaEvidence";
 import { BASEMAP_ATTRIBUTION, resolveBasemapMode } from "../render/basemap";
 import { SoundSynth } from "../render/sound";
 import { CityViewer, WebGLUnavailableError } from "../scene/viewer";
@@ -117,7 +122,17 @@ function rebuildArtifactLinks(): void {
       JSON.stringify(omniverse.simreadyReport, null, 2),
       "application/json",
       `${twin.project_id}_simready_minimum_report.json`
-    )
+    ),
+    makeBlobLink(
+      "nvidia_acceptance.json",
+      "nvidia",
+      JSON.stringify(nvidiaAcceptanceReport, null, 2),
+      "application/json",
+      `${twin.project_id}_nvidia_acceptance.json`
+    ),
+    makeBlobLink("ovrtx_viewer.usda", "nvidia", ovrtxViewerUsda, "model/vnd.usda", `${twin.project_id}_ovrtx_viewer.usda`),
+    makeBlobLink("content_agents_material.usd", "nvidia", materializedUsd, "model/vnd.usd", `${twin.project_id}_content_agents_material.usd`),
+    makeBlobLink("content_agents_physics.usd", "nvidia", physicsUsd, "model/vnd.usd", `${twin.project_id}_content_agents_physics.usd`)
   ].join("");
 }
 
@@ -264,6 +279,86 @@ function applyScenario(id: string): void {
     setRain(Math.max(140, Number(controls.rainSlider.value)));
   }
   controls.scenarioNarrative.textContent = scenarioNarrativeText(id, Number(controls.rainSlider.value));
+}
+
+
+// ---------------------------------------------------------------- NVIDIA visual output viewer
+
+const nvidiaVisualArtifacts = getNvidiaVisualArtifacts();
+
+function nvidiaLiveViewerUrl(): string {
+  const params = new URLSearchParams(window.location.search);
+  const viewerHost =
+    params.get("nvidiaViewerHost") ||
+    import.meta.env.VITE_NVIDIA_VIEWER_HOST ||
+    window.location.hostname ||
+    "localhost";
+  const viewerPort = params.get("nvidiaViewerPort") || import.meta.env.VITE_NVIDIA_VIEWER_PORT || "5191";
+  const streamServer = params.get("nvidiaServer") || import.meta.env.VITE_NVIDIA_STREAM_SERVER || window.location.hostname || "127.0.0.1";
+  const signalingPort = params.get("nvidiaSignalingPort") || import.meta.env.VITE_NVIDIA_SIGNALING_PORT || "49100";
+  const streamPort = params.get("nvidiaStreamPort") || import.meta.env.VITE_NVIDIA_STREAM_PORT || "49101";
+  const healthPort = params.get("nvidiaHealthPort") || import.meta.env.VITE_NVIDIA_HEALTH_PORT || "18081";
+  const url = new URL(`${window.location.protocol}//${viewerHost}:${viewerPort}/`);
+  url.searchParams.set("server", streamServer);
+  url.searchParams.set("signalingport", signalingPort);
+  url.searchParams.set("streamport", streamPort);
+  url.searchParams.set("healthport", healthPort);
+  url.searchParams.set("autoconnect", "1");
+  return url.toString();
+}
+
+function syncNvidiaLiveLink(): string {
+  const url = nvidiaLiveViewerUrl();
+  controls.nvidiaLiveOpenLink.href = url;
+  return url;
+}
+
+function hideNvidiaLiveFrame(): void {
+  controls.nvidiaLiveFrame.hidden = true;
+  controls.nvidiaStaticFrame.hidden = false;
+  controls.nvidiaLiveButton.classList.remove("active");
+}
+
+function showNvidiaLiveFrame(): void {
+  const url = syncNvidiaLiveLink();
+  controls.nvidiaResultViewer.hidden = false;
+  controls.nvidiaResultProduct.textContent = "NVIDIA ovstream + ovrtx live";
+  controls.nvidiaResultTitle.textContent = "Live interactive NVIDIA stream";
+  controls.nvidiaResultStatus.textContent = "LIVE WEBRTC";
+  controls.nvidiaResultLayerNote.textContent = "@nvidia/ov-web-rtc controls → ovstream server callbacks → ovrtx camera write_attribute → RTX frame stream";
+  controls.nvidiaResultCaption.textContent = "GPU 서버(train1)의 ovrtx 렌더러가 USD 카메라를 직접 바꾸고 ovstream WebRTC로 프레임을 보냅니다. 버튼/키/드래그/휠 입력은 NVIDIA data channel/native input으로 서버에 전달됩니다.";
+  controls.nvidiaResultEvidence.textContent = "필요 서버: train1 scripts/nvidia_ovstream_interactive_server.py + local nvidia-viewer dev server(:5191).";
+  controls.nvidiaResultSource.textContent = url;
+  controls.nvidiaStaticFrame.hidden = true;
+  controls.nvidiaLiveFrame.hidden = false;
+  controls.nvidiaLiveButton.classList.add("active");
+  if (controls.nvidiaLiveFrame.src !== url) controls.nvidiaLiveFrame.src = url;
+  for (const button of controls.nvidiaVisualButtons) button.classList.remove("active");
+  addLog("NVIDIA live ovstream 조작 뷰어를 메인에 임베드했습니다.", "success");
+}
+
+function showNvidiaVisual(id: string, log = true): void {
+  const artifact = nvidiaVisualArtifacts.find((item) => item.id === id) ?? nvidiaVisualArtifacts[0];
+  hideNvidiaLiveFrame();
+  controls.nvidiaResultViewer.hidden = false;
+  controls.nvidiaResultTitle.textContent = artifact.title;
+  controls.nvidiaResultProduct.textContent = artifact.product;
+  controls.nvidiaResultStatus.textContent = artifact.status;
+  controls.nvidiaResultImage.src = artifact.imageUrl;
+  controls.nvidiaResultImage.alt = artifact.title;
+  const hasWarpOverlay = Boolean(artifact.warpOverlayUrl);
+  controls.nvidiaResultWarpOverlay.hidden = !hasWarpOverlay;
+  if (artifact.warpOverlayUrl) controls.nvidiaResultWarpOverlay.src = artifact.warpOverlayUrl;
+  controls.nvidiaResultLayerNote.textContent = artifact.fused
+    ? "RTX frame + Warp/CUDA flood depth + Content Agents material/physics + SimReady validator"
+    : "개별 NVIDIA 산출물 원본 보기 — 오른쪽에서 융합 메인으로 돌아갈 수 있습니다.";
+  controls.nvidiaResultCaption.textContent = artifact.caption;
+  controls.nvidiaResultEvidence.textContent = artifact.evidence;
+  controls.nvidiaResultSource.textContent = artifact.sourcePath;
+  for (const button of controls.nvidiaVisualButtons) {
+    button.classList.toggle("active", button.dataset.nvidiaVisual === artifact.id);
+  }
+  if (log) addLog(`NVIDIA 결과 메인 표시: ${artifact.title}`, "success");
 }
 
 // ---------------------------------------------------------------- stats loop
@@ -423,6 +518,20 @@ for (const button of controls.scenarioButtons) {
   });
 }
 
+
+for (const button of controls.nvidiaVisualButtons) {
+  button.addEventListener("click", () => showNvidiaVisual(button.dataset.nvidiaVisual ?? "ovrtx"));
+}
+
+controls.nvidiaLiveButton.addEventListener("click", () => showNvidiaLiveFrame());
+syncNvidiaLiveLink();
+
+controls.nvidiaResultClose.addEventListener("click", () => {
+  controls.nvidiaResultViewer.hidden = true;
+  for (const button of controls.nvidiaVisualButtons) button.classList.remove("active");
+  addLog("로컬 Three.js 비교 보기로 전환했습니다. 오른쪽 NVIDIA 썸네일을 누르면 NVIDIA-only 메인으로 복귀합니다.", "info");
+});
+
 controls.dryButton.addEventListener("click", () => {
   viewer?.solver?.reset();
   backflowActive = false;
@@ -456,5 +565,6 @@ viewer?.start(() => {});
 const queryFromUrl = new URLSearchParams(window.location.search).get("q");
 controls.promptInput.value = queryFromUrl ?? "사당동 317-6번지 디지털 트윈 만들어줘";
 renderAgentRun(runLocalAddressAgent(controls.promptInput.value, initialTwin, initialManifest));
+showNvidiaVisual("fused", false);
 
 window.addEventListener("beforeunload", () => viewer?.dispose());

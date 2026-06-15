@@ -5,13 +5,17 @@
   color: #e8eef8;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
 }
 
 .viewer-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
+  grid-template-columns: minmax(0, 1fr) 390px;
   height: 100vh;
   overflow: hidden;
 }
@@ -20,7 +24,9 @@ body {
   position: relative;
   min-width: 0;
   min-height: 0;
-  background: #000;
+  background:
+    radial-gradient(circle at 18% 10%, rgba(118, 185, 0, 0.16), transparent 32%),
+    #000;
 }
 
 #remote-video {
@@ -40,28 +46,39 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 20px;
-  border-left: 1px solid rgba(148, 163, 184, 0.25);
-  background: rgba(15, 23, 42, 0.92);
+  padding: 18px;
+  border-left: 1px solid rgba(118, 185, 0, 0.32);
+  background:
+    linear-gradient(180deg, rgba(118, 185, 0, 0.08), transparent 38%),
+    rgba(15, 23, 42, 0.95);
   overflow: auto;
 }
 
 .panel h1 {
   margin: 0;
   font-size: 20px;
+  letter-spacing: -0.03em;
 }
 
 .panel p {
   margin: 0;
   color: #aebbd0;
   line-height: 1.5;
+  font-size: 13px;
+}
+
+.connection-grid {
+  display: grid;
+  grid-template-columns: 1fr 0.72fr 0.72fr 0.72fr;
+  gap: 8px;
 }
 
 label {
   display: grid;
   gap: 6px;
   color: #cbd5e1;
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 800;
 }
 
 input,
@@ -74,16 +91,77 @@ button {
   font: inherit;
 }
 
+input {
+  min-width: 0;
+}
+
 button {
   cursor: pointer;
-  background: linear-gradient(135deg, #60a5fa, #22d3ee);
-  color: #03111f;
-  font-weight: 700;
+  background: linear-gradient(135deg, #76b900, #b7ff4a);
+  color: #06110a;
+  font-weight: 900;
+}
+
+button.secondary,
+.control-grid button {
+  background: rgba(255, 255, 255, 0.055);
+  color: #e8eef8;
+}
+
+button.active,
+.control-grid button:hover,
+button.secondary:hover {
+  border-color: rgba(183, 255, 74, 0.72);
+  background: rgba(118, 185, 0, 0.18);
+  color: #dfff9a;
 }
 
 button:disabled {
   cursor: not-allowed;
   opacity: 0.5;
+}
+
+.button-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.control-card {
+  display: grid;
+  gap: 9px;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 14px;
+  background: rgba(2, 6, 23, 0.46);
+}
+
+.section-label {
+  color: #b7ff4a;
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.control-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.control-grid.two-col {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.control-grid button {
+  padding: 9px 8px;
+  font-size: 12px;
+}
+
+.hint {
+  color: #93a4bb !important;
+  font-size: 11px !important;
 }
 
 .overlay {
@@ -105,6 +183,11 @@ button:disabled {
   align-items: center;
 }
 
+.top-left span {
+  color: #b7ff4a;
+  font-weight: 900;
+}
+
 .bottom-left {
   left: 16px;
   bottom: 16px;
@@ -112,8 +195,31 @@ button:disabled {
   color: #cbd5e1;
 }
 
-#events {
-  min-height: 220px;
+.interaction-hint {
+  right: 16px;
+  top: 16px;
+  display: grid;
+  gap: 4px;
+  max-width: 370px;
+}
+
+.interaction-hint b {
+  color: #b7ff4a;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.interaction-hint span {
+  color: #d8e4f4;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+#events,
+#telemetry {
+  min-height: 190px;
+  max-height: 260px;
   overflow: auto;
   white-space: pre-wrap;
   border-radius: 12px;
@@ -121,4 +227,33 @@ button:disabled {
   background: rgba(2, 6, 23, 0.72);
   padding: 12px;
   color: #dbeafe;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+#telemetry {
+  min-height: 125px;
+  color: #dfff9a;
+}
+
+@media (max-width: 900px) {
+  .viewer-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(420px, 58vh) auto;
+    height: auto;
+    min-height: 100vh;
+    overflow: auto;
+  }
+
+  .panel {
+    border-left: none;
+    border-top: 1px solid rgba(118, 185, 0, 0.32);
+  }
+
+  .connection-grid,
+  .button-row,
+  .control-grid,
+  .control-grid.two-col {
+    grid-template-columns: 1fr;
+  }
 }

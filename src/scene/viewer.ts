@@ -141,6 +141,7 @@ export class CityViewer {
     this.projectGroup.add(this.surface.mesh);
 
     this.buildDrainMarkers(this.baked.drains, field);
+    this.addOrientationGuides(field);
     this.setView("orbit");
   }
 
@@ -197,6 +198,56 @@ export class CityViewer {
     this.backflowPlumeMaterial = plumeMaterial;
     this.projectGroup.add(markers);
     this.projectGroup.add(plumes);
+  }
+
+
+  private addOrientationGuides(field: Heightfield): void {
+    const group = new THREE.Group();
+    group.name = "orientation-guides";
+    group.userData.layer = "site";
+
+    const originX = -58;
+    const originZ = -18;
+    const originY = heightAt(field, originX, originZ) + 3.2;
+    const origin = new THREE.Vector3(originX, originY, originZ);
+
+    const north = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), origin, 34, 0x64d2ff, 8, 4);
+    const east = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), origin, 30, 0xb7ff4a, 7, 3.5);
+    north.name = "north-arrow-local-plus-z";
+    east.name = "east-arrow-local-plus-x";
+    group.add(north, east);
+    group.add(this.makeGuideLabel("N +Z", 0x64d2ff, new THREE.Vector3(originX, originY + 10, originZ + 42)));
+    group.add(this.makeGuideLabel("E +X", 0xb7ff4a, new THREE.Vector3(originX + 38, originY + 9, originZ)));
+    this.projectGroup.add(group);
+  }
+
+  private makeGuideLabel(text: string, color: number, position: THREE.Vector3): THREE.Sprite {
+    const canvas = document.createElement("canvas");
+    canvas.width = 192;
+    canvas.height = 64;
+    const context = canvas.getContext("2d");
+    if (context) {
+      context.fillStyle = "rgba(4, 9, 17, 0.72)";
+      context.strokeStyle = `#${color.toString(16).padStart(6, "0")}`;
+      context.lineWidth = 3;
+      context.roundRect(4, 4, canvas.width - 8, canvas.height - 8, 18);
+      context.fill();
+      context.stroke();
+      context.font = "900 28px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+      context.fillStyle = `#${color.toString(16).padStart(6, "0")}`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(text, canvas.width / 2, canvas.height / 2 + 1);
+    }
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
+    const sprite = new THREE.Sprite(material);
+    sprite.position.copy(position);
+    sprite.scale.set(34, 11, 1);
+    sprite.renderOrder = 20;
+    sprite.userData.layer = "site";
+    return sprite;
   }
 
   /** Flip drain grates red while the network backflows. */
