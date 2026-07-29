@@ -6,7 +6,7 @@ Host: train1 / gpu1
 
 ```json
 {
-  "package_dir": "/home/choihy/address-to-digital-twin-mvp-nvidia-check/src/samples/sadang_317_6/omniverse",
+  "package_dir": "${HOME}/address-to-digital-twin-mvp-nvidia-check/src/samples/sadang_317_6/omniverse",
   "status": "passed",
   "checks": [
     {
@@ -243,13 +243,13 @@ Host: train1 / gpu1
 ```json
 {
   "status": "passed",
-  "stage": "/home/choihy/address-to-digital-twin-mvp-nvidia-check/src/samples/sadang_317_6/omniverse/sadang_317_6.ovrtx_viewer.usda",
+  "stage": "${HOME}/address-to-digital-twin-mvp-nvidia-check/src/samples/sadang_317_6/omniverse/sadang_317_6.ovrtx_viewer.usda",
   "render_product": "/Render/OVServer/ViewportTexture0",
   "gpu": "0",
   "started_at_unix": 1781257516.1817348,
   "environment": {
     "OVRTX_SKIP_USD_CHECK": "1",
-    "OVRTX_BIN_PATH": "/home/choihy/.local/lib/python3.12/site-packages/ovrtx/bin",
+    "OVRTX_BIN_PATH": "${HOME}/.local/lib/python3.12/site-packages/ovrtx/bin",
     "LD_LIBRARY_PATH_contains_ovrtx_plugins": true
   },
   "frames": [
@@ -274,7 +274,7 @@ Host: train1 / gpu1
       ],
       "frame_index": 0,
       "step_seconds": 115.33351,
-      "output_ppm": "/home/choihy/address-to-digital-twin-mvp-nvidia-check/src/samples/sadang_317_6/omniverse/ovrtx_first_frame.ppm"
+      "output_ppm": "${HOME}/address-to-digital-twin-mvp-nvidia-check/src/samples/sadang_317_6/omniverse/ovrtx_first_frame.ppm"
     }
   ],
   "renderer_version": "(0, 3, 0)",
@@ -289,7 +289,7 @@ Host: train1 / gpu1
 ```json
 {
   "status": "passed",
-  "stage": "/home/choihy/address-to-digital-twin-mvp-nvidia-check/src/samples/sadang_317_6/omniverse/sadang_317_6.ovrtx_viewer.usda",
+  "stage": "${HOME}/address-to-digital-twin-mvp-nvidia-check/src/samples/sadang_317_6/omniverse/sadang_317_6.ovrtx_viewer.usda",
   "render_product": "/Render/OVServer/ViewportTexture0",
   "gpu": "0",
   "started_at_unix": 1781258533.1447284,
@@ -319,7 +319,7 @@ Host: train1 / gpu1
   "callbacks_registered_before_start": true,
   "environment": {
     "OVRTX_SKIP_USD_CHECK": "1",
-    "OVRTX_BIN_PATH": "/home/choihy/.local/lib/python3.12/site-packages/ovrtx/bin",
+    "OVRTX_BIN_PATH": "${HOME}/.local/lib/python3.12/site-packages/ovrtx/bin",
     "LD_LIBRARY_PATH_contains_ovrtx_plugins": true
   },
   "renderer_version": "(0, 3, 0)",

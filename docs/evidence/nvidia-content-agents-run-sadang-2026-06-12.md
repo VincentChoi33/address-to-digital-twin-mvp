@@ -6,8 +6,8 @@ Status: **passed**
 - Input USD: `src/samples/sadang_317_6/omniverse/simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda`
 - Output dir: `src/samples/sadang_317_6/omniverse/content_agents_run`
 - Router available: `False`
-- Materialized USD: `/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/material/materialized.usd`
-- Physics USD: `/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.usd`
+- Materialized USD: `${HOME}/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/material/materialized.usd`
+- Physics USD: `${HOME}/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.usd`
 - Next step: `rerun-simready-validation-on-content-agents-output`
 - Usage token required: `False`
 - Render endpoint required: `False`

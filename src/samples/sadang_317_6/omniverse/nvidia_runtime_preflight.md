@@ -20,7 +20,7 @@ Status: **openusd_ready**
 | OPENUSD.CHECKER.001 | usdchecker | passed | usdchecker is available on PATH. | - |
 | NVIDIA.GPU.001 | NVIDIA GPU / Driver | blocked | nvidia-smi is not available or returned non-zero. | Run this package on an NVIDIA workstation, cloud GPU VM, or container host with NVIDIA drivers. |
 | DOCKER.001 | Docker | passed | Docker version 29.5.3, build d1c06ef6b4 | - |
-| DOCKER.DAEMON.001 | Docker daemon | blocked | Cannot connect to the Docker daemon at unix:///Users/handy_choi/.docker/run/docker.sock. Is the docker daemon running? | Start Docker Desktop/daemon and re-run preflight. |
+| DOCKER.DAEMON.001 | Docker daemon | blocked | Cannot connect to the Docker daemon at unix://${HOME}/.docker/run/docker.sock. Is the docker daemon running? | Start Docker Desktop/daemon and re-run preflight. |
 | DOCKER.NVIDIA_RUNTIME.001 | NVIDIA Container Toolkit | not_run | Docker runtime metadata did not expose an nvidia runtime. | Install/configure NVIDIA Container Toolkit on the GPU host. |
 | OMNIVERSE.VIEWER.001 | NVIDIA Omniverse / ovrtx / Kit viewer | blocked | No ovrtx command, ovrtx Python package, kit, usdview, or known Omniverse app path was found. | Install/use an Omniverse Kit or ovrtx runtime on an NVIDIA GPU machine. |
 | OMNIVERSE.OVSTREAM.001 | NVIDIA Omniverse Streaming / ovstream WebRTC | blocked | ovstream Python lifecycle check failed and no stream runtime was detected. | Install ovstream on the NVIDIA GPU host and expose OVSTREAM_SIGNALING_URL, OMNIVERSE_STREAM_URL, or OVRTX_WEBRTC_URL after first-frame readiness. |
@@ -28,7 +28,7 @@ Status: **openusd_ready**
 | CONTENT_AGENTS.AUTH.001 | NVIDIA API / NGC / NVCF credentials | blocked | No NVIDIA_API_KEY deployment credential, usage token, or complete Material/Physics endpoint set was found. | Provide NVIDIA_API_KEY for local deployment or set provided Material/Physics endpoint URLs; add endpoint usage tokens only when those endpoints require auth. |
 | CONTENT_AGENTS.ENDPOINTS.001 | Omniverse Content Agents service endpoints | blocked | material=missing, physics=missing, ovrtx/render=missing | Set CONTENT_AGENTS_MATERIAL_AGENT_BASE_URL and CONTENT_AGENTS_PHYSICS_AGENT_BASE_URL, or deploy local Content Agents with NVIDIA_API_KEY. Set OVRTX/render endpoint when deploying or troubleshooting render-dependent services. |
 | CONTENT_AGENTS.RUNTIME.001 | Omniverse Content Agents | blocked | Content Agents prerequisites are incomplete. | Satisfy NVIDIA GPU + Docker daemon + NVIDIA runtime + NVIDIA_API_KEY deployment auth, or provide healthy Material/Physics service endpoints. |
-| SIMREADY.FOUNDATION.001 | NVIDIA SimReady Foundation | passed | SimReady Foundation root exists at /Users/handy_choi/.physical-ai-skill-hub/upstreams/simready-foundation. | - |
+| SIMREADY.FOUNDATION.001 | NVIDIA SimReady Foundation | passed | SimReady Foundation root exists at ${HOME}/.physical-ai-skill-hub/upstreams/simready-foundation. | - |
 | SIMREADY.VALIDATOR.001 | simready-validate | passed | simready-validate CLI is missing, but a Foundation checkout exists for runner-managed installation. | - |
 
 ## Next actions

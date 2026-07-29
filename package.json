@@ -1,12 +1,13 @@
 {
   "name": "address-to-digital-twin-preview-mvp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "license": "MIT",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "npm run lint && vite build",
+    "verify": "npm test && npm run lint && npm run build && npm run public:check",
     "sample:sadang": "tsx src/core/runAddressTwin.ts --sample sadang",
     "export:sadang": "tsx src/core/runAddressTwin.ts --sample sadang",
     "prepare:deploy": "npm run export:sadang && npm run nvidia:package && npm run build && rm -rf dist/samples && mkdir -p dist/samples && cp -R src/samples/sadang_317_6 dist/samples/",
@@ -16,7 +17,7 @@
     "export:omniverse": "tsx src/nvidia/exportOmniversePackage.ts",
     "nvidia:preflight": "tsx src/nvidia/runPreflight.ts",
     "nvidia:handoff": "tsx src/nvidia/packageHandoff.ts",
-    "nvidia:package": "npm run export:omniverse && npm run nvidia:preflight && npm run nvidia:handoff && npm run nvidia:validate",
+    "nvidia:package": "npm run export:omniverse && npm run nvidia:preflight && npm run public:sanitize && npm run nvidia:handoff && npm run nvidia:validate",
     "nvidia:validate": "tsx src/nvidia/validatePackage.ts",
     "nvidia:simready": "python3 scripts/nvidia_simready_validate.py",
     "nvidia:simready:auto": "NVIDIA_SIMREADY_AUTO_INSTALL=1 NVIDIA_SIMREADY_AUTO_CLONE=1 python3 scripts/nvidia_simready_validate.py",
@@ -36,7 +37,9 @@
     "nvidia:finish:remote": "python3 scripts/nvidia_remote_finish.py",
     "nvidia:finish:remote:check": "python3 scripts/nvidia_remote_finish.py --dry-run --allow-blocked",
     "nvidia:key:register": "python3 scripts/nvidia_register_key.py",
-    "nvidia:key:register-and-finish": "python3 scripts/nvidia_register_key.py --run-finish"
+    "nvidia:key:register-and-finish": "python3 scripts/nvidia_register_key.py --run-finish",
+    "public:sanitize": "python3 scripts/sanitize_public_evidence.py",
+    "public:check": "python3 scripts/sanitize_public_evidence.py --check"
   },
   "dependencies": {
     "three": "^0.160.0"
@@ -46,7 +49,7 @@
     "@types/three": "^0.160.0",
     "tsx": "^4.7.1",
     "typescript": "^5.4.2",
-    "vite": "^8.0.10",
-    "vitest": "^4.1.8"
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
   }
 }

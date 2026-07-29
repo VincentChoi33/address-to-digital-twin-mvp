@@ -1,6 +1,6 @@
 {
   "status": "passed",
-  "stage": "/home/choihy/address-to-digital-twin-mvp-nvidia-check/src/samples/sadang_317_6/omniverse/sadang_317_6.ovrtx_viewer.usda",
+  "stage": "${HOME}/address-to-digital-twin-mvp-nvidia-check/src/samples/sadang_317_6/omniverse/sadang_317_6.ovrtx_viewer.usda",
   "render_product": "/Render/OVServer/ViewportTexture0",
   "gpu": "0",
   "started_at_unix": 1781267961.1112237,
@@ -32,7 +32,7 @@
   "callbacks_registered_before_start": true,
   "environment": {
     "OVRTX_SKIP_USD_CHECK": "1",
-    "OVRTX_BIN_PATH": "/home/choihy/.local/lib/python3.12/site-packages/ovrtx/bin",
+    "OVRTX_BIN_PATH": "${HOME}/.local/lib/python3.12/site-packages/ovrtx/bin",
     "LD_LIBRARY_PATH_contains_ovrtx_plugins": true
   },
   "renderer_version": "(0, 3, 0)",

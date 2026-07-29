@@ -51,15 +51,15 @@
       "path": "ovstream_browser_client/package.json",
       "role": "NVIDIA ov-web-rtc Direct browser client manifest",
       "required": true,
-      "size_bytes": 485,
-      "sha256": "5d8883429ce465e463ded1c412a441dea761a7203deff83ae045e999963c0008"
+      "size_bytes": 484,
+      "sha256": "1ddffdc592f4b21dcf1a94bf4fbb1ec5b8f165e2aed4d3d730affae698d62b91"
     },
     {
       "path": "ovstream_browser_client/package-lock.json",
       "role": "NVIDIA ov-web-rtc Direct browser client lockfile",
       "required": true,
-      "size_bytes": 32221,
-      "sha256": "634cdb3c79b8ca55b0dfa539cc199486f66c60748de256ce2378584eb31bafeb"
+      "size_bytes": 33369,
+      "sha256": "9a45206e851f9403b824e8d5b7765b45e8e68a0f2b5172c386276faf6334d2bb"
     },
     {
       "path": "ovstream_browser_client/.npmrc",
@@ -114,15 +114,15 @@
       "path": "nvidia_runtime_preflight.json",
       "role": "machine-readable runtime gate report",
       "required": true,
-      "size_bytes": 11380,
-      "sha256": "09d87219ec257cd22d19ae3d4317b3209b13fecb44549610c670102ac5fd59dc"
+      "size_bytes": 11350,
+      "sha256": "04a5694e97105f12d52c3dd3e2b8a22871666588bfffc52e6453988695ee5e31"
     },
     {
       "path": "nvidia_runtime_preflight.md",
       "role": "human-readable runtime gate report",
       "required": true,
-      "size_bytes": 4648,
-      "sha256": "40af8033867ad83b69f46dbfa86df01e5b93413034f6009c38db60c65316c409"
+      "size_bytes": 4628,
+      "sha256": "60cd40ec833928030ac2d89608c70ae9aa436ae9ac7526f65d4752b5d8f788a8"
     },
     {
       "path": "simready_minimum_report.json",

@@ -1,5 +1,5 @@
 {
-  "package_dir": "/home/choihy/address-to-digital-twin-mvp-nvidia-check/src/samples/sadang_317_6/omniverse",
+  "package_dir": "${HOME}/address-to-digital-twin-mvp-nvidia-check/src/samples/sadang_317_6/omniverse",
   "status": "passed",
   "checks": [
     {

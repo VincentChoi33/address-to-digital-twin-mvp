@@ -27,7 +27,7 @@
       "ok": false,
       "code": 1,
       "stdout": "null",
-      "stderr": "Cannot connect to the Docker daemon at unix:///Users/handy_choi/.docker/run/docker.sock. Is the docker daemon running?"
+      "stderr": "Cannot connect to the Docker daemon at unix://${HOME}/.docker/run/docker.sock. Is the docker daemon running?"
     },
     "python_pxr": {
       "ok": false,
@@ -143,7 +143,7 @@
       "required_for": [
         "local Omniverse Content Agents"
       ],
-      "evidence": "Cannot connect to the Docker daemon at unix:///Users/handy_choi/.docker/run/docker.sock. Is the docker daemon running?",
+      "evidence": "Cannot connect to the Docker daemon at unix://${HOME}/.docker/run/docker.sock. Is the docker daemon running?",
       "remediation": "Start Docker Desktop/daemon and re-run preflight."
     },
     {
@@ -226,7 +226,7 @@
       "required_for": [
         "formal SimReady profile conformance"
       ],
-      "evidence": "SimReady Foundation root exists at /Users/handy_choi/.physical-ai-skill-hub/upstreams/simready-foundation."
+      "evidence": "SimReady Foundation root exists at ${HOME}/.physical-ai-skill-hub/upstreams/simready-foundation."
     },
     {
       "id": "SIMREADY.VALIDATOR.001",

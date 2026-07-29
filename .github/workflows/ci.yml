@@ -29,8 +29,14 @@ jobs:
       - name: Unit tests
         run: npm test
 
+      - name: Public evidence sanitizer tests
+        run: python3 -m unittest tests/test_sanitize_public_evidence.py
+
       - name: Build
         run: npm run build
+
+      - name: Public evidence safety
+        run: npm run public:check
 
       - name: Sample pipeline smoke (offline fallback)
         run: npm run sample:sadang

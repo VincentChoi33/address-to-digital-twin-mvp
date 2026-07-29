@@ -6,7 +6,7 @@
     {
       "name": "material",
       "base_url": "http://127.0.0.1:8100",
-      "input_usd": "/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda",
+      "input_usd": "${HOME}/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/simready_asset/sadang_317_6/simready_usd/sadang_317_6.usda",
       "status": "passed",
       "passed": true,
       "errors": [],
@@ -131,20 +131,20 @@
       "artifact": {
         "ok": true,
         "url": "http://127.0.0.1:8100/artifacts/f550887c-12dc-4d0b-8916-11a72c2343bf/output",
-        "path": "/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/material/materialized.usd",
+        "path": "${HOME}/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/material/materialized.usd",
         "bytes": 65946
       },
-      "output_path": "/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/material/materialized.usd",
+      "output_path": "${HOME}/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/material/materialized.usd",
       "elapsed_seconds": 534.772,
       "simready_sidecar": {
-        "path": "/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/material/materialized.json",
+        "path": "${HOME}/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/material/materialized.json",
         "bytes": 1298
       }
     },
     {
       "name": "physics",
       "base_url": "http://127.0.0.1:8200",
-      "input_usd": "/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/material/materialized.usd",
+      "input_usd": "${HOME}/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/material/materialized.usd",
       "status": "passed",
       "passed": true,
       "errors": [],
@@ -396,20 +396,20 @@
       "artifact": {
         "ok": true,
         "url": "http://127.0.0.1:8200/artifacts/8c0fa670-a167-442c-b90c-175e2c7c6ab6/output-usd",
-        "path": "/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.usd",
+        "path": "${HOME}/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.usd",
         "bytes": 62659
       },
-      "output_path": "/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.usd",
+      "output_path": "${HOME}/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.usd",
       "elapsed_seconds": 425.374,
       "simready_sidecar": {
-        "path": "/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.json",
+        "path": "${HOME}/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.json",
         "bytes": 1291
       }
     }
   ],
   "errors": [],
   "warnings": [],
-  "materialized_usd_path": "/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/material/materialized.usd",
-  "physics_usd_path": "/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.usd",
-  "output_usd_path": "/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.usd"
+  "materialized_usd_path": "${HOME}/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/material/materialized.usd",
+  "physics_usd_path": "${HOME}/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.usd",
+  "output_usd_path": "${HOME}/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.usd"
 }

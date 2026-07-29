@@ -13,6 +13,6 @@
 - Cause: SSH local forwarding carries TCP signaling/health, but WebRTC media needs a directly reachable ICE media path. train1 needs direct UDP/TCP media exposure or Tailscale/WireGuard installed on the GPU host.
 
 ## URLs used
-- Main app: `http://100.112.23.29:5173/?nvidiaServer=100.112.23.29`
-- NVIDIA live viewer: `http://100.112.23.29:5191/?server=100.112.23.29&signalingport=49100&streamport=49101&healthport=18081&autoconnect=1`
-- Health: `http://100.112.23.29:18081/healthz`
+- Main app: `http://<private-host>:5173/?nvidiaServer=<private-host>`
+- NVIDIA live viewer: `http://<private-host>:5191/?server=<private-host>&signalingport=49100&streamport=49101&healthport=18081&autoconnect=1`
+- Health: `http://<private-host>:18081/healthz`
