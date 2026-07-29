@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
+  base: process.env.VITE_BASE_PATH || "/",
   server: {
     port: 5173,
     // Dev: deploy/server.py provides /api/* (geocode+WFS agent, VWorld tile proxy)

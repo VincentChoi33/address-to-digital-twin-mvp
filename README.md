@@ -3,11 +3,31 @@
 [![CI](https://github.com/VincentChoi33/address-to-digital-twin-mvp/actions/workflows/ci.yml/badge.svg)](https://github.com/VincentChoi33/address-to-digital-twin-mvp/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Type a Korean address, get a real-data 3D digital twin — actual DEM terrain, actual WFS building footprints, full-resolution satellite drape — then run a **GPU shallow-water flood simulation** on it: continuous water surface with fresnel reflections, storm drains along the real roads, manhole backflow when the network saturates. TypeScript + Three.js + Vite.
+Type a Korean address and generate a provenance-aware 3D preview twin with
+terrain, buildings, roads, a browser flood simulation, QA artifacts, and an
+optional OpenUSD/NVIDIA handoff package. TypeScript + Three.js + Vite.
 
-**One flow, end to end:** `주소 → Juso/VWorld 지오코딩 → WFS 실건물·도로 + 실DEM + 위성 → GPU 수문 격자 베이크 → virtual-pipe-model 침수 해석`. Any address works — keyless/offline runs degrade to deterministic preview twins, so the loop never breaks.
+**One flow, end to end:** `address → source selection → spatially aligned twin
+→ flood preview → QA report → OpenUSD export`. Keyless runs use deterministic
+fallbacks and explicitly label their confidence and provenance.
 
-**NVIDIA/Omniverse track:** the app now exports each twin as OpenUSD (`*.usda`) with an NVIDIA stack manifest, SimReady minimum report, USD PhysicsScene/static-collider baseline, ovrtx viewer wrapper, first-frame smoke script, ovrtx→ovstream WebRTC readiness smoke server, NVIDIA `@nvidia/ov-web-rtc` Direct browser client, runtime preflight, GPU-host handoff manifest, a self-contained SimReady validator asset source, NVIDIA Warp/CUDA flood smoke, and an ovstream/WebRTC viewer contract that forbids browser-side USD rendering as final NVIDIA evidence. The committed Sadang sample includes a generated Omniverse package under `src/samples/sadang_317_6/omniverse/`; local `usdchecker` validation passes, `simready-validate 2026.4.9` passes `Prop-Robotics-Neutral@1.0.0` on the self-contained asset-source copy, and a remote `train1` RTX 3090 host produced a real NVIDIA ovrtx LdrColor first frame, ovrtx→ovstream WebRTC server readiness, browser `@nvidia/ov-web-rtc` Direct video first-frame evidence, and a passed NVIDIA Warp/CUDA shallow-water flood smoke.
+The core browser flow works without NVIDIA services. The optional NVIDIA track
+exports a self-contained OpenUSD package and validates its units, physics,
+materials, viewer contract, and handoff hashes. Historical GPU evidence is
+kept separately and does not imply that external RTX, ovstream, Warp, or
+Content Agents services are available in every environment.
+
+| Validation surface | Current evidence |
+| --- | --- |
+| Unit tests | 74 deterministic tests |
+| TypeScript and production build | CI-gated |
+| Offline golden sample | Reproducible without API keys |
+| OpenUSD package | Locally generated and contract-validated |
+| Real NVIDIA runtime | Historical environment-specific evidence |
+
+Read the [architecture](docs/architecture.md),
+[data provenance policy](docs/data-provenance.md), and
+[validation levels](docs/validation.md) before interpreting generated results.
 
 ![Web app](docs/images/app-screenshot.png)
 
@@ -47,7 +67,7 @@ Type a Korean address, get a real-data 3D digital twin — actual DEM terrain, a
 ## Quick start
 
 ```bash
-npm install
+npm ci
 npm run dev     # open the printed URL
 ```
 

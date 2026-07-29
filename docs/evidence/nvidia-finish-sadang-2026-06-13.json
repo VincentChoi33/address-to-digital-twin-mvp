@@ -58,7 +58,7 @@
         "--output-md",
         "docs/evidence/nvidia-content-agents-run-sadang-2026-06-12.md"
       ],
-      "stdout_tail": "{\n  \"status\": \"passed\",\n  \"output_json\": \"/home/choihy/workspace/personal/address-to-digital-twin-mvp/docs/evidence/nvidia-content-agents-run-sadang-2026-06-12.json\",\n  \"output_md\": \"/home/choihy/workspace/personal/address-to-digital-twin-mvp/docs/evidence/nvidia-content-agents-run-sadang-2026-06-12.md\"\n}\n",
+      "stdout_tail": "{\n  \"status\": \"passed\",\n  \"output_json\": \"${HOME}/workspace/personal/address-to-digital-twin-mvp/docs/evidence/nvidia-content-agents-run-sadang-2026-06-12.json\",\n  \"output_md\": \"${HOME}/workspace/personal/address-to-digital-twin-mvp/docs/evidence/nvidia-content-agents-run-sadang-2026-06-12.md\"\n}\n",
       "stderr_tail": ""
     },
     {
@@ -69,13 +69,13 @@
         "python3",
         "scripts/nvidia_simready_validate.py",
         "--asset",
-        "/home/choihy/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.usd",
+        "${HOME}/workspace/personal/address-to-digital-twin-mvp/src/samples/sadang_317_6/omniverse/content_agents_run/physics/physics.usd",
         "--output-json",
         "docs/evidence/nvidia-simready-validate-sadang-2026-06-12.json",
         "--output-md",
         "docs/evidence/nvidia-simready-validate-sadang-2026-06-12.md"
       ],
-      "stdout_tail": "{\n  \"status\": \"passed\",\n  \"output_json\": \"/home/choihy/workspace/personal/address-to-digital-twin-mvp/docs/evidence/nvidia-simready-validate-sadang-2026-06-12.json\",\n  \"output_md\": \"/home/choihy/workspace/personal/address-to-digital-twin-mvp/docs/evidence/nvidia-simready-validate-sadang-2026-06-12.md\"\n}\n",
+      "stdout_tail": "{\n  \"status\": \"passed\",\n  \"output_json\": \"${HOME}/workspace/personal/address-to-digital-twin-mvp/docs/evidence/nvidia-simready-validate-sadang-2026-06-12.json\",\n  \"output_md\": \"${HOME}/workspace/personal/address-to-digital-twin-mvp/docs/evidence/nvidia-simready-validate-sadang-2026-06-12.md\"\n}\n",
       "stderr_tail": ""
     },
     {
